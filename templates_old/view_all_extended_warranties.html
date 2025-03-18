@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View All Extended Warranties</title>
+    <style>
+        /* General body styling */
+
+
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        /* Table styling */
+        table {
+            width: 100%;
+			border-collapse: collapse;
+			margin-top: 20px;
+			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+
+
+        th {
+             background-color: #2f276f;
+				color: white;
+				text-align: left;
+				padding: 10px;
+				font-size: 14px;
+				 border: none; /* Remove any border that may be causing the line */
+        }
+
+        td {
+             background-color: #fff;
+    padding: 10px;
+    font-size: 14px;
+    border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover td {
+            background-color: #f1f1f1;
+        }
+
+        /* Button and link styling */
+        a.button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #2f276f; /* Blue button color */
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-right: 10px;
+            font-size: 14px;
+            transition: background-color 0.3s ease, transform 0.1s;
+        }
+
+        a.button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+            transform: translateY(-2px); /* Slight upward movement */
+        }
+
+        /* Action link styling */
+        a.action-link {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a.action-link:hover {
+            text-decoration: underline;
+            color: #0056b3; /* Darker on hover */
+        }
+
+        /* Back button */
+        button.back-button {
+            background-color: #2f276f;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease, transform 0.1s;
+        }
+
+        button.back-button:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+        }
+		
+		
+		body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+/* Header Section */
+.header {
+    background-color: #2f276f;
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 28px;
+	color:white;
+}
+
+.header p {
+    margin: 5px 0 0;
+    font-size: 14px;
+}
+
+
+.header .add-asset-btn {
+    background-color: #2f276f ;
+    color: white;
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header .add-asset-btn:hover {
+    background-color: #291e6c;
+}
+
+        .menu {
+            cursor: pointer;
+            font-size: 24px;
+            padding: 10px;
+            background-color: #2f276f ;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        .menu:hover {
+            background-color: #291e6c;
+        }
+
+        .menu-dropdown {
+            display: none; /* Hidden by default */
+            position: absolute;
+            top: 60px; /* Below the menu button */
+            right: 20px;
+            background-color: white;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .menu-dropdown a,
+        .menu-dropdown button {
+            display: block;
+            text-decoration: none;
+            color: #2f276f ;
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            text-align: left;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .menu-dropdown a:hover,
+        .menu-dropdown button:hover {
+            background-color: #f4f4f9;
+        }r: #f4f4f9;
+        }
+		
+		
+		        /* Add the styles for the new button */
+        a.view-link {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a.view-link:hover {
+            text-decoration: underline;
+            color: #0056b3;
+        }
+
+        /* Disabled button style */
+        .disabled {
+            pointer-events: none;
+            color: #ccc;
+        }
+		
+		
+		/* Warranty details section */
+        .warranty-details {
+            display: none;  /* Hidden by default */
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+		
+		.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4); /* Black with opacity */
+    padding-top: 60px;
+    overflow: auto;
+}
+
+/* Modal content box */
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 800px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+/* Close button (X) */
+.close-btn {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    top: 10px;
+    right: 25px;
+    cursor: pointer;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Print button */
+button.button {
+    background-color: #2f276f;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+button.button:hover {
+    background-color: #0056b3;
+}
+		
+    </style>
+</head>
+<body>
+
+
+ <input type="hidden" name="source" value="{{ source }}">
+
+
+	<div class="header">
+        <h1>Asset Tracker</h1>
+        <div class="menu" onclick="headertoggleMenu()">☰</div>
+        <div class="menu-dropdown" id="menuDropdown">
+		
+		   <a href="{{ url_for('it_dashboard', source=source) }}">Dashboard</a>
+            <a href="{{ url_for('it_assets_index', source=source) }}">Manage IT Assets</a>
+			{% if 'view_service_details' in permissions %}
+			<a href="{{ url_for('service_details_index', source=source)}}">View Service Details</a>
+			{% endif %} 
+            {% if 'raise_ticket' in permissions %}
+			<a href="{{ url_for('raised_ticket_details_index', source=source)}}">Raised Tickets</a>
+            {% endif %}
+
+			
+        </div>
+    </div>
+
+
+
+
+
+
+
+    <h1>All Extended Warranties</h1>
+
+    {% if extended_assets and extended_assets|length > 0 %}
+        <a href="{{ url_for('extended_warranty', asset_id=extended_assets[0].asset_id, source=source) }}" class="button">Create Extended Warranty</a>
+        <button class="back-button" onclick="window.location.href='{{ url_for('it_assets_index', source=source) }}'">Back</button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Asset ID</th>
+                    <th>Warranty Asset ID</th>
+                    <th>Value</th>
+                    <th>Extended Warranty</th>
+                    <th>ADP Protection</th>
+                    <th>Product Condition</th>
+                    <th>Remarks</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asset in extended_assets %}
+                <tr>
+                    <td>{{ asset.asset_id }}</td>
+                    <td>{{ asset.warranty_asset_id }}</td>
+                    <td>{{ asset.value }}</td>
+                    <td>{{ asset.extended_warranty }}</td>
+                    <td>{{ asset.adp_protection }}</td>
+                    <td>{{ asset.product_condition }}</td>
+                    <td>{{ asset.remarks }}</td>
+                    <td>{{ asset.created_at }}</td>
+                    <td>
+						{% if 'view' in permissions %}
+							<a href="javascript:void(0);" class="action-link" onclick="viewWarrantyDetails('{{ asset.warranty_asset_id }}')">View</a> |
+						{% endif %}
+
+						{% if 'edit' in permissions %}
+							{% if asset.warranty_asset_id == latest_warranty_asset_id %}
+								<a href="{{ url_for('edit_extended_warranty', warranty_asset_id=asset.warranty_asset_id, source=source) }}" class="action-link">Edit</a> |
+							{% else %}
+								<span class="action-link" style="color: grey;">Edit</span> |
+							{% endif %}
+						{% endif %}
+
+						{% if 'delete' in permissions %}
+							{% if asset.warranty_asset_id == latest_warranty_asset_id %}
+								<a href="{{ url_for('delete_extended_warranty', warranty_asset_id=asset.warranty_asset_id) }}" class="action-link" onclick="return confirm('Are you sure you want to delete this record?');">Delete</a>
+							{% else %}
+								<span class="action-link" style="color: grey;">Delete</span>
+							{% endif %}
+						{% endif %}
+					</td>
+
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+		
+		
+
+
+<!-- Modal for viewing warranty details -->
+<div id="warranty-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeWarrantyModal()">×</span>
+        <h2>Warranty Details</h2>
+        <div id="warranty-content"></div> <!-- Warranty details will be inserted here -->
+        <button class="button" onclick="printWarrantyDetails()">Print</button>
+    </div>
+</div>
+
+
+
+
+    {% else %}
+        <p>No warranties have been created for this asset.</p>
+		 <a href="{{ url_for('extended_warranty', asset_id=asset_id, source=source) }}" class="button">Create Extended Warranty</a>
+		  <button class="back-button" onclick="window.location.href='{{ url_for('it_assets_index', source=source) }}'">Back</button>
+       
+		
+		<p>{{'abc'}}{{source}}</p>
+        <!-- <button class="back-button" onclick="window.location.href='{{ url_for('it_assets_index', source=source) }}'">Back</button>-->
+		
+
+	
+    {% endif %}
+</body>
+
+
+
+<script>
+    const permissions = {{ permissions | tojson }};
+</script>
+
+<script>
+        function headertoggleMenu() {
+            const menu = document.getElementById('menuDropdown');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Close the dropdown if clicked outside
+        document.addEventListener('click', function (event) {
+            const dropdown = document.getElementById('menuDropdown');
+            const menuButton = document.querySelector('.menu');
+
+            if (!dropdown.contains(event.target) && !menuButton.contains(event.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    </script>
+	
+	
+	    <script>
+       // Function to open the warranty modal and load details
+function viewWarrantyDetails(warranty_asset_id) {
+    // Fetch warranty details via AJAX
+    fetch(`/get_extended_warranty_details?warranty_asset_id=${warranty_asset_id}`)
+        .then(response => response.json())
+        .then(data => {
+            // Get the modal and content container
+            const modal = document.getElementById('warranty-modal');
+            const contentDiv = document.getElementById('warranty-content');
+
+            if (modal && contentDiv) {
+                // Create content dynamically
+                const content = `
+						<p><strong>ID:</strong> ${data.id}</p>
+						<p><strong>Created By:</strong> ${data.created_by}</p>
+						<p><strong>Created At:</strong> ${data.created_at}</p>
+						<p><strong>Warranty Asset ID:</strong> ${data.warranty_asset_id}</p>
+						<p><strong>Asset ID:</strong> ${data.asset_id}</p>
+						<p><strong>Serial No:</strong> ${data.serial_no}</p>
+						<p><strong>Product Name:</strong> ${data.product_name}</p>
+						<p><strong>Purchase Date:</strong> ${data.purchase_date}</p>
+						<p><strong>Extended Warranty Start:</strong> ${data.extended_warranty_start}</p>
+						<p><strong>Extended Warranty Period:</strong> ${data.extended_warranty_period}</p>
+						<p><strong>Extended Warranty:</strong> ${data.extended_warranty}</p>
+						<p><strong>Warranty Provider Type:</strong> ${data.warranty_provider_type}</p>
+						<p><strong>Warranty Provider Name:</strong> ${data.warranty_provider_name}</p>
+						<p><strong>Warranty Provider Phone Number:</strong> ${data.warranty_provider_ph_no}</p>
+						<p><strong>Warranty Provider Location:</strong> ${data.warranty_provider_location}</p>
+						<p><strong>Value:</strong> ${data.value}</p>
+						<p><strong>ADP Protection:</strong> ${data.adp_protection}</p>
+						<p><strong>Extended Warranty Purchase Bill Path:</strong> ${data.extended_warrranty_purchase_bill_path}</p>
+						<p><strong>Product Condition:</strong> ${data.product_condition}</p>
+						<p><strong>Modified By:</strong> ${data.modified_by}</p>
+						<p><strong>Modified At:</strong> ${data.modified_at}</p>
+						<p><strong>Remarks:</strong> ${data.remarks}</p>
+						<p><strong>Asset Category:</strong> ${data.asset_category}</p>
+
+                `;
+                contentDiv.innerHTML = content;
+
+                // Display the modal
+                modal.style.display = 'block';
+            } else {
+                console.error("Error loading warranty details.");
+            }
+        })
+        .catch(error => console.error('Error fetching warranty details:', error));
+}
+
+// Function to close the modal
+function closeWarrantyModal() {
+    const modal = document.getElementById('warranty-modal');
+    modal.style.display = 'none';
+}
+
+// Function to print the warranty details
+function printWarrantyDetails() {
+    const contentDiv = document.getElementById('warranty-content');
+    const printWindow = window.open('', '', 'height=600,width=800');
+    printWindow.document.write('<html><head><title>Warranty Details</title></head><body>');
+    printWindow.document.write(contentDiv.innerHTML);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+}
+
+// Close the modal if the user clicks outside of it
+window.onclick = function(event) {
+    const modal = document.getElementById('warranty-modal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+};
+
+
+    </script>
+</html>

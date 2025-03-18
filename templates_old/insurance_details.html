@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insurance Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            color: #2f276f;
+        }
+        .container {
+            display: flex;
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .column {
+            width: 95%;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            margin-right: 10px;
+        }
+        .column:last-child {
+            margin-right: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input[type="submit"], button {
+            width: auto;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        input[type="submit"]:hover, button:hover {
+            background-color: #45a049;
+        }
+        button.edit {
+            background-color: #007BFF;
+        }
+        button.edit:hover {
+            background-color: #0056b3;
+        }
+        button.delete {
+            background-color: #dc3545;
+        }
+        button.delete:hover {
+            background-color: #c82333;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+		
+		
+		
+		
+		
+		
+		
+		
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+/* Header Section */
+.header {
+    background-color: #2f276f;
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 28px;
+	color:white;
+}
+
+.header p {
+    margin: 5px 0 0;
+    font-size: 14px;
+}
+
+
+.header .add-asset-btn {
+    background-color: #2f276f ;
+    color: white;
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header .add-asset-btn:hover {
+    background-color: #291e6c;
+}
+
+        .menu {
+            cursor: pointer;
+            font-size: 24px;
+            padding: 10px;
+            background-color: #2f276f ;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        .menu:hover {
+            background-color: #291e6c;
+        }
+
+        .menu-dropdown {
+            display: none; /* Hidden by default */
+            position: absolute;
+            top: 60px; /* Below the menu button */
+            right: 20px;
+            background-color: white;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .menu-dropdown a,
+        .menu-dropdown button {
+            display: block;
+            text-decoration: none;
+            color: #2f276f ;
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            text-align: left;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .menu-dropdown a:hover,
+        .menu-dropdown button:hover {
+            background-color: #f4f4f9;
+        }r: #f4f4f9;
+        }
+
+		
+		
+		
+button.back-button {
+    background-color: #2f276f;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease, transform 0.1s;
+    text-align: center; /* Center the text inside the button */
+    margin-top: 20px;   /* Add margin at the top */
+}
+
+button.back-button:hover {
+    background-color: #2f276f;
+    transform: translateY(-2px);
+}
+
+		
+
+		
+    </style>
+</head>
+<body>
+
+
+
+		  <div class="header">
+        <h1>IT Asset Tracker</h1>
+        <div class="menu" onclick="headertoggleMenu()">☰</div>
+        <div class="menu-dropdown" id="menuDropdown">
+		
+		   <a href="{{ url_for('it_dashboard', source=source) }}">Dashboard</a>
+           
+            <a href="{{ url_for('it_assets_index', source=source) }}">Manage IT Assets</a>
+			{% if 'view_service_details' in permissions %}
+			<a href="{{ url_for('service_details_index', source=source)}}">View Service Details</a>
+			{% endif %} 
+            
+            
+            
+            {% if 'raise_ticket' in permissions %}
+			<a href="{{ url_for('raised_ticket_details_index', source=source)}}">Raised Tickets</a>
+            {% endif %}
+
+			
+        </div>
+    </div>
+	
+
+    <h1>Insurance Details</h1>
+	 <h1>
+    <!-- <button class="back-button" onclick="window.location.href='{{ url_for('it_assets_index', source=source) }}'" style="color: white; background-color: #2f276f;">Back</button>-->
+	      <button class="back-button"id="return-to-previous" onclick="returnToPreviousPage()" " style="color: white; background-color: #2f276f;">Back</button>
+     </h1>
+
+
+    <div class="container">
+        <!-- Left Column: Existing Insurance Details -->
+        <div class="column">
+            <h3>Existing Insurance Details</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Policy Number</th>
+                        <th>Insurance Value</th>
+                        <th>Start Date</th>
+                        <th>Period</th>
+                        <th>End Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for detail in insurance_details %}
+                    <tr>
+                        <td>{{ detail.policy_no }}</td>
+                        <td>{{ detail.insurance_value }}</td>
+                        <td>{{ detail.insurance_start }}</td>
+                        <td>{{ detail.insurance_period }}</td>
+                        <td>{{ detail.insurance_end }}</td>
+                        <td>
+                            {% if loop.index == 1 %}
+							
+							
+								{% if 'edit' in permissions %}
+									<button class="edit" 
+											data-id="{{ detail.insurance_id }}"
+											data-policy-no="{{ detail.policy_no }}"
+											data-insurance-value="{{ detail.insurance_value }}"
+											data-start="{{ detail.insurance_start }}"
+											data-period="{{ detail.insurance_period }}"
+											data-end="{{ detail.insurance_end }}"
+											data-remarks="{{ detail.remarks }}"
+											onclick="editInsurance(this)">
+										Edit
+									</button>
+
+								{% endif %}
+								
+								{% if 'delete' in permissions %}
+								<button 
+									class="delete" 
+									onclick="deleteInsurance('{{ detail.insurance_id }}')">
+									Delete
+								</button>
+								{% endif %}
+
+
+                            {% else %}
+                                <button class="edit" disabled>Edit</button>
+                                <button class="delete" disabled>Delete</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Right Column: Add/Edit Insurance -->
+        <div class="column">
+            <div class="column">
+				<h3 id="form-title">Add New Insurance</h3>
+				<form id="insurance-form" action="{{ url_for('insurance_details', source=source, asset_id=asset_id) }}" method="post">
+					<input type="hidden" id="insurance_id" name="insurance_id" value="">
+					<input type="hidden" id="source" name="source" value="{{ source }}">
+					<input type="hidden" id="asset_id" name="asset_id" value="{{ asset_id }}">
+
+					<label for="policy_number">Policy Number:</label>
+					<input type="text" id="policy_number" name="policy_number" value="" required>
+
+					<label for="insurance_value">Insurance Value:</label>
+					<input type="number" id="insurance_value" name="insurance_value" step="0.01" value="" required>
+					
+					<P> lAST iNSURANCE DATE {{last_insurance_end_date}} </P>
+
+					<label for="insurance_start">Insurance Start Date:</label>
+					<input type="date" id="insurance_start" name="insurance_start" value="" required>
+
+					<label for="insurance_period_years">Insurance Period:</label>
+					<input type="number" id="insurance_period_years" name="insurance_period_years" placeholder="Years" min="0" value="">
+					<input type="number" id="insurance_period_months" name="insurance_period_months" placeholder="Months" min="0" value="">
+					<input type="number" id="insurance_period_days" name="insurance_period_days" placeholder="Days" min="0" value="">
+
+					<label for="insurance_end">Insurance End Date:</label>
+					<input type="date" id="insurance_end" name="insurance_end" value="" readonly>
+
+					<label for="remarks">Remarks:</label>
+					<textarea id="remarks" name="remarks" rows="4"></textarea>
+
+					<input type="submit" value="Add Insurance">
+					<button type="button" id="cancel-btn" onclick="cancelEdit()">Cancel Edit</button>
+				</form>
+			</div>
+
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Calculate insurance end date dynamically
+            const startDateInput = document.getElementById('insurance_start');
+            const periodYearsInput = document.getElementById('insurance_period_years');
+            const periodMonthsInput = document.getElementById('insurance_period_months');
+            const periodDaysInput = document.getElementById('insurance_period_days');
+            const endDateInput = document.getElementById('insurance_end');
+
+            function calculateEndDate() {
+                const startDate = startDateInput.value;
+                const years = parseInt(periodYearsInput.value) || 0;
+                const months = parseInt(periodMonthsInput.value) || 0;
+                const days = parseInt(periodDaysInput.value) || 0;
+
+                if (startDate) {
+                    const date = new Date(startDate);
+                    date.setFullYear(date.getFullYear() + years);
+                    date.setMonth(date.getMonth() + months);
+                    date.setDate(date.getDate() + days);
+
+                    endDateInput.value = date.toISOString().split('T')[0];
+                }
+            }
+
+            startDateInput.addEventListener('change', calculateEndDate);
+            periodYearsInput.addEventListener('input', calculateEndDate);
+            periodMonthsInput.addEventListener('input', calculateEndDate);
+            periodDaysInput.addEventListener('input', calculateEndDate);
+        });
+
+        function deleteInsurance(insuranceId) {
+            if (confirm('Are you sure you want to delete this insurance?')) {
+                window.location.href = `/delete_insurance?insurance_id=${insuranceId}`;
+            }
+        }
+    </script>
+	
+	<script>
+    function deleteInsurance(insuranceId) {
+        if (confirm('Are you sure you want to delete this insurance?')) {
+            // Construct the DELETE request URL
+            const deleteUrl = `/delete/insurance_details/${insuranceId}`;
+
+            // Send the DELETE request
+            fetch(deleteUrl, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Failed to delete the insurance.');
+                }
+            })
+            .then(data => {
+                if (data.success) {
+                    // Notify the user
+                    alert('Insurance deleted successfully.');
+                    // Reload the page to update the displayed insurance details
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                // Handle errors gracefully
+                console.error('Error:', error);
+                alert('An error occurred while deleting the insurance.');
+            });
+        }
+    }
+</script>
+<script>
+    const permissions = {{ permissions | tojson }};
+</script>
+
+
+<script>
+        function headertoggleMenu() {
+            const menu = document.getElementById('menuDropdown');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Close the dropdown if clicked outside
+        document.addEventListener('click', function (event) {
+            const dropdown = document.getElementById('menuDropdown');
+            const menuButton = document.querySelector('.menu');
+
+            if (!dropdown.contains(event.target) && !menuButton.contains(event.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    </script>
+
+
+
+
+<script>
+    // Get the last insurance end date from the server
+    const lastInsuranceEndDate = "{{ last_insurance_end_date }}";
+
+    // Check if lastInsuranceEndDate is valid and not empty
+    if (lastInsuranceEndDate && lastInsuranceEndDate !== "None") {
+        document.getElementById('insurance_start').addEventListener('input', function () {
+            const insuranceStartDate = this.value;
+
+            // Log values for debugging
+            console.log("Last Insurance End Date:", lastInsuranceEndDate);
+            console.log("Insurance Start Date:", insuranceStartDate);
+
+            // Ensure date comparison works by converting to Date objects
+            const lastEndDate = new Date(lastInsuranceEndDate);
+            const startDate = new Date(insuranceStartDate);
+
+            if (startDate < lastEndDate) {
+                alert("Insurance start date cannot be earlier than the last insurance end date.");
+                this.value = ""; // Clear the invalid input
+            }
+        });
+    } else {
+        console.log("No valid last insurance end date provided.");
+    }
+</script>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const effectiveDateInput = document.getElementById('insurance_start');
+    const latestEndingDate = new Date('{{ last_insurance_end_date|safe }}'); // Fetch latest ending date.
+
+    effectiveDateInput.addEventListener('change', function() {
+    const effectiveDate = new Date(effectiveDateInput.value);
+
+
+
+        // Check if effective date is >= latest ending date
+        if (effectiveDate < latestEndingDate) {
+            alert("Effective date cannot be earlier than the latest ending date.");
+            effectiveDateInput.value = '';
+            return;
+        }
+    });
+
+
+});
+</script>
+
+
+
+
+<script>
+    // Capture the previous page URL (referrer)
+    const previousPageUrl = document.referrer;
+
+    // Check if the referrer is available
+    if (previousPageUrl) {
+        console.log("Previous Page URL:", previousPageUrl);
+    } else {
+        console.log("No previous page URL available.");
+    }
+
+    // Example: Redirect back to the previous page using the stored URL
+    function returnToPreviousPage() {
+        if (previousPageUrl) {
+            // Redirect to the previous page URL
+            window.location.href = previousPageUrl;
+        } else {
+            console.error("Previous page URL not available.");
+        }
+    }
+</script>
+
+
+<script>
+    function editInsurance(button) {
+        // Get form elements
+        const form = document.getElementById('insurance-form');
+        const formTitle = document.getElementById('form-title');
+
+        // Update the form title
+        formTitle.textContent = 'Edit Insurance';
+
+        // Populate the form fields with data from the button's attributes
+        document.getElementById('insurance_id').value = button.dataset.id;
+        document.getElementById('policy_number').value = button.dataset.policyNo;
+        document.getElementById('insurance_value').value = button.dataset.insuranceValue;
+        document.getElementById('insurance_start').value = button.dataset.start;
+
+        // Split the period into years, months, and days
+        const periodParts = button.dataset.period.split(' ');
+        document.getElementById('insurance_period_years').value = periodParts[0] || '';
+        document.getElementById('insurance_period_months').value = periodParts[2] || '';
+        document.getElementById('insurance_period_days').value = periodParts[4] || '';
+
+        document.getElementById('insurance_end').value = button.dataset.end;
+        document.getElementById('remarks').value = button.dataset.remarks;
+
+        // Change the submit button label
+        form.querySelector('input[type="submit"]').value = 'Update Insurance';
+
+        // Show the Cancel Edit button
+        document.getElementById('cancel-btn').style.display = 'inline-block';
+    }
+
+    function cancelEdit() {
+        // Reset the form
+        const form = document.getElementById('insurance-form');
+        form.reset();
+
+        // Clear hidden inputs
+        document.getElementById('insurance_id').value = '';
+
+        // Update the form title back to "Add New Insurance"
+        const formTitle = document.getElementById('form-title');
+        formTitle.textContent = 'Add New Insurance';
+
+        // Change the submit button label back to "Add Insurance"
+        form.querySelector('input[type="submit"]').value = 'Add Insurance';
+
+        // Hide the Cancel Edit button
+        document.getElementById('cancel-btn').style.display = 'none';
+    }
+
+    // Hide the Cancel Edit button by default when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('cancel-btn').style.display = 'none';
+    });
+</script>
+
+
+
+</body>
+</html>

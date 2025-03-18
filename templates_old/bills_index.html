@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bills Index</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .actions a {
+            margin: 0 5px;
+            text-decoration: none;
+            color: #007BFF;
+        }
+
+        .actions a:hover {
+            text-decoration: underline;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .pagination a {
+            margin: 0 5px;
+            text-decoration: none;
+            color: #007BFF;
+        }
+
+        .pagination a.active {
+            font-weight: bold;
+        }
+
+        .filter {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .filter input[type="text"] {
+            padding: 5px;
+            width: 200px;
+        }
+
+        /* A4 modal size */
+        .modal-a4 {
+            width: 210mm; /* A4 width */
+            height: 297mm; /* A4 height */
+            max-width: 100%; /* Responsive */
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+	
+	
+	 <a href="{{ url_for('bills_manager') }}">Create Bill</a><br><br>
+	 <a href="{{ url_for('it_asset_form',source='page_manage_bills' ) }}" class="details-button">Create New Equipment Data</a><br><br>
+	 <!--<a href="{{ url_for('service_details_index', source = 'page_manage_bills') }}" class="details-button">Service Details</a><br><br>-->
+	 
+	 <!-- <a href="{{ url_for('page_manage_bills') }}" class="details-button">Manage Bills IT Assets</a><br><br>-->
+	 <a href="{{ url_for('it_assets_index', source='page_manage_bills') }}" class="details-button">Manage Bills IT Assets</a><br><br>
+	 
+        <h1>Bills Index</h1>
+        
+        <div class="filter">
+            <form method="GET" action="{{ url_for('bills_index') }}">
+                <input type="text" name="search" placeholder="Search by vendor or purchaser" value="{{ search_query }}">
+                <input type="submit" value="Search">
+            </form>
+        </div>
+		<button onclick="exportBillTableToExcel()">Download Bill Table as Excel</button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Bill ID</th>
+                    <th>Vendor Name</th>
+                    <th>Purchaser Name</th>
+                    <th>Order Date</th>
+                    <th>Total Amount</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bill in bills %}
+                <tr>
+                    <td>{{ bill[3] }}</td> <!-- bill_id -->
+                    <td>{{ bill[4] }}</td> <!-- vendor_name -->
+                    <td>{{ bill[5] }}</td> <!-- purchaser_name -->
+                    <td>{{ bill[6] }}</td> <!-- order_date -->
+                    <td>{{ bill[10] }}</td> <!-- total_amount -->
+                    <td class="actions">
+                        <a href="#" data-toggle="modal" data-target="#billModal" 
+                           data-bill-id="{{ bill[3] }}"
+                           data-vendor-name="{{ bill[4] }}"
+                           data-purchaser-name="{{ bill[5] }}"
+                           data-order-date="{{ bill[6] }}"
+                           data-remarks="{{ bill[8] }}"
+                           data-total-amount="{{ bill[10] }}"
+                           data-bill-products="{{ bill[3] }}">View</a>
+                        <a href="{{ url_for('edit_bill', bill_id=bill[3]) }}">Edit</a>
+                        <a href="{{ url_for('delete_bill', bill_id=bill[3]) }}" onclick="return confirm('Are you sure you want to delete this bill?');">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="pagination">
+            {% if page > 1 %}
+            <a href="{{ url_for('bills_index', page=page-1, search=search_query) }}">Previous</a>
+            {% endif %}
+            {% for p in range(1, total_pages + 1) %}
+                <a href="{{ url_for('bills_index', page=p, search=search_query) }}" class="{{ 'active' if p == page else '' }}">{{ p }}</a>
+            {% endfor %}
+            {% if page < total_pages %}
+            <a href="{{ url_for('bills_index', page=page+1, search=search_query) }}">Next</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Bill Details Modal -->
+    <div class="modal fade" id="billModal" tabindex="-1" role="dialog" aria-labelledby="billModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-a4" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="billModalLabel">Bill Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Bill ID:</strong> <span id="modalBillId"></span></p>
+                    <p><strong>Vendor Name:</strong> <span id="modalVendorName"></span></p>
+                    <p><strong>Purchaser Name:</strong> <span id="modalPurchaserName"></span></p>
+                    <p><strong>Order Date:</strong> <span id="modalOrderDate"></span></p>
+                    <p><strong>Remarks:</strong> <span id="modalRemarks"></span></p>
+                    <p><strong>Total Amount:</strong> <span id="modalTotalAmount"></span></p>
+
+                    <h4>Products</h4>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Weight</th>
+                                <th>Rate</th>
+                                <th>Total Price</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalProductsBody">
+                            <!-- Product details will be injected here using JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include full version of jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.full.min.js"></script>
+	
+	
+	<script>
+    function exportBillTableToExcel() {
+        const tableData = [];
+        const tableRows = document.querySelectorAll('tbody tr');
+
+        // Add the header row with the specific columns you want
+        const headers = ['Bill ID', 'Vendor Name', 'Purchaser Name', 'Order Date', 'Total Amount'];
+        tableData.push(headers);
+
+        // Add each row data for the specified columns only
+        tableRows.forEach(row => {
+            const rowData = [];
+            const cells = row.querySelectorAll('td');
+
+            // Extract only the columns you're interested in
+            rowData.push(cells[0].innerText); // Bill ID
+            rowData.push(cells[1].innerText); // Vendor Name
+            rowData.push(cells[2].innerText); // Purchaser Name
+            rowData.push(cells[3].innerText); // Order Date
+            rowData.push(cells[4].innerText); // Total Amount
+
+            tableData.push(rowData);
+        });
+
+        // Create a new workbook and add the data
+        const ws = XLSX.utils.aoa_to_sheet(tableData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Bills');
+
+        // Save the Excel file
+        XLSX.writeFile(wb, 'bills_data.xlsx');
+    }
+</script>
+
+    <script>
+        // JavaScript to populate the modal with bill details
+        $('#billModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget); // Button that triggered the modal
+            var billId = button.data('bill-id');
+            var vendorName = button.data('vendor-name');
+            var purchaserName = button.data('purchaser-name');
+            var orderDate = button.data('order-date');
+            var remarks = button.data('remarks');
+            var totalAmount = button.data('total-amount');
+            var billProductsId = button.data('bill-products');
+
+            // Fetching products for the specific bill_id from server
+            $.ajax({
+                url: '/get_bill_products',
+                type: 'GET',
+                data: { bill_id: billProductsId },
+                success: function (data) {
+                    // Clear previous products
+                    $('#modalProductsBody').empty();
+                    // Populate modal fields
+                    $('#modalBillId').text(billId);
+                    $('#modalVendorName').text(vendorName);
+                    $('#modalPurchaserName').text(purchaserName);
+                    $('#modalOrderDate').text(orderDate);
+                    $('#modalRemarks').text(remarks);
+                    $('#modalTotalAmount').text(totalAmount);
+
+                    // Append each product to the table
+                    $.each(data.products, function (index, product) {
+                        $('#modalProductsBody').append(
+                            '<tr>' +
+                                '<td>' + product.product_name + '</td>' +
+                                '<td>' + product.weight + '</td>' +
+                                '<td>' + product.rate + '</td>' +
+                                '<td>' + product.total_price + '</td>' +
+                            '</tr>'
+                        );
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error('AJAX Error:', status, error);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

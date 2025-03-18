@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vendor Details Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            color: #333;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: auto;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            width: auto;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+		.flash-message {
+			padding: 10px;
+			margin-bottom: 20px;
+			border: 1px solid transparent;
+			border-radius: 4px;
+		}
+		.flash-message.success {
+			color: #3c763d;
+			background-color: #dff0d8;
+			border-color: #d6e9c6;
+		}
+		.flash-message.danger {
+			color: #a94442;
+			background-color: #f2dede;
+			border-color: #ebccd1;
+}
+
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+/* Header Section */
+.header {
+    background-color: #2f276f;
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 28px;
+	color:white;
+}
+
+.header p {
+    margin: 5px 0 0;
+    font-size: 14px;
+}
+
+
+.header .add-asset-btn {
+    background-color: #2f276f ;
+    color: white;
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header .add-asset-btn:hover {
+    background-color: #291e6c;
+}
+
+        .menu {
+            cursor: pointer;
+            font-size: 24px;
+            padding: 10px;
+            background-color: #2f276f ;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        .menu:hover {
+            background-color: #291e6c;
+        }
+
+        .menu-dropdown {
+            display: none; /* Hidden by default */
+            position: absolute;
+            top: 60px; /* Below the menu button */
+            right: 20px;
+            background-color: white;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .menu-dropdown a,
+        .menu-dropdown button {
+            display: block;
+            text-decoration: none;
+            color: #2f276f ;
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            text-align: left;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .menu-dropdown a:hover,
+        .menu-dropdown button:hover {
+            background-color: #f4f4f9;
+        }r: #f4f4f9;
+        }
+		
+		
+		
+.main-content {
+            padding: 20px;
+        }
+
+        .main-content h2 {
+            font-size: 20px;
+            color: #2f276f ;
+            margin-bottom: 5px;
+        }
+
+        .main-content p {
+            font-size: 14px;
+            color: #666;
+        }
+
+
+
+
+
+		
+/* Ticket Actions Section */
+.ticket-actions {
+    display: flex;
+    justify-content: space-between;  /* Align the elements to the left and right */
+    align-items: center;
+    padding: 20px;
+    background-color: #f4f4f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Ticket Actions Section (For "Raise Ticket" and "View All Raised Tickets" button) */
+.ticket-actions {
+    display: flex;
+    justify-content: space-between;  /* Align the items to the left and right */
+    align-items: center;
+    padding: 20px;
+    background-color: #f4f4f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Styling for "Raise Ticket" title */
+.ticket-actions h1 {
+    margin: 0;
+    font-size: 28px;
+    color: #2f276f;
+}
+
+
+
+.form-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .form-column {
+        flex: 1;
+        min-width: 400px; /* Ensure columns adjust for smaller screens */
+		
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        font-weight: bold;
+    }
+
+    .form-group input, 
+    .form-group select, 
+    .form-group textarea {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+    }
+
+    .hidden {
+        display: none;
+    }
+	
+		
+    </style>
+
+	
+	
+	
+
+	
+</head>
+<body>
+
+
+
+	<div class="header">
+        <h1>IT Asset Tracker</h1>
+		
+        <div class="menu" onclick="headertoggleMenu()">☰</div>
+        <div class="menu-dropdown" id="menuDropdown">
+		
+		   <a href="{{ url_for('it_dashboard', source=source) }}">Dashboard</a>
+           
+            <a href="{{ url_for('it_assets_index', source=source) }}">Manage IT Assets</a>
+			{% if 'view_service_details' in permissions %}
+			<a href="{{ url_for('service_details_index', source=source)}}">View Service Details</a>
+			{% endif %} 
+            
+            
+            
+            {% if 'raise_ticket' in permissions %}
+			<a href="{{ url_for('raised_ticket_details_index', source=source)}}">Raised Tickets</a>
+            {% endif %}
+
+			
+        </div>
+    </div>
+	
+	
+	<!-- Container for "Raise Ticket" title and "View All Raised Tickets" button below the header -->
+<div class="ticket-actions">
+
+<div id="message" style="display: none; background-color: #4CAF50; color: white; padding: 10px; margin-top: 10px;"></div>
+    <h1>VendorDetails Form</h1>
+	
+	
+	<button id="return-to-previous" onclick="returnToPreviousPage()">Return to Previous Page</button>
+	
+
+</div>
+
+
+	
+	
+	
+    <div class="form-container">
+	
+	
+	
+	
+        <form action="{{ url_for('submit_vendor', source=source) }}" method="post" enctype="multipart/form-data">
+		<input type="hidden" name="source" value="{{ source }}">
+		
+		    {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+			<input type="hidden" name="source" value="{{ source }}">
+			
+			<label for="vendor_name">Vendor Name:</label>
+            <input type="text" id="vendor_name" name="vendor_name" required><br><br>
+			
+			<label for="address">Vendor Address:</label>
+            <input type="text" id="address" name="address" ><br><br>
+			
+			<label for="state">State:</label>
+            <input type="text" id="state" name="state" ><br><br>
+			
+			
+		
+			
+			<label for="ph_no">Contact No. :</label>
+            <input type="text" id="ph_no" name="ph_no" ><br><br>
+			
+				
+			<label for="email">Email:</label>
+            <input type="text" id="email" name="email" ><br><br>
+
+			
+			<label for="remarks">Remarks:</label>
+            <textarea id="text" name="remarks" rows="4" cols="50"></textarea><br><br>
+			
+	
+			
+  
+            <input type="submit" value="Submit">
+        </form>
+		
+		
+    </div>
+</body>
+
+
+	
+	    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            if (flashMessages.length > 0) {
+                setTimeout(() => {
+                    flashMessages.forEach(message => {
+                        message.style.display = 'none';
+                    });
+                }, 3000);
+            }
+        });
+		
+		
+		document.getElementById('vendor_name').addEventListener('change', function() {
+    if (this.value === 'add_new_vendor') {
+        window.location.href = "{{ url_for('vendor_form') }}";  // Update with the actual route for the vendor form
+    }
+});
+
+    </script>
+	
+	<script>
+    // Capture the previous page URL (referrer)
+    const previousPageUrl = document.referrer;
+
+    // Check if the referrer is available
+    if (previousPageUrl) {
+        console.log("Previous Page URL:", previousPageUrl);
+    } else {
+        console.log("No previous page URL available.");
+    }
+
+    // Example: Redirect back to the previous page using the stored URL
+    function returnToPreviousPage() {
+        if (previousPageUrl) {
+            // Redirect to the previous page URL
+            window.location.href = previousPageUrl;
+        } else {
+            console.error("Previous page URL not available.");
+        }
+    }
+</script>
+
+
+<script>
+        function headertoggleMenu() {
+            const menu = document.getElementById('menuDropdown');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Close the dropdown if clicked outside
+        document.addEventListener('click', function (event) {
+            const dropdown = document.getElementById('menuDropdown');
+            const menuButton = document.querySelector('.menu');
+
+            if (!dropdown.contains(event.target) && !menuButton.contains(event.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    </script>
+</html>

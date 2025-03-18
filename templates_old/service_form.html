@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Details Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            width: auto;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .flash-message {
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        .flash-message.success {
+            color: #3c763d;
+            background-color: #dff0d8;
+            border-color: #d6e9c6;
+        }
+        .flash-message.danger {
+            color: #a94442;
+            background-color: #f2dede;
+            border-color: #ebccd1;
+        }
+		
+		
+		
+				
+		
+	.form-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 60px;
+    }
+
+    .form-column {
+        flex: 1;
+        min-width: 600px; /* Ensure columns adjust for smaller screens */
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        font-weight: bold;
+    }
+
+    .form-group input, 
+    .form-group select, 
+    .form-group textarea {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+    }
+
+    .hidden {
+        display: none;
+    }
+		
+		
+	body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0 100px; /* Add horizontal padding to the body */
+}
+
+
+/* Header Section */
+.header {
+    background-color: #2f276f;
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 28px;
+	color:white;
+}
+
+.header p {
+    margin: 5px 0 0;
+    font-size: 14px;
+}
+
+
+.header .add-asset-btn {
+    background-color: #2f276f ;
+    color: white;
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header .add-asset-btn:hover {
+    background-color: #291e6c;
+}
+
+        .menu {
+            cursor: pointer;
+            font-size: 24px;
+            padding: 10px;
+            background-color: #2f276f ;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        .menu:hover {
+            background-color: #291e6c;
+        }
+
+        .menu-dropdown {
+            display: none; /* Hidden by default */
+            position: absolute;
+            top: 60px; /* Below the menu button */
+            right: 20px;
+            background-color: white;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .menu-dropdown a,
+        .menu-dropdown button {
+            display: block;
+            text-decoration: none;
+            color: #2f276f ;
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            text-align: left;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .menu-dropdown a:hover,
+        .menu-dropdown button:hover {
+            background-color: #f4f4f9;
+        }r: #f4f4f9;
+        }
+		
+		
+		.main-content {
+            padding: 20px;
+        }
+
+        .main-content h2 {
+            font-size: 20px;
+            color: #2f276f ;
+            margin-bottom: 5px;
+        }
+
+        .main-content p {
+            font-size: 14px;
+            color: #666;
+        }
+		
+				
+		/* New parent container for Assets header */
+.assets-header {
+    display: flex; /* Use flexbox for horizontal alignment */
+    justify-content: space-between; /* Push items to far ends */
+    align-items: center; /* Vertically align items */
+    margin-bottom: 20px; /* Add spacing below the header */
+}
+
+/* Heading styling */
+.assets-header h2 {
+    margin: 0; /* Remove default margin for better alignment */
+    font-size: 18px; /* Adjust as needed */
+    color: #2f276f ; /* Optional: match the button color */
+}
+
+/* Button container styling */
+.assets-header .button-container {
+    margin-right: 10px; /* Add small gap from the edge if needed */
+}
+
+
+
+        /* Back button */
+        button.back-button {
+            background-color: #2f276f;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease, transform 0.1s;
+        }
+
+        button.back-button:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+        }
+		
+    </style>
+   
+</head>
+<body>
+
+
+
+	
+	<div class="header">
+        <h1>Asset Tracker</h1>
+        <div class="menu" onclick="headertoggleMenu()">☰</div>
+        <div class="menu-dropdown" id="menuDropdown">
+            <a href="{{ url_for('it_dashboard', source=source) }}">Dashboard</a>
+            <a href="{{ url_for('it_assets_index', source=source) }}">Manage IT Assets</a>
+            {% if 'view_service_details' in permissions %}
+                <a href="{{ url_for('service_details_index', source=source) }}">View Service Details</a>
+            {% endif %}
+            {% if 'raise_ticket' in permissions %}
+                <a href="{{ url_for('raised_ticket_details_index', source=source) }}">Raised Tickets</a>
+            {% endif %}
+        </div>
+    </div>
+
+
+
+	
+		<div class="main-content">
+		<div class="assets-header">
+			<h1>Service Details Form</h1>
+			<h1>
+           <button class="back-button" onclick="window.location.href='{{ url_for('it_assets_index', source=source) }}'" style="color: white; background-color: #2f276f;">Back</button>
+             </h1
+		</div>
+	</div>
+	
+	
+	
+	
+    <div class="form-container">
+	
+	
+		
+                <!-- Left Column -->
+         <div class="form-column">
+		 
+		 
+			<form action="{{ url_for('submit_service_form', service_id=services['service_id'] if services else None, source=source) }}" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="source" value="{{ source }}">
+			<input type="hidden" name="asset_id" value="{{ asset_id }}">
+			
+            
+            {% if services %}
+                <input type="hidden" name="service_id" value="{{ services.service_id }}">
+            {% endif %}
+            
+			
+			 <input type="hidden" name="source" value="{{ source }}">
+            <!--<label for="asset_id">Asset ID:</label>
+            <input type="text" name="asset_id" value="{{services['asset_id'] if services else asset_id }}" required>-->
+			
+			
+			
+
+			
+			
+			
+			
+			
+			<label for="asset_id">Asset ID:</label>
+			<input type="text" id="asset_id" name="asset_id" 
+				   value="{{ services['asset_id'] if services else '' }}" required>
+			<br><br>
+				
+            
+            <label for="ticket_id">Ticket ID: (optional)</label>
+            <input type="text" id="ticket_id" name="ticket_id" value="{{ services['ticket_id'] if services else '' }}"><br><br>
+            
+            <label for="case_id">Case ID:</label>
+            <input type="text" id="case_id" name="case_id" value="{{ services['case_id'] if services else '' }}" required><br><br>
+            
+            <label for="service_type">Service Type:</label>
+            <select id="service_type" name="service_type" required>
+                <option value="">Select a service type</option>
+                <option value="office" {% if services and services['service_type'] == 'office' %}selected{% endif %}>office</option>
+                <option value="industry" {% if services and services['service_type'] == 'industry' %}selected{% endif %}>industry</option>
+                <option value="home" {% if services and services['service_type'] == 'home' %}selected{% endif %}>home</option>
+            </select><br><br>
+            
+            <!--<label for="warranty_type">Warranty Type:</label>
+            <select id="warranty_type" name="warranty_type" required>
+                <option value="">Select a warranty type</option>
+                <option value="in_warranty" {% if services and services['warranty_type'] == 'in_warranty' %}selected{% endif %}>In Warranty</option>
+                <option value="out_warranty" {% if services and services['warranty_type'] == 'out_warranty' %}selected{% endif %}>Out of Warranty</option>
+            </select><br><br>-->
+			
+			
+			
+			<label for="warranty_type">Warranty Type:</label>
+				<select id="warranty_type" name="warranty_type" required>
+					<option value="">Select a warranty type</option>
+					<option value="in_warranty" {% if warranty_status == 'in_warranty' %}selected{% endif %}>In Warranty</option>
+					<option value="out_warranty" {% if warranty_status == 'out_warranty' %}selected{% endif %}>Out of Warranty</option>
+				</select><br><br>
+
+			
+		</div>
+
+        <div class="form-column">
+
+            <label for="technician_name">Technician Name:</label>
+            <select id="technician_name" name="technician_name" required>
+                <option value="">Select a technician</option>
+                {% for technician in technician_names %}
+                    <option value="{{ technician['technician_name'] }}" data-technician-id="{{ technician['technician_id'] }}"
+                        {% if services and technician['technician_id'] == services['technician_id'] %}selected{% endif %}>
+                        {{ technician['technician_name'] }}
+                    </option>
+                {% endfor %}
+                <option value="add_new_technician">Add New technician</option>
+            </select>
+
+            <input type="hidden" id="technician_id" name="technician_id">
+            <p>Selected technician ID: <span id="technician_id_display">None</span></p>
+
+            <label for="work_done">Work Done:</label>
+            <textarea id="work_done" name="work_done" rows="4">{{ services['work_done'] if services else '' }}</textarea><br><br>
+
+            <!--<label for="next_service_date">Next Service Date:</label>
+            <input type="date" id="next_service_date" name="next_service_date" value="{{ services['next_service_date'] if services else '' }}" ><br><br>-->
+			
+			<label for="next_service_date">Next Service Date:</label>
+			<input type="date" id="next_service_date" name="next_service_date" 
+				   value="{{ services['next_service_date'] if services else '' }}" 
+				   min="{{ date.today().isoformat() }}" ><br><br>
+
+			
+			
+			
+			
+
+            <label for="charge">Charge:</label>
+            <input type="text" id="charge" name="charge" value="{{ services['charge'] if services else '' }}" required><br><br>
+			
+		</div>
+		
+	</div>
+
+            <label for="remarks">Remarks:</label>
+            <textarea id="remarks" name="remarks" rows="4">{{ services['remarks'] if services else '' }}</textarea><br><br>
+
+            <input type="submit" value="Submit">
+        </form>
+    
+</body>
+
+
+
+ <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Flash message hide functionality
+            const flashMessages = document.querySelectorAll('.flash-message');
+            if (flashMessages.length > 0) {
+                setTimeout(() => {
+                    flashMessages.forEach(message => {
+                        message.style.display = 'none';
+                    });
+                }, 3000);
+            }
+
+            // Technician dropdown and technician_id handling
+            const technicianDropdown = document.getElementById('technician_name');
+            const technicianIdInput = document.getElementById('technician_id');
+            const technicianIdDisplay = document.getElementById('technician_id_display');
+
+            if (technicianDropdown) {
+                technicianDropdown.addEventListener('change', function() {
+                    if (this.value === 'add_new_technician') {
+                        // Save current form state to localStorage
+                        const formData = {};
+                        document.querySelectorAll('form input, form select, form textarea').forEach(field => {
+                            if (field.name) {
+                                formData[field.name] = field.value;
+                            }
+                        });
+                        localStorage.setItem('formState', JSON.stringify(formData));
+
+                        // Redirect to technician form, passing the source parameter
+                        window.location.href = "{{ url_for('technician_form') }}?source={{ source }}"; 
+                    } else {
+                        // Update technician_id based on selected technician_name
+                        const selectedOption = this.options[this.selectedIndex];
+                        const technicianId = selectedOption.getAttribute('data-technician-id');
+                        technicianIdInput.value = technicianId || ''; // Set technician_id input field value
+                        technicianIdDisplay.textContent = technicianId || 'None'; // Update displayed technician_id
+                    }
+                });
+
+                // Restore form state after returning from technician form
+                const savedForm = localStorage.getItem('formState');
+                if (savedForm) {
+                    const formData = JSON.parse(savedForm);
+                    Object.keys(formData).forEach(key => {
+                        if (document.getElementsByName(key)[0]) {
+                            document.getElementsByName(key)[0].value = formData[key];
+                        }
+                    });
+                }
+
+                // Fetch newly created technician (assuming it's stored in localStorage after creation)
+                const newtechnician = localStorage.getItem('newtechnician');
+                if (newtechnician) {
+                    const option = document.createElement("option");
+                    option.value = newtechnician;
+                    option.text = newtechnician;
+                    technicianDropdown.add(option); // Add the new technician to the dropdown
+                    technicianDropdown.value = newtechnician; // Select the newly created technician
+                    localStorage.removeItem('newtechnician'); // Clear the stored new technician data
+                }
+
+                // Clear the saved form data after restoring
+                localStorage.removeItem('formState');
+            }
+
+            // --------------------------------------
+            // Prefill ticket_id and asset_id from URL
+            // --------------------------------------
+            
+            // Function to get query parameters from the URL
+            function getQueryParam(param) {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get(param);
+            }
+
+            // Auto-fill the form fields for ticket_id and asset_id when the page loads
+            const ticketIdField = document.getElementById('ticket_id');
+            const assetIdField = document.getElementById('asset_id');
+
+            // Get the values from the URL
+            const ticketId = getQueryParam('ticket_id');
+            const assetId = getQueryParam('asset_id');
+
+            // If ticket_id and asset_id are available in the URL, fill the form fields
+            if (ticketId && assetId) {
+                if (ticketIdField) ticketIdField.value = ticketId;
+                if (assetIdField) assetIdField.value = assetId;
+
+                // Optionally, make them read-only so they cannot be edited
+                if (ticketIdField) ticketIdField.readOnly = true;
+                if (assetIdField) assetIdField.readOnly = true;
+            }
+        });
+    </script>
+	
+	<script>
+        function headertoggleMenu() {
+            const menu = document.getElementById('menuDropdown');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Close the dropdown if clicked outside
+        document.addEventListener('click', function (event) {
+            const dropdown = document.getElementById('menuDropdown');
+            const menuButton = document.querySelector('.menu');
+
+            if (!dropdown.contains(event.target) && !menuButton.contains(event.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    </script>
+	
+	<script>
+    document.getElementById('next_service_date').addEventListener('input', function() {
+        const inputDate = new Date(this.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Normalize to midnight for accurate comparison
+
+        if (inputDate < today) {
+            alert("Please select today or a future date.");
+            this.value = ""; // Clear the invalid input
+        }
+    });
+</script>
+
+</html>
