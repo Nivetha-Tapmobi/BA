@@ -121,7 +121,10 @@ def create_tables():
                     has_user_details BOOLEAN,
                     asset_category VARCHAR(255) NOT NULL,
                     amc VARCHAR(255),
-                    archieved VARCHAR(255)
+                    archieved VARCHAR(255),
+                    has_amc VARCHAR(255),
+                    amc_desc VARCHAR(255)
+                    
                 )
             """)
 
@@ -412,6 +415,9 @@ def create_asset():
             amc = request.form['amc']
             archieved = request.form.get('archieved', 'No')
             has_user_details = request.form.get('has_user_details', False)
+            has_amc = request.form.get('has_amc', False)
+            amc_desc = request.form['amc_desc']
+
 
             created_by = 't1'
 
@@ -422,8 +428,8 @@ def create_asset():
                     warranty_checked, warranty_exists, warranty_start, warranty_period, warranty_end,
                     extended_warranty_exists, extended_warranty_period, extended_warranty_end,
                     adp_production, insurance, description, remarks, product_age, product_condition,
-                    asset_category, amc, archieved, has_user_details
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    asset_category, amc, archieved, has_user_details, has_amc, amc_desc
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
 
             values = (
@@ -432,7 +438,7 @@ def create_asset():
                 warranty_checked, warranty_exists, warranty_start, warranty_period, warranty_end,
                 extended_warranty_exists, extended_warranty_period, extended_warranty_end,
                 adp_production, insurance, description, remarks, product_age, product_condition,
-                asset_category, amc, archieved, has_user_details
+                asset_category, amc, archieved, has_user_details, has_amc, amc_desc
             )
 
             cursor.execute(query, values)
