@@ -4,255 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IT Asset Form</title>
-<style>
-    .form-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-    }
-
-    .form-column {
-        flex: 1;
-        min-width: 400px; /* Ensure columns adjust for smaller screens */
-		
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    label {
-        font-weight: bold;
-    }
-
-    .form-group input, 
-    .form-group select, 
-    .form-group textarea {
-        width: 100%;
-        padding: 8px;
-        box-sizing: border-box;
-    }
-
-    .hidden {
-        display: none;
-    }
-
-
-body {
-    font-family: 'Roboto', sans-serif;
-    background-color: #f8f9fa;
-    margin: 0;
-    padding: 0 100px; /* Add horizontal padding to the body */
-}
-
-
-/* Header Section */
-.header {
-    background-color: #2f276f;
-    color: white;
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.header h1 {
-    margin: 0;
-    font-size: 28px;
-	color:white;
-}
-
-.header p {
-    margin: 5px 0 0;
-    font-size: 14px;
-}
-
-
-.header .add-asset-btn {
-    background-color: #2f276f ;
-    color: white;
-    padding: 10px 20px;
-    font-size: 14px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: background-color 0.3s ease;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.header .add-asset-btn:hover {
-    background-color: #291e6c;
-}
-
-        .menu {
-            cursor: pointer;
-            font-size: 24px;
-            padding: 10px;
-            background-color: #2f276f ;
-            border: none;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.3s;
-        }
-
-        .menu:hover {
-            background-color: #291e6c;
-        }
-
-        .menu-dropdown {
-            display: none; /* Hidden by default */
-            position: absolute;
-            top: 60px; /* Below the menu button */
-            right: 20px;
-            background-color: white;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            overflow: hidden;
-            z-index: 1000;
-        }
-
-        .menu-dropdown a,
-        .menu-dropdown button {
-            display: block;
-            text-decoration: none;
-            color: #2f276f ;
-            padding: 10px 20px;
-            border: none;
-            background: none;
-            text-align: left;
-            width: 100%;
-            cursor: pointer;
-        }
-
-        .menu-dropdown a:hover,
-        .menu-dropdown button:hover {
-            background-color: #f4f4f9;
-        }r: #f4f4f9;
-        }
-		
-		
-		        .warranty-period-wrapper {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-        }
-        .warranty-period-wrapper input {
-            width: calc(33.33% - 6.66px);
-        }
-        .error {
-            color: red;
-            margin-top: 5px;
-            display: none;
-        }
-		
-		        input, textarea, select {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        input[type="submit"], .clear-button {
-            width: auto;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-        }
-        input[type="submit"]:hover, .clear-button:hover {
-            background-color: #45a049;
-        }
-        .flash-message {
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid transparent;
-            border-radius: 4px;
-        }
-        .flash-message.success {
-            color: #3c763d;
-            background-color: #dff0d8;
-            border-color: #d6e9c6;
-        }
-        .flash-message.danger {
-            color: #a94442;
-            background-color: #f2dede;
-            border-color: #ebccd1;
-        }
 	
-	
-	
-			/* New parent container for Assets header */
-.assets-header {
-    display: flex; /* Use flexbox for horizontal alignment */
-    justify-content: space-between; /* Push items to far ends */
-    align-items: center; /* Vertically align items */
-    margin-bottom: 20px; /* Add spacing below the header */
-}
-
-/* Heading styling */
-.assets-header h2 {
-    margin: 0; /* Remove default margin for better alignment */
-    font-size: 18px; /* Adjust as needed */
-    color: #2f276f ; /* Optional: match the button color */
-}
-
-/* Button container styling */
-.assets-header .button-container {
-    margin-right: 10px; /* Add small gap from the edge if needed */
-}
-
-
-        /* Back button */
-        button.back-button {
-            background-color: #2f276f;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s ease, transform 0.1s;
-        }
-
-        button.back-button:hover {
-            background-color: #5a6268;
-            transform: translateY(-2px);
-        }
-	
-	
-</style>
-
-    
+	<link rel="stylesheet" href="static/css/create_asset_style.css">
 
 </head>
 
-
 <body>
-		<div class="header">
-			<h1>Asset Tracker</h1>
-			<div class="menu" onclick="headertoggleMenu()">☰</div>
-			<div class="menu-dropdown" id="menuDropdown">
-			</div>
-		</div>
+
+	<div class="header">
+		<h1>Asset Tracker</h1>
+		<div class="menu" onclick="headertoggleMenu()">☰</div>
+		<div class="menu-dropdown" id="menuDropdown"></div>
+	</div>
    
-   		<div class="main-content">
-		<div class="assets-header">
-			<h1>Create IT Asset</h1>
-		</div>
+	<div class="main-content">
+	<div class="assets-header">
+		<h1>Create IT Asset</h1>
+	</div>
 	</div>
 	
-    <div class="form-container">
-        <form action="{{ url_for('create_asset') }}" method="post" enctype="multipart/form-data">
-            {% with messages = get_flashed_messages(with_categories=true) %}
+	
+	
+	<div class="form-container">
+
+		<form action="{{ url_for('create_asset') }}" method="post" enctype="multipart/form-data">
+		
+		
+		 {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
                         <div class="flash-message {{ category }}">{{ message }}</div>
@@ -260,597 +38,318 @@ body {
                 {% endif %}
             {% endwith %}
 			
+		
+		
+		<div class="form-container">
+		
+			<div class="form-column">
+			
+				<div id="modal" class="modal">
+					<div class="modal-content">
+						<span id="close_modal" class="close">&times;</span>
+						<h2>Add New Option</h2>
+						<input type="text" id="new_option_input" placeholder="Enter new option">
+						<button id="add_option_btn">Add</button> <!-- Separate Add Button -->
+					</div>
+				</div>
+						
+				
+				<!-- Asset Category Dropdown -->
+				<div class="form-group">
+					<label for="asset_category">Asset Category Type</label>
+					<select id="asset_category" name="asset_category" class="dropdown-with-add">
+						<option value="">--select an option--</option>
+						{% for category in asset_categories %}
+							<option value="{{ category }}">{{ category }}</option>
+						{% endfor %}
+						<option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
+					</select>
+				</div>
 
-            <input type="hidden" name="source" value="{{ source }}">
 
-            <div class="form-container">
-                <div class="form-column">
+				<div class="form-group">
+					<label for="serial_no">Serial No:</label>
+					<input type="text" id="serial_no" name="serial_no" required>
+				</div>
+				
+				
+				<div class="form-group">
+					<label for="product_type">Product Type</label>
+					<select id="product_type" name="product_type" class="dropdown-with-add">
+						<option value="">--select an option--</option>
+						{% for product in product_types %}
+							<option value="{{ product }}">{{ product }}</option>
+						{% endfor %}
+						<option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
+					</select>
+				</div>
+				
+
+
+				<div class="form-group">
+					<label for="product_name">Product Name:</label>
+					<input type="text" id="product_name" name="product_name" required>
+				</div>
+				
+				<div class="form-group">
+					<label for="make">Make:</label>
+					<input type="text" id="make" name="make" required>
+				</div>
+
+				<div class="form-group">
+					<label for="model">Model:</label>
+					<input type="text" id="model" name="model" required>
+				</div>
+
+				<div class="form-group">
+					<label for="part_no">Part No:</label>
+					<input type="text" id="part_no" name="part_no" required>
+				</div>	
+	
+			</div>	
+
+			<div class="form-column">
+	
+				<div class="form-group">
+					<label for="description">Product Description:</label>
+					<textarea id="description" name="description"></textarea>
+				</div>
+				
+
+			
+			
+			
+<div class="form-group">
+    <label for="vendor_name">Vendor Name:</label>
+    <select id="vendor_name" name="vendor_name" required>
+        <option value="">Select a vendor</option>
+        {% for vendor_list in vendors %}  
+            {% for vendor in vendor_list %}  
+                <option value="{{ vendor.vendor_name }}" data-vendor-id="{{ vendor.vendor_id }}">
+                    {{ vendor.vendor_name }}
+                </option>
+            {% endfor %}
+        {% endfor %}
+        <option value="add_new_vendor" style="color: blue; font-weight: bold;">+ Add New Vendor</option>
+    </select><br>
+
+    <!-- Hidden input to store vendor_id -->
+    <input type="hidden" id="vendor_id" name="vendor_id">
+
+    <!-- This span will display the selected Vendor ID -->
+    <p>Selected Vendor ID: <span id="vendor_id_display">None</span></p>
+</div>
+
+
+
+
+			
+			
+			
+
+			<!-- Asset Category Dropdown -->
+				<div class="form-group">
+					<label for="company_name">Company Name</label>
+					<select id="company_name" name="company_name" class="dropdown-with-add">
+						<option value="">--select an option--</option>
+						{% for company in companies %}
+							<option value="{{ company }}">{{ company }}</option>
+						{% endfor %}
+						<option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
+					</select>
+				</div>
+				
+
+				
+				
+				<div class="form-group">
+					<label for="asset_type">Asset Type</label>
+					<select id="asset_type" name="asset_type" class="dropdown-with-add">
+						<option value="">--select an option--</option>
+						{% for asset_type in asset_types %}
+							<option value="{{ asset_type }}">{{ asset_type }}</option>
+						{% endfor %}
+						<option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
+					</select>
+				</div>
 				
 				
 				
-           <div class="form-group">
-                <label for="asset_category">Asset Category Type</label>
-                <select id="asset_category" name="asset_category">
-                  <option value="">--select an option--</option>
-					{% for category in asset_categories %}
-						<option value="{{ category }}">{{ category }}</option>
-					{% endfor %}
-					 </select>
-            </div><br>
 
-            <div class="form-group">
-                <label for="serial_no">Serial No:</label>
-                <input type="text" id="serial_no" name="serial_no" value="{{ asset.serial_no if asset else '' }}" required>
-            </div><br>
-			
-			
-			<div class="form-group">
-				<label for="product_type">Product Type</label>
-				<select id="product_type" name="product_type" onchange="toggleOtherInput()">
-				<option value="">--select an option--</option>
-					{% for product in product_types %}
-						<option value="{{ product }}">{{ product }}</option>
-					{% endfor %}
-					<option value="Other">Other</option>
-					 </select>
-				</select>
-			</div>
-			<div class="form-group" id="other_input_group" style="display: none;">
-				<label for="other_product_type">Specify Other</label>
-				<input type="text" id="other_product_type" name="other_product_type" value="{% if asset and asset.product_type.startswith('Other-') %}{{ asset.product_type[6:] }}{% endif %}">
-			</div>
+				<div class="form-group">
+					<label for="purchase_value">Product Cost:</label>
+					<input type="number" id="purchase_value" name="purchase_value" required>
+				</div>
 
-			
+				<div class="form-group">
+					<label for="purchase_date">Purchase Date:</label>
+					<input type="date" id="purchase_date" name="purchase_date" required>
+				</div>
 
-            
-            <div class="form-group">
-                <label for="product_name">Product Name:</label>
-                <input type="text" id="product_name" name="product_name" value="{{ asset.product_name if asset else '' }}" required>
-            </div><br>
-            
-            <div class="form-group">
-                <label for="make">Make:</label>
-                <input type="text" id="make" name="make" value="{{ asset.make if asset else '' }}" required>
-            </div><br>
-            
-            <div class="form-group">
-                <label for="model">Model:</label>
-                <input type="text" id="model" name="model" value="{{ asset.model if asset else '' }}" required>
-            </div><br>
-            
-            <div class="form-group">
-                <label for="part_no">Part No:</label>
-                <input type="text" id="part_no" name="part_no" value="{{ asset.part_no if asset else '' }}" required>
-            </div><br>
-            
-            <div class="form-group">
-                <label for="description">Product Description:</label>
-                <textarea id="description" name="description" rows="4">{{ asset.description if asset else '' }}</textarea>
-            </div><br>
+				<div class="form-group">
+					<label for="product_age">Product Age:</label>
+					<input type="text" id="product_age" name="product_age" readonly>
+				</div>
+			
+			</div>	
 
-			
-			
-			
-			</div>
-			
 			<div class="form-column">
 
-			<div class="form-group">
-				<label for="company_name">Company Name:</label>
-				<select id="company_name" name="company_name" required onchange="toggleOtherCompanyInput()">
-					<option value="">--select an option--</option>
-					{% for company in companies %}
-						<option value="{{ company }}">{{ company }}</option>
-					{% endfor %}
-					<option value="Other">Other</option>
-				</select>
-			</div>
-
-
-			<div class="form-group" id="other_company_input_group" style="display: none;">
-				<label for="other_company_name">Specify Other Company Name:</label>
-				<input type="text" id="other_company_name" name="other_company_name" value="{% if asset and asset.company_name.startswith('Other-') %}{{ asset.company_name[6:] }}{% endif %}">
-			</div>
-										
-			
-            
-            <div class="form-group">
-                <label for="asset_type">Asset Type:</label>
-				<select id="asset_type" name="asset_type" >
-                <option value="">--select an option--</option>
-					{% for asset_type in asset_types %}
-						<option value="{{ asset_type }}">{{ asset_type }}</option>
-					{% endfor %}
-					 </select>
-            </div><br>
-            
-            <div class="form-group">
-                <label for="product_cost">Product Cost:</label>
-                <input type="number" id="product_cost" name="product_cost" value="{{ asset.value if asset else '' }}" required>
-            </div><br>
-            
-			<div class="form-group">
-            <label for="purchase_date">Purchase Date:</label>
-            <input type="date" id="purchase_date" name="purchase_date"  value="{{ asset.purchase_date if asset else '' }}" required></div><br>
-            
-            <div class="form-group">
-                <label for="product_age">Product Age:</label>
-                <input type="text" id="product_age" name="product_age" value="{{ asset.product_age if asset else '' }}" readonly>
-            </div><br>
-			
-			
-			 <div class="form-group">
-                <label for="warranty">Warranty</label>
-                <select id="warranty" name="warranty">
-                    <option value="">--select an option--</option>
-                    <option value="Yes" {% if asset and asset.warranty == 'Yes' %}selected{% endif %}>Yes</option>
-                    <option value="No" {% if asset and asset.warranty == 'No' %}selected{% endif %}>No</option>
-                </select>
-                <div id="warranty_error" class="error"></div>
-            </div><br>
-
-            <div id="warranty_section" class="{% if asset and asset.warranty == 'Yes' %} {% else %} hidden {% endif %}">
-                <label for="warranty_start">Warranty Start Date:</label>
-                <input type="date" id="warranty_start" name="warranty_start" value="{{ asset.warranty_start if asset else '' }}"><br><br><br>
-
-                <!-- Warranty Period -->
-                <label for="warranty_period">Warranty Period:</label>
-                <div class="warranty-period-wrapper">
-                    <input type="number" id="warranty_period_years" name="warranty_period_years" placeholder="Years" min="0" max="10" value="{{ warranty_years }}">
-                    <input type="number" id="warranty_period_months" name="warranty_period_months" placeholder="Months" min="0" max="11" value="{{ warranty_months }}">
-                    <input type="number" id="warranty_period_days" name="warranty_period_days" placeholder="Days" min="0" max="30" value="{{ warranty_days }}">
-                    <input type="hidden" id="warranty_period" name="warranty_period" value="{{ asset.warranty_period if asset else '' }}">
-                </div><br><br><br>
-
-                <label for="warranty_end">Warranty End Date:</label>
-                <input type="date" id="warranty_end" name="warranty_end" readonly value="{{ asset.warranty_end if asset else '' }}">
-            </div><br><br><br>
-
-			
-			
-			
-						
-        </div>
-
-                <!-- Right Column -->
-                <div class="form-column">
-
-            <div class="form-group hidden">
-                <label for="extra_warranty">Extended warranty?</label>
-                <select id="extra_warranty" name="extra_warranty">
-                    <option value="">--select an option--</option>
-                    <option value="Yes" {% if asset and asset.extra_warranty == 'Yes' %}selected{% endif %}>Yes</option>
-                    <option value="No" {% if asset and asset.extra_warranty == 'No' %}selected{% endif %}>No</option>
-                </select>
-                <div id="extra_warranty_error" class="error"></div>
-            </div>
-
-            <div id="extended_warranty_section" class="hidden">
-                <label for="extended_warranty_period">Extended Warranty Period:</label>
-                <div class="warranty-period-wrapper">
-                    <input type="number" id="extended_warranty_period_years" name="extended_warranty_period_years" placeholder="Years" min="0" max="10" value="{{ extended_warranty_years }}">
-                    <input type="number" id="extended_warranty_period_months" name="extended_warranty_period_months" placeholder="Months" min="0" max="11" value="{{ extended_warranty_months }}">
-                    <input type="number" id="extended_warranty_period_days" name="extended_warranty_period_days" placeholder="Days" min="0" max="30" value="{{ extended_warranty_days }}">
-                </div>
-
-                <label for="extended_warranty">Extended Warranty End Date:</label>
-                <input type="date" id="extended_warranty" name="extended_warranty" readonly>
-            </div><br>
-
-            <div class="form-group">
-                <label for="warranty_checked">Warranty Checked:</label>
-                <select id="warranty_checked" name="warranty_checked">
-                    <option value="">--select an option--</option>
-                    <option value="Yes" {% if asset and asset.warranty_checked == 'Yes' %}selected{% endif %}>Yes</option>
-                    <option value="No" {% if asset and asset.warranty_checked == 'No' %}selected{% endif %}>No</option>
-                </select>
-                <div id="warranty_checked_error" class="error"></div>
-            </div><br>
-            
-            <div class="form-group">
-                <label for="adp_production">ADP Added or Not:</label>
-                <select id="adp_production" name="adp_production">
-                    <option value="">--select an option--</option>
-                    <option value="Yes" {% if asset and asset.adp_production == 'Yes' %}selected{% endif %}>Yes</option>
-                    <option value="No" {% if asset and asset.adp_production == 'No' %}selected{% endif %}>No</option>
-                </select>
-                <div id="adp_production_error" class="error"></div>
-            </div><br>
-			
-			<div class="form-group">
-				<label for="insurance">Insurance:</label>
-				<select id="insurance" name="insurance" >
-					<option value="">--select an option--</option>
-					<option value="Yes" {% if asset and asset.insurance == 'Yes' %}selected{% endif %}>Yes</option>
-					<option value="No" {% if asset and asset.insurance == 'No' %}selected{% endif %}>No</option>
-				</select>
-				<div id="insurance_error" class="error"></div>
-			</div>
-            
-
-
-    
-            <div class="form-group">
-                <label for="product_condition">Product Condition:</label>
-                <input type="text" id="product_condition" name="product_condition" value="{{ asset.product_condition if asset else '' }}">
-            </div><br>
-            
-
-						<!-- Asset Image Upload Field -->
-			<div class="form-group">
-				<label for="asset_image">Asset Images (or PDF/DOCX):</label>
-				{% if asset and asset.asset_image %}
-					<div>
-						<p>Existing Asset Files:</p>
-						<ul>
-							{% for image in asset.asset_images %}
-								<li>
-									<a href="{{ url_for('uploaded_file', filename=image) }}" target="_blank">{{ image }}</a>
-									{% if image.endswith('.png') or image.endswith('.jpg') or image.endswith('.jpeg') %}
-										<img src="{{ url_for('uploaded_file', filename=image) }}" alt="Asset Image" style="max-width: 200px; margin-top: 10px;">
-									{% endif %}
-								</li>
-							{% endfor %}
-						</ul>
+					<div class="form-group">
+						<label for="warranty_exists">Warranty Exists:</label>
+						<select id="warranty_exists" name="warranty_exists" onchange="toggleWarrantyFields()">
+							<option value="">--select an option--</option>
+							<option value="Yes">Yes</option>
+							<option value="No">No</option>
+						</select>
 					</div>
-				{% endif %}
-				<input type="file" id="asset_image" name="asset_image" accept="image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple>
-			</div><br>
+
+					<div id="warranty_fields" style="display: none;">
+						<div class="form-group">
+							<label for="warranty_start">Warranty Start Date:</label>
+							<input type="date" id="warranty_start" name="warranty_start">
+						</div>
+
+						<div class="form-group">
+							<label for="warranty_period">Warranty Period:</label>
+							<div class="period-container">
+								<input type="number" id="warranty_period_years" name="warranty_period_years" placeholder="Years">
+								<input type="number" id="warranty_period_months" name="warranty_period_months" placeholder="Months">
+								<input type="number" id="warranty_period_days" name="warranty_period_days" placeholder="Days">
+							</div>
+						</div>
+
+							<div class="form-group">
+								<label for="warranty_end">Warranty End Date:</label>
+								<input type="date" id="warranty_end" name="warranty_end" readonly>
+							</div>
+							
+							
+							<div class="form-group">
+								<label for="warranty_checked">Warranty Checked:</label>
+								<select id="warranty_checked" name="warranty_checked">
+									<option value="">--select an option--</option>
+									<option value="Yes">Yes</option>
+									<option value="No">No</option>
+								</select>
+							</div>
 
 
 
-            <!-- Purchase Bill Upload Field -->
-            <div class="form-group">
-                <label for="purchase_bill">Purchase Bill (or Image/PDF/DOCX):</label>
-                {% if asset and asset.purchase_bill %}
-                    <div>
-                        <a href="{{ url_for('uploaded_file', filename=asset.purchase_bill) }}" target="_blank">View Existing Purchase Bill</a>
-                        <br>
-                        <a href="{{ url_for('uploaded_file', filename=asset.purchase_bill) }}" download>Download Purchase Bill</a>
-                    </div>
-                {% endif %}
-                <input type="file" id="purchase_bill" name="purchase_bill" accept="image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
-            </div><br>
+							<div class="form-group">
+								<label for="extended_warranty_exists">Extended Warranty :</label>
+								<select id="extended_warranty_exists" name="extended_warranty_exists" onchange="toggleExtendedWarrantyFields()">
+									<option value="">--select an option--</option>
+									<option value="Yes">Yes</option>
+									<option value="No">No</option>
+								</select>
+							</div>
+			
+						</div>
 			
 			
-			                </div>
-            </div>
+						<div id="extended_warranty_fields" style="display: none;">
+							<div class="form-group">
+								<label for="extended_warranty_period">Extended Warranty Period:</label>
+								<div class="period-container">
+									<input type="number" id="extended_warranty_period_years" name="extended_warranty_period_years" placeholder="Years">
+									<input type="number" id="extended_warranty_period_months" name="extended_warranty_period_months" placeholder="Months">
+									<input type="number" id="extended_warranty_period_days" name="extended_warranty_period_days" placeholder="Days">
+								</div>
+							</div>
+							
+							<div class="form-group">
+								<label for="extended_warranty_end">Extended Warranty End Date:</label>
+								<input type="date" id="extended_warranty_end" name="extended_warranty_end" readonly>
+							</div>
+							
+						</div>
+			</div>
+		
+			<div class="form-column">
 
-            <div class="form-group">
-                <label for="remarks">Remarks :</label>
-                <textarea id="remarks" name="remarks" rows="4">{{ asset.remarks if asset else '' }}</textarea>
-            </div><br><br>
-			
+				
+				<div class="form-group">
+					<label for="insurance">Insurance:</label>
+					<select id="insurance" name="insurance">
+						<option value="">--select an option--</option>
+						<option value="Yes">Yes</option>
+						<option value="No">No</option>
+					</select>
+				</div>
+				
+		        <div class="form-group">
+					<label for="adp_production">ADP Production:</label>
+					<select id="adp_production" name="adp_production">
+						<option value="">--select an option--</option>
+						<option value="Yes">Yes</option>
+						<option value="No">No</option>
+					</select>
+				</div>
+				
+				
 
-            <div class="form-group">
-                <input type="submit" value="{{ 'Update' if asset else 'Submit' }}">
-            </div>
+				<div class="form-group">
+					<label for="product_condition">Product Condition:</label>
+					<input type="text" id="product_condition" name="product_condition">
+				</div>
 
-        </form>
-    </div>
+				<div class="form-group">
+					<label for="asset_image">Asset Images:</label>
+					<input type="file" id="asset_image" name="asset_image[]" multiple>
+				</div>
+
+				<div class="form-group">
+					<label for="purchase_bill">Purchase Bill:</label>
+					<input type="file" id="purchase_bill" name="purchase_bill[]" multiple>
+				</div>
+
+				<div class="form-group">
+					<label for="remarks">Remarks:</label>
+					<textarea id="remarks" name="remarks"></textarea>
+				</div>
+				
+				
+				<div class="form-group">
+					<label for="has_amc">AMC:</label>
+					<select id="has_amc" name="has_amc" onchange="toggleAMCFields()">
+						<option value="">--select an option--</option>
+						<option value="Yes">Yes</option>
+						<option value="No">No</option>
+					</select>
+				</div>
+						
+				<!-- Recurring Alert for AMC (Initially Hidden) -->
+				<div id="recurring-alert-section" style="display: none;">
+					<label for="recurring_alert_for_amc">Recurring Alert for AMC:</label>
+					<div id="recurring-alert-container">
+						<div class="recurring-alert-row">
+							<input type="text" name="recurring_alert_key[]" placeholder="Event Type">
+							<input type="number" name="recurring_alert_value[]" placeholder="Every X" min="1">
+							<select name="recurring_alert_unit[]">
+								<option value="Days">Days</option>
+								<option value="Weeks">Weeks</option>
+								<option value="Months">Months</option>
+								<option value="Years">Years</option>
+							</select>
+							<button type="button" class="add-field">+</button>
+						</div>
+					</div>
+				</div>
+
+		    </div>
+
+			<div class="form-group">
+				<input type="submit" value="Submit">
+			</div>
+    </form>
+
+<script>
+    const createVendorUrl = "{{ url_for('create_vendor') }}";  // Jinja processes this here
+</script>
+
+<script src="static/JS/create_asset.js"></script>
+
+
 </body>
-
-
-<script>
-    function toggleOtherInput() {
-        const productTypeSelect = document.getElementById('product_type');
-        const otherInputGroup = document.getElementById('other_input_group');
-        if (productTypeSelect.value === "Other") {
-            otherInputGroup.style.display = "block";
-        } else {
-            otherInputGroup.style.display = "none";
-            document.getElementById('other_product_type').value = ''; // Clear the other input if not needed
-        }
-    }
-
-    // Run toggleOtherInput on page load to handle pre-selected "Other" option
-    document.addEventListener('DOMContentLoaded', toggleOtherInput);
-</script>
-
-
-
-<script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Flash message handling
-            const flashMessages = document.querySelectorAll('.flash-message');
-            if (flashMessages.length > 0) {
-                setTimeout(() => {
-                    flashMessages.forEach(message => {
-                        message.style.display = 'none';
-                    });
-                }, 3000);
-            }
-
-            // Selecting DOM elements
-            const warrantyFieldStart = document.getElementById('warranty_start');
-            const warrantyPeriodYears = document.getElementById('warranty_period_years');
-            const warrantyPeriodMonths = document.getElementById('warranty_period_months');
-            const warrantyPeriodDays = document.getElementById('warranty_period_days');
-            const warrantyEndField = document.getElementById('warranty_end');
-            const extendedWarrantyField = document.getElementById('extended_warranty');
-            const purchaseDateField = document.getElementById('purchase_date');
-            const productAgeField = document.getElementById('product_age');
-            const extendedWarrantyYears = document.getElementById('extended_warranty_period_years');
-            const extendedWarrantyMonths = document.getElementById('extended_warranty_period_months');
-            const extendedWarrantyDays = document.getElementById('extended_warranty_period_days');
-            const extraWarrantySelect = document.getElementById('extra_warranty');
-            const extendedWarrantySection = document.getElementById('extended_warranty_section');
-            const warrantySelect = document.getElementById('warranty');
-            const warrantySection = document.getElementById('warranty_section');
-            const warrantyPeriodHiddenInput = document.getElementById('warranty_period');
-            const form = document.querySelector('form'); // The form element
-
-            // Function to validate warranty_start date against purchase_date
-            function validateDates() {
-                const today = new Date();
-                const warrantyStartDate = warrantyFieldStart.value ? new Date(warrantyFieldStart.value) : null;
-                const purchaseDate = purchaseDateField.value ? new Date(purchaseDateField.value) : null;
-
-                if (!purchaseDate) return; // If purchase_date is not filled, don't do any validation
-
-                // If warranty_start is filled, compare it with purchase_date
-                if (warrantyStartDate && purchaseDate > warrantyStartDate) {
-                    alert("Purchase date must be less than or equal to Warranty Start date.");
-                    warrantyFieldStart.value = ''; // Clear warranty_start if validation fails
-                    return;
-                }
-
-                if (purchaseDate > today) {
-                    alert("Purchase date cannot be in the future.");
-                    purchaseDateField.value = ''; // Clear purchase_date if it's in the future
-                    return;
-                }
-
-                calculateProductAge(purchaseDate, today); // Calculate product age if valid
-            }
-
-            // Function to calculate warranty end date
-            function calculateWarrantyEnd() {
-                const startDateValue = warrantyFieldStart.value;
-                const years = parseInt(warrantyPeriodYears.value) || 0;
-                const months = parseInt(warrantyPeriodMonths.value) || 0;
-                const days = parseInt(warrantyPeriodDays.value) || 0;
-
-                if (!startDateValue) {
-                    alert("Please enter a valid Warranty Start date.");
-                    return;
-                }
-
-                const startDate = new Date(startDateValue);
-                startDate.setFullYear(startDate.getFullYear() + years);
-                startDate.setMonth(startDate.getMonth() + months);
-                startDate.setDate(startDate.getDate() + days);
-
-                const formattedEndDate = startDate.toISOString().split('T')[0];
-                warrantyEndField.value = formattedEndDate;
-
-                // Automatically calculate the extended warranty if extra warranty is applied
-                if (extraWarrantySelect.value === "Yes") {
-                    calculateExtendedWarrantyEnd();
-                }
-            }
-
-            // Function to calculate extended warranty end date
-            function calculateExtendedWarrantyEnd() {
-                const warrantyEndDateValue = warrantyEndField.value;
-                if (!warrantyEndDateValue) {
-                    alert("Please ensure the Warranty End date is calculated first.");
-                    return;
-                }
-
-                const years = parseInt(extendedWarrantyYears.value) || 0;
-                const months = parseInt(extendedWarrantyMonths.value) || 0;
-                const days = parseInt(extendedWarrantyDays.value) || 0;
-                const warrantyEndDate = new Date(warrantyEndDateValue);
-
-                warrantyEndDate.setFullYear(warrantyEndDate.getFullYear() + years);
-                warrantyEndDate.setMonth(warrantyEndDate.getMonth() + months);
-                warrantyEndDate.setDate(warrantyEndDate.getDate() + days);
-
-                const formattedExtendedEndDate = warrantyEndDate.toISOString().split('T')[0];
-                extendedWarrantyField.value = formattedExtendedEndDate;
-            }
-
-            // Function to calculate the product age based on purchase date
-            function calculateProductAge(purchaseDate, today) {
-                const ageInMilliseconds = today - purchaseDate;
-                const ageInDays = Math.floor(ageInMilliseconds / (1000 * 60 * 60 * 24));
-
-                if (ageInDays <= 30) {
-                    productAgeField.value = ageInDays + " day(s)";
-                } else if (ageInDays <= 365) {
-                    const months = Math.floor(ageInDays / 30);
-                    productAgeField.value = months + " month(s)";
-                } else {
-                    const years = Math.floor(ageInDays / 365);
-                    const remainingDays = ageInDays % 365;
-                    const months = Math.floor(remainingDays / 30);
-                    productAgeField.value = years + " year(s) " + months + " month(s)";
-                }
-            }
-
-            // Toggle warranty and extended warranty sections based on selection
-            function toggleWarrantySection() {
-                if (warrantySelect.value === "Yes") {
-                    warrantySection.classList.remove("hidden");
-                    // Show the extended warranty option only if warranty is Yes
-                    extraWarrantySelect.closest('.form-group').classList.remove('hidden');
-                } else {
-                    warrantySection.classList.add("hidden");
-                    clearWarrantyFields();
-                    // Hide the extended warranty section and its related fields if warranty is No
-                    extendedWarrantySection.classList.add("hidden");
-                    clearExtendedWarrantyFields();
-                    extraWarrantySelect.closest('.form-group').classList.add('hidden');
-                }
-            }
-
-            function toggleExtendedWarrantySection() {
-                if (extraWarrantySelect.value === "Yes") {
-                    extendedWarrantySection.classList.remove("hidden");
-                } else {
-                    extendedWarrantySection.classList.add("hidden");
-                    clearExtendedWarrantyFields();
-                }
-            }
-
-            // Clear warranty fields when section is hidden
-            function clearWarrantyFields() {
-                warrantyFieldStart.value = '';
-                warrantyPeriodYears.value = '';
-                warrantyPeriodMonths.value = '';
-                warrantyPeriodDays.value = '';
-                warrantyEndField.value = '';
-            }
-
-            // Clear extended warranty fields when section is hidden
-            function clearExtendedWarrantyFields() {
-                extendedWarrantyYears.value = '';
-                extendedWarrantyMonths.value = '';
-                extendedWarrantyDays.value = '';
-                extendedWarrantyField.value = '';
-            }
-
-            // Concatenate warranty period values into a single field
-            function concatenateWarrantyPeriod() {
-                const years = warrantyPeriodYears.value || 0;
-                const months = warrantyPeriodMonths.value || 0;
-                const days = warrantyPeriodDays.value || 0;
-                warrantyPeriodHiddenInput.value = `${years} years ${months} months ${days} days`;
-            }
-
-            // Set the visibility based on the current values
-            toggleWarrantySection();
-            toggleExtendedWarrantySection();
-
-            // Add event listeners to check when dropdown values change
-            warrantySelect.addEventListener('change', toggleWarrantySection);
-            extraWarrantySelect.addEventListener('change', toggleExtendedWarrantySection);
-
-            // Add event listeners for date and warranty calculations
-            warrantyFieldStart.addEventListener('change', validateDates);
-            warrantyPeriodYears.addEventListener('input', calculateWarrantyEnd);
-            warrantyPeriodMonths.addEventListener('input', calculateWarrantyEnd);
-            warrantyPeriodDays.addEventListener('input', calculateWarrantyEnd);
-            warrantyEndField.addEventListener('change', validateDates);
-            extendedWarrantyYears.addEventListener('input', calculateExtendedWarrantyEnd);
-            extendedWarrantyMonths.addEventListener('input', calculateExtendedWarrantyEnd);
-            extendedWarrantyDays.addEventListener('input', calculateExtendedWarrantyEnd);
-            extendedWarrantyField.addEventListener('change', validateDates);
-            purchaseDateField.addEventListener('change', validateDates);
-
-            // Concatenate warranty period before form submission
-            form.addEventListener('submit', concatenateWarrantyPeriod);
-
-            // Vendor form handling
-            const vendorDropdown = document.getElementById('vendor_name');
-            const vendorIdInput = document.getElementById('vendor_id');
-            const vendorIdDisplay = document.getElementById('vendor_id_display');
-
-           vendorDropdown.addEventListener('change', function() {
-				if (this.value === 'add_new_vendor') {
-					// Save current form state to localStorage
-					const formData = {};
-					document.querySelectorAll('form input, form select, form textarea').forEach(field => {
-						if (field.name) {
-							formData[field.name] = field.value;
-						}
-					});
-					localStorage.setItem('formState', JSON.stringify(formData));
-
-					// Redirect to vendor form, passing the source parameter
-
-				} else {
-					const selectedOption = this.options[this.selectedIndex];
-					const vendorId = selectedOption.getAttribute('data-vendor-id');
-					vendorIdInput.value = vendorId || '';
-					vendorIdDisplay.textContent = vendorId || 'None';
-				}
-			});
-
-
-            const savedForm = localStorage.getItem('formState');
-            if (savedForm) {
-                const formData = JSON.parse(savedForm);
-                Object.keys(formData).forEach(key => {
-                    if (document.getElementsByName(key)[0]) {
-                        document.getElementsByName(key)[0].value = formData[key];
-                    }
-                });
-            }
-
-            const newVendor = localStorage.getItem('newVendor');
-            if (newVendor) {
-                const option = document.createElement("option");
-                option.value = newVendor;
-                option.text = newVendor;
-                vendorDropdown.add(option);
-                vendorDropdown.value = newVendor;
-                localStorage.removeItem('newVendor');
-            }
-
-            localStorage.removeItem('formState');
-	
-        });
-    </script>
-	<script>
-    function handleInsuranceChange() {
-        const insuranceSelect = document.getElementById('insurance');
-        const selectedValue = insuranceSelect.value;
-
-        if (selectedValue === 'Yes') {
-            const assetId = "{{ asset_id }}"; // Ensure asset_id is passed to the template
-            const source = "{{ source }}"; // Ensure source is passed to the template
-
-            if (!assetId) {
-                alert("Asset ID is missing. Please ensure you are editing a valid asset.");
-                return;
-            }
-
-            // Redirect to the insurance details page
-            window.location.href = `/insurance_details?asset_id=${assetId}&source=${encodeURIComponent(source)}`;
-        }
-    }
-</script>
-
-
-<script>
-        function headertoggleMenu() {
-            const menu = document.getElementById('menuDropdown');
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-        }
-
-        // Close the dropdown if clicked outside
-        document.addEventListener('click', function (event) {
-            const dropdown = document.getElementById('menuDropdown');
-            const menuButton = document.querySelector('.menu');
-
-            if (!dropdown.contains(event.target) && !menuButton.contains(event.target)) {
-                dropdown.style.display = 'none';
-            }
-        });
-    </script>
-	
-	
-
-
-
-
-
-<script>
-    function toggleOtherCompanyInput() {
-        var selectElement = document.getElementById('company_name');
-        var otherInputContainer = document.getElementById('other_company_input_group');
-        var selectedValue = selectElement.value;
-
-        // Check if "Other" is selected to toggle the input field
-        if (selectedValue === 'Other') {
-            otherInputContainer.style.display = 'block';
-            document.getElementById('other_company_name').focus();
-        } else {
-            otherInputContainer.style.display = 'none';
-        }
-    }
-</script>
-
 </html>

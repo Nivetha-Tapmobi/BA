@@ -1,0 +1,287 @@
+
+	.form-container {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 20px;
+	}
+
+	.form-column {
+		flex: 1;
+		min-width: 400px; /* Ensure columns adjust for smaller screens */
+		
+	}
+
+	.form-group {
+		margin-bottom: 20px;
+	}
+
+	label {
+		font-weight: bold;
+	}
+
+	.form-group input, 
+	.form-group select, 
+	.form-group textarea {
+		width: 100%;
+		padding: 8px;
+		box-sizing: border-box;
+	}
+
+	.hidden {
+		display: none;
+	}
+
+
+	body {
+		font-family: 'Roboto', sans-serif;
+		background-color: #f8f9fa;
+		margin: 0;
+		padding: 0 100px; /* Add horizontal padding to the body */
+	}
+
+
+
+	.header {
+		background-color: #2f276f;
+		color: white;
+		padding: 20px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		border-radius: 8px;
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+	}
+
+	.header h1 {
+		margin: 0;
+		font-size: 28px;
+		color:white;
+	}
+
+	.header p {
+		margin: 5px 0 0;
+		font-size: 14px;
+	}
+
+
+.menu {
+	cursor: pointer;
+	font-size: 24px;
+	padding: 10px;
+	background-color: #2f276f ;
+	border: none;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: background-color 0.3s;
+}
+
+.menu:hover {
+	background-color: #291e6c;
+}
+
+.menu-dropdown {
+	display: none; /* Hidden by default */
+	position: absolute;
+	top: 60px; /* Below the menu button */
+	right: 20px;
+	background-color: white;
+	box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+	border-radius: 8px;
+	overflow: hidden;
+	z-index: 1000;
+}
+
+.menu-dropdown a,
+.menu-dropdown button {
+	display: block;
+	text-decoration: none;
+	color: #2f276f ;
+	padding: 10px 20px;
+	border: none;
+	background: none;
+	text-align: left;
+	width: 100%;
+	cursor: pointer;
+}
+
+.menu-dropdown a:hover,
+.menu-dropdown button:hover {
+	background-color: #f4f4f9;
+}r: #f4f4f9;
+}
+
+
+.warranty-period-wrapper {
+	display: flex;
+	justify-content: space-between;
+	gap: 10px;
+}
+.warranty-period-wrapper input {
+	width: calc(33.33% - 6.66px);
+}
+
+.error {
+	color: red;
+	margin-top: 5px;
+	display: none;
+}
+
+input, textarea, select {
+	width: 100%;
+	padding: 8px;
+	margin-bottom: 10px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+}
+input[type="submit"], .clear-button {
+	width: auto;
+	background-color: #4CAF50;
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	cursor: pointer;
+}
+input[type="submit"]:hover, .clear-button:hover {
+	background-color: #45a049;
+}
+.flash-message {
+	padding: 10px;
+	margin-bottom: 20px;
+	border: 1px solid transparent;
+	border-radius: 4px;
+}
+.flash-message.success {
+	color: #3c763d;
+	background-color: #dff0d8;
+	border-color: #d6e9c6;
+}
+.flash-message.danger {
+	color: #a94442;
+	background-color: #f2dede;
+	border-color: #ebccd1;
+}
+
+.assets-header {
+	display: flex; /* Use flexbox for horizontal alignment */
+	justify-content: space-between; /* Push items to far ends */
+	align-items: center; /* Vertically align items */
+	margin-bottom: 20px; /* Add spacing below the header */
+}
+
+/* Heading styling */
+.assets-header h2 {
+	margin: 0; /* Remove default margin for better alignment */
+	font-size: 18px; /* Adjust as needed */
+	color: #2f276f ; /* Optional: match the button color */
+}
+
+/* Button container styling */
+.assets-header .button-container {
+	margin-right: 10px; /* Add small gap from the edge if needed */
+}
+
+
+/* Back button */
+button.back-button {
+	background-color: #2f276f;
+	color: white;
+	padding: 10px 15px;
+	border-radius: 5px;
+	border: none;
+	cursor: pointer;
+	font-size: 14px;
+	transition: background-color 0.3s ease, transform 0.1s;
+}
+
+button.back-button:hover {
+	background-color: #5a6268;
+	transform: translateY(-2px);
+}
+
+.period-container {
+	display: flex;
+	gap: 10px; /* Space between inputs */
+}
+
+.period-container input {
+	flex: 1; /* Distributes inputs evenly */
+	min-width: 80px; /* Prevents shrinking */
+	text-align: center; /* Centers text in inputs */
+}
+
+.recurring-alert-row {
+	display: flex;
+	gap: 10px;
+	margin-bottom: 5px;
+}
+
+.recurring-alert-row input {
+	width: 120px;
+	text-align: center;
+}
+
+.recurring-alert-row select {
+	flex: 1;
+}
+
+.add-field, .remove-field {
+	padding: 5px 10px;
+	background-color: #28a745;
+	color: white;
+	border: none;
+	cursor: pointer;
+	font-size: 16px;
+}
+
+.remove-field {
+	background-color: #dc3545;
+}
+
+	
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    margin: 15% auto;
+    text-align: center;
+    box-shadow: 0px 0px 10px #000;
+}
+
+.close {
+    float: right;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+input[type="text"] {
+    width: 80%;
+    padding: 5px;
+    margin-bottom: 10px;
+}
+
+button#add_option_btn {
+    padding: 8px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button#add_option_btn:hover {
+    background-color: #0056b3;
+}

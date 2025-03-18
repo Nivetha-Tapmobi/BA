@@ -1,0 +1,218 @@
+document.addEventListener("DOMContentLoaded", function () {
+	window.toggleWarrantyFields = function() {
+		let warrantyFields = document.getElementById('warranty_fields');
+		warrantyFields.style.display = (document.getElementById('warranty_exists').value === 'Yes') ? 'block' : 'none';
+	};
+
+	window.toggleExtendedWarrantyFields = function() {
+		let extendedWarrantyFields = document.getElementById('extended_warranty_fields');
+		extendedWarrantyFields.style.display = (document.getElementById('extended_warranty_exists').value === 'Yes') ? 'block' : 'none';
+	};
+
+
+    function calculateEndDate(startId, endId, yearsId, monthsId, daysId) {
+        let startDate = new Date(document.getElementById(startId).value);
+        let years = parseInt(document.getElementById(yearsId).value) || 0;
+        let months = parseInt(document.getElementById(monthsId).value) || 0;
+        let days = parseInt(document.getElementById(daysId).value) || 0;
+
+        if (!isNaN(startDate.getTime())) {
+            startDate.setFullYear(startDate.getFullYear() + years);
+            startDate.setMonth(startDate.getMonth() + months);
+            startDate.setDate(startDate.getDate() + days);
+            document.getElementById(endId).value = startDate.toISOString().split('T')[0];
+        }
+    }
+
+    function calculateWarrantyEndDate() {
+        calculateEndDate('warranty_start', 'warranty_end', 'warranty_period_years', 'warranty_period_months', 'warranty_period_days');
+    }
+
+    function calculateExtendedWarrantyEndDate() {
+        let warrantyEndDate = new Date(document.getElementById('warranty_end').value);
+        let years = parseInt(document.getElementById('extended_warranty_period_years').value) || 0;
+        let months = parseInt(document.getElementById('extended_warranty_period_months').value) || 0;
+        let days = parseInt(document.getElementById('extended_warranty_period_days').value) || 0;
+
+        if (!isNaN(warrantyEndDate.getTime())) {
+            warrantyEndDate.setFullYear(warrantyEndDate.getFullYear() + years);
+            warrantyEndDate.setMonth(warrantyEndDate.getMonth() + months);
+            warrantyEndDate.setDate(warrantyEndDate.getDate() + days);
+            document.getElementById('extended_warranty_end').value = warrantyEndDate.toISOString().split('T')[0];
+        }
+    }
+
+    document.getElementById('purchase_date')?.addEventListener('change', function () {
+        let purchaseDate = new Date(this.value);
+        let today = new Date();
+        if (purchaseDate > today) {
+            alert('Purchase date cannot be in the future.');
+            this.value = '';
+        } else {
+            let diff = today - purchaseDate;
+            let days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            document.getElementById('product_age').value = `${days} days`;
+        }
+    });
+
+    document.getElementById('warranty_start')?.addEventListener('change', function () {
+        let purchaseDate = new Date(document.getElementById('purchase_date').value);
+        let warrantyStartDate = new Date(this.value);
+        if (warrantyStartDate < purchaseDate) {
+            alert('Warranty start date cannot be before purchase date.');
+            this.value = '';
+        }
+    });
+
+    document.querySelectorAll('#warranty_period_years, #warranty_period_months, #warranty_period_days').forEach(input => {
+        input.addEventListener('input', calculateWarrantyEndDate);
+    });
+
+    document.querySelectorAll('#extended_warranty_period_years, #extended_warranty_period_months, #extended_warranty_period_days').forEach(input => {
+        input.addEventListener('input', calculateExtendedWarrantyEndDate);
+    });
+
+    const amcSelect = document.getElementById("has_amc");
+    const amcSection = document.getElementById("recurring-alert-section");
+    const container = document.getElementById("recurring-alert-container");
+
+    window.toggleAMCFields = function () {
+        amcSection.style.display = amcSelect.value === "Yes" ? "block" : "none";
+    };
+
+    container?.addEventListener("click", function (event) {
+        if (event.target.classList.contains("add-field")) {
+            const newRow = document.createElement("div");
+            newRow.classList.add("recurring-alert-row");
+            newRow.innerHTML = `
+                <input type="text" name="recurring_alert_key[]" placeholder="Event Type">
+                <input type="number" name="recurring_alert_value[]" placeholder="Every X" min="1">
+                <select name="recurring_alert_unit[]">
+                    <option value="Days">Days</option>
+                    <option value="Weeks">Weeks</option>
+                    <option value="Months">Months</option>
+                    <option value="Years">Years</option>
+                </select>
+                <button type="button" class="remove-field">-</button>
+            `;
+            container.appendChild(newRow);
+        } else if (event.target.classList.contains("remove-field")) {
+            event.target.parentElement.remove();
+        }
+    });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    window.handleSelection = function(select) {  
+        if (select.value === "add_new") {
+            document.getElementById("modal").style.display = "block";
+            document.getElementById("new_option_input").dataset.targetSelect = select.id;
+        }
+    };
+
+    // Attach event listener to all dropdowns with class "dropdown-with-add"
+    document.querySelectorAll(".dropdown-with-add").forEach(select => {
+        select.addEventListener("change", function () {
+            handleSelection(this);
+        });
+    });
+
+    // Handle modal submission (Add New Option)
+    document.getElementById("add_option_btn").addEventListener("click", function () {
+        let newOption = document.getElementById("new_option_input").value;
+        let targetSelectId = document.getElementById("new_option_input").dataset.targetSelect;
+        let targetSelect = document.getElementById(targetSelectId);
+
+        if (newOption.trim() === "" || !targetSelect) {
+            alert("Please enter a valid option.");
+            return;
+        }
+
+        fetch('/add_new_option', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: targetSelectId, newValue: newOption })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                let newOptionElement = document.createElement("option");
+                newOptionElement.value = newOption;
+                newOptionElement.text = newOption;
+
+                // Insert before "Add New Option"
+                targetSelect.insertBefore(newOptionElement, targetSelect.lastElementChild);
+                targetSelect.value = newOption;
+
+                // Close modal and reset input
+                document.getElementById("modal").style.display = "none";
+                document.getElementById("new_option_input").value = "";
+                alert(data.message);
+            } else {
+                alert("Error: " + data.error);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        let modal = document.getElementById("modal");
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    };
+
+    // Close modal when clicking the "X"
+    document.getElementById("close_modal").addEventListener("click", function () {
+        document.getElementById("modal").style.display = "none";
+    });
+});
+//create vendor
+
+// Vendor form handling
+// Vendor form handling
+const vendorDropdown = document.getElementById('vendor_name');
+const vendorIdInput = document.getElementById('vendor_id');
+const vendorIdDisplay = document.getElementById('vendor_id_display');
+
+vendorDropdown.addEventListener('change', function() {
+    if (this.value === 'add_new_vendor') {
+        // Save current form state to localStorage
+        const formData = {};
+        document.querySelectorAll('form input, form select, form textarea').forEach(field => {
+            if (field.name) {
+                formData[field.name] = field.value;
+            }
+        });
+        localStorage.setItem('formState', JSON.stringify(formData));
+
+        // Store the current page as the previous page
+        localStorage.setItem('previousPage', window.location.pathname); // e.g., '/create_asset'
+
+        // Redirect to vendor form
+        window.location.href = '/create_vendor';
+    } else {
+        const selectedOption = this.options[this.selectedIndex];
+        const vendorId = selectedOption.getAttribute('data-vendor-id');
+        vendorIdInput.value = vendorId || '';
+        vendorIdDisplay.textContent = vendorId || 'None';
+    }
+});
+
+// Restore form data from localStorage when page loads, then clear it
+document.addEventListener('DOMContentLoaded', function() {
+    const savedForm = localStorage.getItem('formState');
+    if (savedForm) {
+        const formData = JSON.parse(savedForm);
+        Object.keys(formData).forEach(key => {
+            const field = document.getElementsByName(key)[0];
+            if (field) {
+                field.value = formData[key];
+            }
+        });
+        // Clear localStorage after restoring the data
+        localStorage.removeItem('formState');
+        localStorage.removeItem('previousPage'); // Optional: clear this too
+    }
+});

@@ -17,6 +17,7 @@ from werkzeug.utils import secure_filename
 import secrets
 from dateutil.relativedelta import relativedelta
 from werkzeug.datastructures import ImmutableMultiDict
+import json
 
 
 
@@ -45,7 +46,10 @@ db_config = {
 UPLOAD_FOLDER = os.path.join('static', 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'docx'}
 
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def get_db_connection():
     try:
@@ -94,7 +98,9 @@ def create_tables():
                     make VARCHAR(255) NOT NULL,
                     model VARCHAR(255) NOT NULL,
                     part_no VARCHAR(255) NOT NULL,
+                           
                     purchase_date DATE,
+                           
                     vendor_name VARCHAR(255) ,
                     vendor_id VARCHAR(255) NOT NULL,
                     company_name VARCHAR(255) ,       
@@ -120,10 +126,9 @@ def create_tables():
                     modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                     has_user_details BOOLEAN,
                     asset_category VARCHAR(255) NOT NULL,
-                    amc VARCHAR(255),
                     archieved VARCHAR(255),
                     has_amc VARCHAR(255),
-                    amc_desc VARCHAR(255)
+                    recurring_alert_for_amc VARCHAR(255)
                     
                 )
             """)
@@ -347,30 +352,97 @@ def generate_unique_id( prefix):
 def home():
     return redirect(url_for('create_asset')) 
 
+@app.route('/add_new_option', methods=['POST'])
+def add_new_option():
+    if request.method == 'POST':
+        data = request.json
+        option_type = data.get('type')
+        new_option = data.get('newValue')
+
+        if option_type and new_option:
+            try:
+                if option_type == 'asset_category':
+                    column_name = 'asset_category'
+
+                elif option_type == 'product_type':
+                    column_name = 'product_type'
+
+                elif option_type == 'company_name':
+                    column_name = 'company_name'
+
+                elif option_type == 'asset_type':
+                    column_name = 'asset_type'
+
+                else:
+                    return jsonify({'error': 'Invalid option type'}), 400
+                
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute(f"INSERT INTO drop_down_attributes ({column_name}) VALUES (%s)", (new_option,))
+                conn.commit()
+                cursor.close()
+                return jsonify({'message': f'New {option_type} added successfully'}), 200
+            except Exception as e:
+                return jsonify({'error': str(e)}), 500
+        else:
+            return jsonify({'error': 'Invalid request'}), 400
+
+def display_drop_down(page):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if page == 'Create_Asset':
+        cursor.execute("""
+            SELECT DISTINCT product_type, company_name, asset_category, asset_type 
+            FROM drop_down_attributes
+        """)
+
+        product_types, companies, asset_categories, asset_types = set(), set(), set(), set()
+        dropdown = cursor.fetchall()
+
+        for row in dropdown:
+            if row['product_type']:
+                product_types.add(row['product_type'])
+            if row['company_name']:
+                companies.add(row['company_name'])
+            if row['asset_category']:
+                asset_categories.add(row['asset_category'])
+            if row['asset_type']:
+                asset_types.add(row['asset_type'])
+
+        result = {
+            "product_types": list(product_types),
+            "companies": list(companies),
+            "asset_categories": list(asset_categories),
+            "asset_types": list(asset_types)
+        }
+
+    elif page == 'Create_Vendor':
+        cursor.execute("""
+            SELECT vendor_id, vendor_name FROM vendor_details
+        """)
+
+        vendors = cursor.fetchall()
+
+        result = {
+            "vendors": vendors  # List of dictionaries with 'vendor_id' & 'vendor_name'
+        }
+
+    # Close the cursor & connection AFTER fetching the data
+    cursor.close()
+    conn.close()
+
+    return result
+
+
 @app.route('/create_asset', methods=['GET', 'POST'])
 def create_asset():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # Fetch dropdown data
-    cursor.execute("""
-        SELECT DISTINCT product_type, company_name, asset_category, asset_type FROM drop_down_attributes
-    """)
+    product_types, companies, asset_categories, asset_types =  display_drop_down('Create_Asset').values()
+    vendors = display_drop_down('Create_Vendor').values()
 
-    product_types, companies, asset_categories, asset_types = set(), set(), set(), set()
-
-    dropdown =  cursor.fetchall()
-
-
-    for row in dropdown:
-        if row['product_type']:
-            product_types.add(row['product_type'])
-        if row['company_name']:
-            companies.add(row['company_name'])
-        if row['asset_category']:
-            asset_categories.add(row['asset_category'])
-        if row['asset_type']:
-            asset_types.add(row['asset_type'])
 
     cursor.close()
     conn.close()
@@ -381,10 +453,12 @@ def create_asset():
             if conn is None:
                 flash("Database connection failed!", "danger")
                 return redirect(url_for('create_asset'))
-                
+            
             cursor = conn.cursor()
-
-            asset_id = generate_unique_id('IT')
+            
+            created_by = 't1'
+            created_at = datetime.now().strftime('%Y-%m-%d %H-%M-%S')
+            asset_id = generate_unique_id('IT') 
             product_type = request.form['product_type']
             product_name = request.form['product_name']
             serial_no = request.form['serial_no']
@@ -393,18 +467,69 @@ def create_asset():
             part_no = request.form['part_no']
             purchase_date = request.form['purchase_date']
             vendor_name = request.form['vendor_name']
-            vendor_id = request.form['vendor_id']
+            vendor_id = 123
             company_name = request.form['company_name']
             asset_type = request.form['asset_type']
             purchase_value = request.form['purchase_value']
+
+            asset_folder = os.path.join(app.config['UPLOAD_FOLDER'], asset_id)
+            asset_images_folder = os.path.join(asset_folder, 'Asset_Images')
+            purchase_bills_folder = os.path.join(asset_folder, 'Purchase_Bills')
+
+            os.makedirs(asset_images_folder, exist_ok=True)
+            os.makedirs(purchase_bills_folder, exist_ok=True)
+
+            # Handle Asset Image Uploads
+            asset_images = []
+            if 'asset_image[]' in request.files:
+                files = request.files.getlist('asset_image[]')
+                for file in files:
+                    if file and allowed_file(file.filename):
+                        filename = secure_filename(file.filename)
+                        filepath = os.path.join(asset_images_folder, filename)
+                        file.save(filepath)
+                        asset_images.append(filename)
+
+            # Handle Purchase Bill Uploads
+            purchase_bills = []
+            if 'purchase_bill[]' in request.files:
+                files = request.files.getlist('purchase_bill[]')
+                for file in files:
+                    if file and allowed_file(file.filename):
+                        filename = secure_filename(file.filename)
+                        filepath = os.path.join(purchase_bills_folder, filename)
+                        file.save(filepath)
+                        purchase_bills.append(filename)
+
+            # Convert file paths to comma-separated strings
+            asset_images_str = ','.join(asset_images)
+            purchase_bills_str = ','.join(purchase_bills)
+
             warranty_checked = request.form.get('warranty_checked', 'No')
             warranty_exists = request.form.get('warranty_exists', 'No')
             warranty_start = request.form['warranty_start']
-            warranty_period = request.form['warranty_period']
+
+            # Get warranty period values from form
+            warranty_period_dict = {
+                "years": int(request.form.get("warranty_period_years", 0) or 0),
+                "months": int(request.form.get("warranty_period_months", 0) or 0),
+                "days": int(request.form.get("warranty_period_days", 0) or 0),
+            }
+
+            warranty_period = json.dumps(warranty_period_dict)
             warranty_end = request.form['warranty_end']
+
             extended_warranty_exists = request.form.get('extended_warranty_exists', 'No')
-            extended_warranty_period = request.form['extended_warranty_period']
+            extended_warranty_period_dict = {
+                "years": int(request.form.get("extended_warranty_period_years", 0) or 0),
+                "months": int(request.form.get("extended_warranty_period_months", 0) or 0),
+                "days": int(request.form.get("extended_warranty_period_days", 0) or 0),
+            }
+
+            extended_warranty_period = json.dumps(extended_warranty_period_dict)
+            # extended_warranty_period = f"{request.form.get('extended_warranty_period_years', '0')} years {request.form.get('extended_warranty_period_months', '0')} months {request.form.get('extended_warranty_period_days', '0')} days"
             extended_warranty_end = request.form['extended_warranty_end']
+            
             adp_production = request.form['adp_production']
             insurance = request.form['insurance']
             description = request.form['description']
@@ -412,55 +537,97 @@ def create_asset():
             product_age = request.form['product_age']
             product_condition = request.form['product_condition']
             asset_category = request.form['asset_category']
-            amc = request.form['amc']
+            
             archieved = request.form.get('archieved', 'No')
-            has_user_details = request.form.get('has_user_details', False)
-            has_amc = request.form.get('has_amc', False)
-            amc_desc = request.form['amc_desc']
-
-
-            created_by = 't1'
+            has_user_details = request.form.get('has_user_details', 'No') == 'Yes'
+            has_amc = request.form.get('has_amc', 'No') == 'Yes'
+            
+            # Handling recurring alert
+            recurring_alert_keys = request.form.getlist('recurring_alert_key[]')
+            recurring_alert_values = request.form.getlist('recurring_alert_value[]')
+            recurring_alert_units = request.form.getlist('recurring_alert_unit[]')
+            recurring_alert_for_amc = str(list(zip(recurring_alert_keys, recurring_alert_values, recurring_alert_units)))
 
             query = """
                 INSERT INTO it_assets (
-                    created_by, asset_id, product_type, product_name, serial_no, make, model, part_no, 
+                    created_by, created_at, asset_id, product_type, product_name, serial_no, make, model, part_no, 
                     purchase_date, vendor_name, vendor_id, company_name, asset_type, purchase_value, 
                     warranty_checked, warranty_exists, warranty_start, warranty_period, warranty_end,
                     extended_warranty_exists, extended_warranty_period, extended_warranty_end,
                     adp_production, insurance, description, remarks, product_age, product_condition,
-                    asset_category, amc, archieved, has_user_details, has_amc, amc_desc
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    asset_category, archieved, has_user_details, has_amc, recurring_alert_for_amc, image_path, purchase_bill_path
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
 
             values = (
-               created_by , asset_id, product_type, product_name, serial_no, make, model, part_no, 
+                created_by, created_at, asset_id, product_type, product_name, serial_no, make, model, part_no, 
                 purchase_date, vendor_name, vendor_id, company_name, asset_type, purchase_value, 
                 warranty_checked, warranty_exists, warranty_start, warranty_period, warranty_end,
                 extended_warranty_exists, extended_warranty_period, extended_warranty_end,
                 adp_production, insurance, description, remarks, product_age, product_condition,
-                asset_category, amc, archieved, has_user_details, has_amc, amc_desc
+                asset_category, archieved, has_user_details, has_amc, recurring_alert_for_amc,
+                asset_images_str, purchase_bills_str
             )
 
-            cursor.execute(query, values)
 
+            cursor.execute(query, values)
             conn.commit()
+
             cursor.close()
             conn.close()
 
-            flash("Asset successfully created!", "success")
+            flash("Asset successfully created!", "create_asset")
 
         except Exception as e:
             flash(f'Error: {str(e)}', 'danger')
 
-        return redirect(url_for('create_asset'))
+        # return redirect(url_for('create_asset'))
     
 
 
     return render_template('create_asset.html', 
-                           product_types=list(product_types), 
-                           companies=list(companies),
-                           asset_categories=list(asset_categories),
-                           asset_types=list(asset_types))
+                           product_types=product_types, 
+                           companies=companies,
+                           asset_categories=asset_categories,
+                           asset_types=asset_types,
+                           vendors=vendors)
+
+
+# Route to show the vendor creation form
+@app.route('/create_vendor', methods=['GET', 'POST'])
+def create_vendor():
+
+    if request.method == 'POST':
+
+        vendor_id = generate_unique_id('VD') 
+        
+        vendor_name = request.form.get('vendor_name')
+        address = request.form.get('address')
+        phone_number = request.form.get('phone_number')
+        email = request.form.get('email')
+        remarks = request.form.get('remarks')
+        created_by = "admin"  # Change this based on logged-in user
+        modified_by = created_by
+
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO vendor_details 
+                (vendor_id, vendor_name, address, phone_number, email, remarks, created_by, modified_by) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (vendor_id, vendor_name, address, phone_number, email, remarks, created_by, modified_by))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            flash("Vendor added successfully!", "success")
+            return redirect(url_for('create_vendor'))
+        except mysql.connector.Error as err:
+            flash(f"Error: {err}", "danger")
+
+
+
+    return render_template('create_vendor.html')
 
 if __name__ == '__main__':
     
