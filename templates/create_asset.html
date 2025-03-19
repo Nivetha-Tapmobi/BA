@@ -122,7 +122,8 @@
 <div class="form-group">
     <label for="vendor_name">Vendor Name:</label>
     <select id="vendor_name" name="vendor_name" required>
-        <option value="">Select a vendor</option>
+	<option value="" selected>Select a vendor</option> 
+        
         {% for vendor_list in vendors %}  
             {% for vendor in vendor_list %}  
                 <option value="{{ vendor.vendor_name }}" data-vendor-id="{{ vendor.vendor_id }}">
@@ -140,12 +141,6 @@
     <p>Selected Vendor ID: <span id="vendor_id_display">None</span></p>
 </div>
 
-
-
-
-			
-			
-			
 
 			<!-- Asset Category Dropdown -->
 				<div class="form-group">
@@ -348,7 +343,7 @@
     const createVendorUrl = "{{ url_for('create_vendor') }}";  // Jinja processes this here
 </script>
 
-<script src="static/JS/create_asset.js"></script>
+<script src="static/js/create_asset.js"></script>
 
 
 </body>

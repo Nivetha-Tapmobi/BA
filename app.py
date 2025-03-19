@@ -18,6 +18,8 @@ import secrets
 from dateutil.relativedelta import relativedelta
 from werkzeug.datastructures import ImmutableMultiDict
 import json
+from datetime import date
+import ast
 
 
 
@@ -348,9 +350,13 @@ def generate_unique_id( prefix):
     
     return new_id
 
+# @app.route('/')
+# def home():
+#     return redirect(url_for('create_asset')) 
+
 @app.route('/')
 def home():
-    return redirect(url_for('create_asset')) 
+    return redirect(url_for('view_assets')) 
 
 @app.route('/add_new_option', methods=['POST'])
 def add_new_option():
@@ -591,6 +597,211 @@ def create_asset():
                            asset_categories=asset_categories,
                            asset_types=asset_types,
                            vendors=vendors)
+
+
+@app.route('/edit_asset/<asset_id>', methods=['GET', 'POST'])
+def edit_asset(asset_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Fetch dropdown options (similar to create_asset)
+    product_types, companies, asset_categories, asset_types = display_drop_down('Create_Asset').values()
+    vendors = display_drop_down('Create_Vendor').values()
+
+    if request.method == 'POST':
+        try:
+            # Update asset details based on form submission
+            product_type = request.form['product_type']
+            product_name = request.form['product_name']
+            serial_no = request.form['serial_no']
+            make = request.form['make']
+            model = request.form['model']
+            part_no = request.form['part_no']
+            purchase_date = request.form['purchase_date']
+            vendor_name = request.form['vendor_name']
+            vendor_id = request.form['vendor_id']
+            company_name = request.form['company_name']
+            asset_type = request.form['asset_type']
+            purchase_value = request.form['purchase_value']
+
+            asset_folder = os.path.join(app.config['UPLOAD_FOLDER'], asset_id)
+            asset_images_folder = os.path.join(asset_folder, 'Asset_Images')
+            purchase_bills_folder = os.path.join(asset_folder, 'Purchase_Bills')
+
+            os.makedirs(asset_images_folder, exist_ok=True)
+            os.makedirs(purchase_bills_folder, exist_ok=True)
+
+            # Fetch existing file paths
+            cursor.execute("SELECT image_path, purchase_bill_path FROM it_assets WHERE asset_id = %s", (asset_id,))
+            existing_data = cursor.fetchone()
+            existing_images = existing_data['image_path'].split(',') if existing_data['image_path'] else []
+            existing_bills = existing_data['purchase_bill_path'].split(',') if existing_data['purchase_bill_path'] else []
+
+            # Handle Asset Image Uploads
+            asset_images = existing_images
+            if 'asset_image[]' in request.files:
+                files = request.files.getlist('asset_image[]')
+                for file in files:
+                    if file and allowed_file(file.filename):
+                        filename = secure_filename(file.filename)
+                        filepath = os.path.join(asset_images_folder, filename)
+                        file.save(filepath)
+                        if filename not in asset_images:
+                            asset_images.append(filename)
+
+            # Handle Purchase Bill Uploads
+            purchase_bills = existing_bills
+            if 'purchase_bill[]' in request.files:
+                files = request.files.getlist('purchase_bill[]')
+                for file in files:
+                    if file and allowed_file(file.filename):
+                        filename = secure_filename(file.filename)
+                        filepath = os.path.join(purchase_bills_folder, filename)
+                        file.save(filepath)
+                        if filename not in purchase_bills:
+                            purchase_bills.append(filename)
+
+            asset_images_str = ','.join(asset_images)
+            purchase_bills_str = ','.join(purchase_bills)
+
+            warranty_checked = request.form.get('warranty_checked', 'No')
+            warranty_exists = request.form.get('warranty_exists', 'No')
+            warranty_start = request.form.get('warranty_start') or None
+            warranty_period_dict = {
+                "years": int(request.form.get("warranty_period_years", 0) or 0),
+                "months": int(request.form.get("warranty_period_months", 0) or 0),
+                "days": int(request.form.get("warranty_period_days", 0) or 0),
+            }
+            warranty_period = json.dumps(warranty_period_dict)
+            warranty_end = request.form.get('warranty_end') or None
+
+            extended_warranty_exists = request.form.get('extended_warranty_exists', 'No')
+            extended_warranty_period_dict = {
+                "years": int(request.form.get("extended_warranty_period_years", 0) or 0),
+                "months": int(request.form.get("extended_warranty_period_months", 0) or 0),
+                "days": int(request.form.get("extended_warranty_period_days", 0) or 0),
+            }
+            extended_warranty_period = json.dumps(extended_warranty_period_dict)
+            extended_warranty_end = request.form.get('extended_warranty_end') or None
+
+            adp_production = request.form['adp_production']
+            insurance = request.form['insurance']
+            description = request.form['description']
+            remarks = request.form['remarks']
+            product_age = request.form['product_age']
+            product_condition = request.form['product_condition']
+            asset_category = request.form['asset_category']
+            archieved = request.form.get('archieved', 'No')
+            has_user_details = request.form.get('has_user_details', 'No') == 'Yes'
+            has_amc = request.form.get('has_amc', 'No') == 'Yes'
+
+            # Handling recurring alert
+            recurring_alert_keys = request.form.getlist('recurring_alert_key[]')
+            recurring_alert_values = request.form.getlist('recurring_alert_value[]')
+            recurring_alert_units = request.form.getlist('recurring_alert_unit[]')
+            recurring_alert_for_amc = str(list(zip(recurring_alert_keys, recurring_alert_values, recurring_alert_units)))
+
+            update_query = """
+                UPDATE it_assets SET 
+                    product_type=%s, product_name=%s, serial_no=%s, make=%s, model=%s, part_no=%s, 
+                    purchase_date=%s, vendor_name=%s, vendor_id=%s, company_name=%s, asset_type=%s, 
+                    purchase_value=%s, warranty_checked=%s, warranty_exists=%s, warranty_start=%s, 
+                    warranty_period=%s, warranty_end=%s, extended_warranty_exists=%s, 
+                    extended_warranty_period=%s, extended_warranty_end=%s, adp_production=%s, 
+                    insurance=%s, description=%s, remarks=%s, product_age=%s, product_condition=%s, 
+                    asset_category=%s, archieved=%s, has_user_details=%s, has_amc=%s, 
+                    recurring_alert_for_amc=%s, image_path=%s, purchase_bill_path=%s, 
+                    modified_by=%s, modified_at=NOW()
+                WHERE asset_id=%s
+            """
+            values = (
+                product_type, product_name, serial_no, make, model, part_no, purchase_date, 
+                vendor_name, vendor_id, company_name, asset_type, purchase_value, warranty_checked, 
+                warranty_exists, warranty_start, warranty_period, warranty_end, extended_warranty_exists, 
+                extended_warranty_period, extended_warranty_end, adp_production, insurance, 
+                description, remarks, product_age, product_condition, asset_category, archieved, 
+                has_user_details, has_amc, recurring_alert_for_amc, asset_images_str, purchase_bills_str,
+                "current_user", asset_id  # Replace "current_user" with actual user tracking logic
+            )
+
+            cursor.execute(update_query, values)
+            conn.commit()
+            flash("Asset successfully updated!", "success")
+            cursor.close()
+            conn.close()
+            return redirect(url_for('view_assets'))
+
+        except Exception as e:
+            flash(f'Error: {str(e)}', 'danger')
+            cursor.close()
+            conn.close()
+
+    # GET request: Fetch asset details
+    cursor.execute("SELECT * FROM it_assets WHERE asset_id = %s", (asset_id,))
+    asset = cursor.fetchone()
+
+    if not asset:
+        flash('Asset not found!', 'error')
+        cursor.close()
+        conn.close()
+        return redirect(url_for('view_assets'))
+
+    cursor.close()
+    conn.close()
+
+    # Parse warranty_period and extended_warranty_period if they exist
+    warranty_period_dict = json.loads(asset['warranty_period']) if asset['warranty_period'] else {"years": 0, "months": 0, "days": 0}
+    extended_warranty_period_dict = json.loads(asset['extended_warranty_period']) if asset['extended_warranty_period'] else {"years": 0, "months": 0, "days": 0}
+    recurring_alert_list = ast.literal_eval(asset['recurring_alert_for_amc']) if asset['recurring_alert_for_amc'] else []
+    return render_template('edit_asset.html', 
+                           asset=asset, 
+                           product_types=product_types, 
+                           companies=companies,
+                           asset_categories=asset_categories,
+                           asset_types=asset_types,
+                           vendors=vendors,
+                           warranty_period_dict=warranty_period_dict,
+                           extended_warranty_period_dict=extended_warranty_period_dict,
+                           recurring_alert_list=recurring_alert_list)
+
+
+
+@app.route('/view_assets', methods=['GET'])
+def view_assets():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Select all columns instead of just a few
+    query = """
+        SELECT id, created_by, created_at, asset_id, product_type, product_name, 
+               serial_no, make, model, part_no, purchase_date, vendor_name, 
+               vendor_id, company_name, asset_type, purchase_value, image_path,
+               purchase_bill_path, warranty_checked, warranty_exists, 
+               warranty_start, warranty_period, warranty_end, 
+               extended_warranty_exists, extended_warranty_period, 
+               extended_warranty_end, adp_production, insurance, description,
+               remarks, product_age, product_condition, modified_by, 
+               modified_at, has_user_details, asset_category, archieved,
+               has_amc, recurring_alert_for_amc
+        FROM it_assets
+    """
+    cursor.execute(query)
+    all_assets = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    # Convert the tuple results to a list of dictionaries for easier handling
+    columns = [desc[0] for desc in cursor.description]
+    assets_list = [dict(zip(columns, asset)) for asset in all_assets]
+
+    today = date.today()
+
+    return render_template('view_assets.html', all_assets=assets_list, today=today)
+
+
+
+
 
 
 # Route to show the vendor creation form

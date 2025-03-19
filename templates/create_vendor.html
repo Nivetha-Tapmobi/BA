@@ -21,7 +21,7 @@
 
     <div class="form-container">
         <form action="{{ url_for('create_vendor') }}" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="source" value="{{ source }}">
+            
 
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
@@ -53,6 +53,6 @@
         </form>
     </div>
 
-    <script src="static/JS/create_vendor.js"></script>
+    <script src="static/js/create_vendor.js"></script>
 </body>
 </html>
