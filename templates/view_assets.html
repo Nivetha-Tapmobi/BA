@@ -228,7 +228,9 @@
                         <div class="action-menu" id="action-menu-{{ asset.asset_id }}">
                             <button class="view-btn" onclick='viewDetails({{ asset|tojson|safe }})'>View Details</button>
                             <button class="edit-btn" onclick="editAsset('{{ asset.asset_id }}')">Edit</button>
-                            <button class="delete-btn" onclick="deleteAsset('{{ asset.asset_id }}')">Delete</button>
+                            <!--<button class="delete-btn" onclick="deleteAsset('{{ asset.asset_id }}')">Delete</button>-->
+							<button class="delete-btn" data-table="it_assets" onclick="deleteAsset('{{ asset.asset_id }}', this)">Delete</button>
+
                         </div>
                     </td>
                 </tr>
@@ -315,12 +317,32 @@
             window.location.href = `/edit_asset/${assetId}`;
         }
 
-        function deleteAsset(assetId) {
-            if (confirm('Are you sure you want to delete this asset?')) {
-                // Add your delete logic here, e.g., AJAX call or redirect
-                window.location.href = `/delete_asset/${assetId}`;
-            }
-        }
+
+		
+		function deleteAsset(assetId, button) {
+		const tableName = button.getAttribute('data-table'); // Get table name from HTML attribute
+
+		if (confirm('Are you sure you want to delete this asset?')) {
+			fetch(`/delete/${assetId}`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ table: tableName }) // Send table name in request body
+			})
+			.then(response => response.json())
+			.then(data => {
+				if (data.message) {
+					alert(data.message);
+					location.reload(); // Refresh the page or update the UI
+				} else {
+					alert('Error: ' + data.error);
+				}
+			})
+			.catch(error => console.error('Error:', error));
+		}
+	}
+
     </script>
 </body>
 </html>

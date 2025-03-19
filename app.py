@@ -99,10 +99,8 @@ def create_tables():
                     serial_no VARCHAR(255) NOT NULL,
                     make VARCHAR(255) NOT NULL,
                     model VARCHAR(255) NOT NULL,
-                    part_no VARCHAR(255) NOT NULL,
-                           
-                    purchase_date DATE,
-                           
+                    part_no VARCHAR(255) NOT NULL,     
+                    purchase_date DATE,      
                     vendor_name VARCHAR(255) ,
                     vendor_id VARCHAR(255) NOT NULL,
                     company_name VARCHAR(255) ,       
@@ -350,9 +348,6 @@ def generate_unique_id( prefix):
     
     return new_id
 
-# @app.route('/')
-# def home():
-#     return redirect(url_for('create_asset')) 
 
 @app.route('/')
 def home():
@@ -765,7 +760,6 @@ def edit_asset(asset_id):
                            recurring_alert_list=recurring_alert_list)
 
 
-
 @app.route('/view_assets', methods=['GET'])
 def view_assets():
     conn = get_db_connection()
@@ -783,7 +777,8 @@ def view_assets():
                remarks, product_age, product_condition, modified_by, 
                modified_at, has_user_details, asset_category, archieved,
                has_amc, recurring_alert_for_amc
-        FROM it_assets
+        FROM it_assets 
+        WHERE archieved != 'yes' OR archieved IS NULL
     """
     cursor.execute(query)
     all_assets = cursor.fetchall()
@@ -800,8 +795,24 @@ def view_assets():
     return render_template('view_assets.html', all_assets=assets_list, today=today)
 
 
+@app.route('/delete/<string:id>', methods=['POST'])
+def delete(id):
+    data = request.get_json()  # Get JSON data from the request body
+    table_name = data.get('table')  # Extract table name from request body
 
+    if table_name == 'it_assets':
+        conn = get_db_connection()
+        cursor = conn.cursor()
 
+        # Update the `archived` column to 'yes' instead of deleting
+        cursor.execute("UPDATE it_assets SET archieved = 'yes' WHERE asset_id = %s", (id,))
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+        return jsonify({"message": "Asset Deleted successfully"}), 200
+    else:
+        return jsonify({"error": "Invalid table name"}), 400
 
 
 # Route to show the vendor creation form
