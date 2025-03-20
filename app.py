@@ -626,8 +626,8 @@ def edit_asset(asset_id):
 
     # Fetch dropdown options (similar to create_asset)
     product_types, companies, asset_categories, asset_types = display_drop_down('Create_Asset').values()
-    vendors = display_drop_down('Create_Vendor').values()
-
+    vendors_data = display_drop_down('Create_Vendor')
+    vendors = vendors_data['vendors']  # Flat list of vendors
     if request.method == 'POST':
         try:
             # Update asset details based on form submission
@@ -760,6 +760,26 @@ def edit_asset(asset_id):
     cursor.execute("SELECT * FROM it_assets WHERE asset_id = %s", (asset_id,))
     asset = cursor.fetchone()
 
+    print('actual amc', asset['has_amc'])
+    # asset['has_amc'] = 'Yes' if asset['has_amc'] in (1, True) else 'No'
+    asset['has_amc'] = 'Yes' if str(asset['has_amc']) in ('1', 'True', 1, True) else 'No'
+
+    print('Asset has_amc normalized:', asset['has_amc'])  # Debug
+
+    # Check if coming from create_vendor to clear vendor selection
+    from_create_vendor = request.referrer and 'create_vendor' in request.referrer
+    if from_create_vendor:
+        asset['vendor_name'] = None
+        asset['vendor_id'] = None
+        print('Returning from create_vendor, cleared vendor_name and vendor_id')
+
+    # If form_state exists, ensure it doesn’t override cleared values
+    form_state = session.get('form_state', {}) if request.referrer and 'create_vendor' in request.referrer else {}
+    if from_create_vendor and 'form_state' in session:
+        form_state['vendor_name'] = ['']
+        form_state['vendor_id'] = ['']
+        session['form_state'] = form_state
+
     if not asset:
         flash('Asset not found!', 'error')
         cursor.close()
@@ -782,7 +802,8 @@ def edit_asset(asset_id):
                            vendors=vendors,
                            warranty_period_dict=warranty_period_dict,
                            extended_warranty_period_dict=extended_warranty_period_dict,
-                           recurring_alert_list=recurring_alert_list)
+                           recurring_alert_list=recurring_alert_list,
+                           form_state=form_state)
 
 
 @app.route('/view_assets', methods=['GET'])
@@ -840,9 +861,43 @@ def delete(id):
         return jsonify({"error": "Invalid table name"}), 400
 
 
+# @app.route('/create_vendor', methods=['GET', 'POST'])
+# def create_vendor():
+#     print('Form State in create_vendor:', session.get('form_state', {}))  # Debug
+#     if request.method == 'POST':
+#         vendor_id = generate_unique_id('VD')
+#         vendor_name = request.form.get('vendor_name')
+#         address = request.form.get('address')
+#         phone_number = request.form.get('phone_number')
+#         email = request.form.get('email')
+#         remarks = request.form.get('remarks')
+#         created_by = "admin"
+#         modified_by = created_by
+
+#         try:
+#             conn = get_db_connection()
+#             cursor = conn.cursor()
+#             cursor.execute("""
+#                 INSERT INTO vendor_details 
+#                 (vendor_id, vendor_name, address, phone_number, email, remarks, created_by, modified_by) 
+#                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+#             """, (vendor_id, vendor_name, address, phone_number, email, remarks, created_by, modified_by))
+#             conn.commit()
+#             cursor.close()
+#             conn.close()
+#             flash("Vendor added successfully!", "success")
+#             print('\n\n Form State before redirect:', session.get('form_state', {}))  # Debug
+#             return redirect(url_for('create_asset'))
+#         except mysql.connector.Error as err:
+#             flash(f"Error: {err}", "danger")
+#             return render_template('create_vendor.html')
+
+#     return render_template('create_vendor.html')
+
+
 @app.route('/create_vendor', methods=['GET', 'POST'])
 def create_vendor():
-    print('Form State in create_vendor:', session.get('form_state', {}))  # Debug
+    print('Form State in create_vendor:', session.get('form_state', {}))
     if request.method == 'POST':
         vendor_id = generate_unique_id('VD')
         vendor_name = request.form.get('vendor_name')
@@ -865,20 +920,46 @@ def create_vendor():
             cursor.close()
             conn.close()
             flash("Vendor added successfully!", "success")
-            print('\n\n Form State before redirect:', session.get('form_state', {}))  # Debug
-            return redirect(url_for('create_asset'))
+            
+            # Determine redirect based on session
+            return_to = session.get('return_to', 'create_asset')  # Default to create_asset
+            if return_to == 'edit_asset' and 'asset_id' in session:
+                asset_id = session['asset_id']
+                # Optionally clear form_state if not needed
+                if 'form_state' in session:
+                    session.pop('form_state')
+                return redirect(url_for('edit_asset', asset_id=asset_id))
+            else:
+                return redirect(url_for('create_asset'))
         except mysql.connector.Error as err:
             flash(f"Error: {err}", "danger")
             return render_template('create_vendor.html')
 
     return render_template('create_vendor.html')
 
+# @app.route('/save_form_state', methods=['POST'])
+# def save_form_state():
+#     form_data = request.form.to_dict(flat=False)
+#     print('\n\n Form Data:', form_data)
+#     session['form_state'] = form_data
+#     print('\n\n Session after setting:', session.get('form_state'))  # Debug
+#     return redirect(url_for('create_vendor'))
+
 @app.route('/save_form_state', methods=['POST'])
 def save_form_state():
     form_data = request.form.to_dict(flat=False)
     print('\n\n Form Data:', form_data)
     session['form_state'] = form_data
-    print('\n\n Session after setting:', session.get('form_state'))  # Debug
+    
+    # Store the referrer to determine return destination
+    referrer = request.referrer
+    if referrer:
+        if 'edit_asset' in referrer:
+            session['return_to'] = 'edit_asset'
+            session['asset_id'] = referrer.split('/')[-1]  # Extract asset_id from URL
+        elif 'create_asset' in referrer:
+            session['return_to'] = 'create_asset'
+    print('\n\n Session after setting:', session)
     return redirect(url_for('create_vendor'))
 
 

@@ -20,7 +20,7 @@
     </div>
 
     <div class="form-container">
-        <form action="{{ url_for('edit_asset', asset_id=asset.asset_id) }}" method="post" enctype="multipart/form-data">
+        <form id="assetForm" action="{{ url_for('edit_asset', asset_id=asset.asset_id) }}" method="post" enctype="multipart/form-data">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
@@ -45,7 +45,9 @@
                         <select id="asset_category" name="asset_category" class="dropdown-with-add">
                             <option value="">--select an option--</option>
                             {% for category in asset_categories %}
-                                <option value="{{ category }}" {% if category == asset.asset_category %}selected{% endif %}>{{ category }}</option>
+                                <option value="{{ category }}" {% if category == asset.asset_category %}selected{% endif %}>
+                                    {{ category }}
+                                </option>
                             {% endfor %}
                             <option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
                         </select>
@@ -53,7 +55,7 @@
 
                     <div class="form-group">
                         <label for="serial_no">Serial No:</label>
-                        <input type="text" id="serial_no" name="serial_no" value="{{ asset.serial_no }}" required>
+                        <input type="text" id="serial_no" name="serial_no" value="{{ asset.serial_no|default('') }}" required>
                     </div>
 
                     <div class="form-group">
@@ -61,7 +63,9 @@
                         <select id="product_type" name="product_type" class="dropdown-with-add">
                             <option value="">--select an option--</option>
                             {% for product in product_types %}
-                                <option value="{{ product }}" {% if product == asset.product_type %}selected{% endif %}>{{ product }}</option>
+                                <option value="{{ product }}" {% if product == asset.product_type %}selected{% endif %}>
+                                    {{ product }}
+                                </option>
                             {% endfor %}
                             <option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
                         </select>
@@ -69,55 +73,91 @@
 
                     <div class="form-group">
                         <label for="product_name">Product Name:</label>
-                        <input type="text" id="product_name" name="product_name" value="{{ asset.product_name }}" required>
+                        <input type="text" id="product_name" name="product_name" value="{{ asset.product_name|default('') }}" required>
                     </div>
 
                     <div class="form-group">
                         <label for="make">Make:</label>
-                        <input type="text" id="make" name="make" value="{{ asset.make }}" required>
+                        <input type="text" id="make" name="make" value="{{ asset.make|default('') }}" required>
                     </div>
 
                     <div class="form-group">
                         <label for="model">Model:</label>
-                        <input type="text" id="model" name="model" value="{{ asset.model }}" required>
+                        <input type="text" id="model" name="model" value="{{ asset.model|default('') }}" required>
                     </div>
 
                     <div class="form-group">
                         <label for="part_no">Part No:</label>
-                        <input type="text" id="part_no" name="part_no" value="{{ asset.part_no }}" required>
+                        <input type="text" id="part_no" name="part_no" value="{{ asset.part_no|default('') }}" required>
                     </div>
                 </div>
 
                 <div class="form-column">
                     <div class="form-group">
                         <label for="description">Product Description:</label>
-                        <textarea id="description" name="description">{{ asset.description }}</textarea>
+                        <textarea id="description" name="description">{{ asset.description|default('') }}</textarea>
                     </div>
 
-                    <div class="form-group">
-                        <label for="vendor_name">Vendor Name:</label>
-                        <select id="vendor_name" name="vendor_name" required>
-                            <option value="">Select a vendor</option>
-                            {% for vendor_list in vendors %}
-                                {% for vendor in vendor_list %}
-                                    <option value="{{ vendor.vendor_name }}" data-vendor-id="{{ vendor.vendor_id }}"
-                                            {% if vendor.vendor_name == asset.vendor_name %}selected{% endif %}>
-                                        {{ vendor.vendor_name }}
-                                    </option>
-                                {% endfor %}
-                            {% endfor %}
-                            <option value="add_new_vendor" style="color: blue; font-weight: bold;">+ Add New Vendor</option>
-                        </select>
-                        <input type="hidden" id="vendor_id" name="vendor_id" value="{{ asset.vendor_id }}">
-                        <p>Selected Vendor ID: <span id="vendor_id_display">{{ asset.vendor_id or 'None' }}</span></p>
-                    </div>
+				<!--<div class="form-group">
+					<label for="vendor_name">Vendor Name:</label>
+					<select id="vendor_name" name="vendor_name" required>
+						<option value="">Select a vendor</option>
+						{% for vendor in vendors %}
+							<option value="{{ vendor.vendor_name }}" data-vendor-id="{{ vendor.vendor_id }}"
+									{% if vendor.vendor_name == asset.vendor_name %}selected{% endif %}>
+								{{ vendor.vendor_name }}
+							</option>
+						{% endfor %}
+						<option value="add_new_vendor" style="color: blue; font-weight: bold;">+ Add New Vendor</option>
+					</select>
+					<input type="hidden" id="vendor_id" name="vendor_id" value="{{ asset.vendor_id|default('') }}">
+					<p>Selected Vendor ID: <span id="vendor_id_display">{{ asset.vendor_id|default('None') }}</span></p>
+				</div>-->
+				
+				
+					<!--<div class="form-group">
+					<label for="vendor_name">Vendor Name:</label>
+					<select id="vendor_name" name="vendor_name" required>
+    <option value="">Select a vendor</option>
+    {% for vendor in vendors %}
+        <option value="{{ vendor.vendor_name }}" data-vendor-id="{{ vendor.vendor_id }}"
+                {% if vendor.vendor_name == asset.vendor_name %}selected{% endif %}>
+            {{ vendor.vendor_name }}
+        </option>
+    {% endfor %}
+    <option value="add_new_vendor" style="color: blue; font-weight: bold;">+ Add New Vendor</option>
+</select>
+					<input type="hidden" id="vendor_id" name="vendor_id" value="{{ asset.vendor_id|default('') }}">
+					<p>Selected Vendor ID: <span id="vendor_id_display">{{ asset.vendor_id|default('None') }}</span></p>
+				</div>-->
+				
+				<div class="form-group">
+    <label for="vendor_name">Vendor Name:</label>
+    <select id="vendor_name" name="vendor_name" required>
+        <option value="">Select a vendor</option>
+        {% for vendor in vendors %}
+            <option value="{{ vendor.vendor_name }}" data-vendor-id="{{ vendor.vendor_id }}"
+                    {% if vendor.vendor_name == asset.vendor_name %}selected{% endif %}>
+                {{ vendor.vendor_name }}
+            </option>
+        {% endfor %}
+        <option value="add_new_vendor" style="color: blue; font-weight: bold;">+ Add New Vendor</option>
+    </select>
+    <input type="hidden" id="vendor_id" name="vendor_id" value="{{ asset.vendor_id|default('') }}">
+    <p>Selected Vendor ID: <span id="vendor_id_display">{{ asset.vendor_id|default('None') }}</span></p>
+</div>
+				
+				
+				
 
                     <div class="form-group">
                         <label for="company_name">Company Name</label>
                         <select id="company_name" name="company_name" class="dropdown-with-add">
                             <option value="">--select an option--</option>
                             {% for company in companies %}
-                                <option value="{{ company }}" {% if company == asset.company_name %}selected{% endif %}>{{ company }}</option>
+                                <option value="{{ company }}" {% if company == asset.company_name %}selected{% endif %}>
+                                    {{ company }}
+                                </option>
                             {% endfor %}
                             <option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
                         </select>
@@ -128,7 +168,9 @@
                         <select id="asset_type" name="asset_type" class="dropdown-with-add">
                             <option value="">--select an option--</option>
                             {% for asset_type in asset_types %}
-                                <option value="{{ asset_type }}" {% if asset_type == asset.asset_type %}selected{% endif %}>{{ asset_type }}</option>
+                                <option value="{{ asset_type }}" {% if asset_type == asset.asset_type %}selected{% endif %}>
+                                    {{ asset_type }}
+                                </option>
                             {% endfor %}
                             <option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
                         </select>
@@ -136,17 +178,17 @@
 
                     <div class="form-group">
                         <label for="purchase_value">Product Cost:</label>
-                        <input type="number" id="purchase_value" name="purchase_value" value="{{ asset.purchase_value }}" required>
+                        <input type="number" id="purchase_value" name="purchase_value" value="{{ asset.purchase_value|default('') }}" required>
                     </div>
 
                     <div class="form-group">
                         <label for="purchase_date">Purchase Date:</label>
-                        <input type="date" id="purchase_date" name="purchase_date" value="{{ asset.purchase_date }}" required>
+                        <input type="date" id="purchase_date" name="purchase_date" value="{{ asset.purchase_date|default('') }}" required>
                     </div>
 
                     <div class="form-group">
                         <label for="product_age">Product Age:</label>
-                        <input type="text" id="product_age" name="product_age" value="{{ asset.product_age }}" readonly>
+                        <input type="text" id="product_age" name="product_age" value="{{ asset.product_age|default('') }}" readonly>
                     </div>
                 </div>
 
@@ -163,24 +205,24 @@
                     <div id="warranty_fields" style="display: {% if asset.warranty_exists == 'Yes' %}block{% else %}none{% endif %};">
                         <div class="form-group">
                             <label for="warranty_start">Warranty Start Date:</label>
-                            <input type="date" id="warranty_start" name="warranty_start" value="{{ asset.warranty_start }}">
+                            <input type="date" id="warranty_start" name="warranty_start" value="{{ asset.warranty_start|default('') }}">
                         </div>
 
                         <div class="form-group">
                             <label for="warranty_period">Warranty Period:</label>
                             <div class="period-container">
                                 <input type="number" id="warranty_period_years" name="warranty_period_years" 
-                                       value="{{ warranty_period_dict.years }}" placeholder="Years">
+                                       value="{{ warranty_period_dict.years|default('0') }}" placeholder="Years">
                                 <input type="number" id="warranty_period_months" name="warranty_period_months" 
-                                       value="{{ warranty_period_dict.months }}" placeholder="Months">
+                                       value="{{ warranty_period_dict.months|default('0') }}" placeholder="Months">
                                 <input type="number" id="warranty_period_days" name="warranty_period_days" 
-                                       value="{{ warranty_period_dict.days }}" placeholder="Days">
+                                       value="{{ warranty_period_dict.days|default('0') }}" placeholder="Days">
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label for="warranty_end">Warranty End Date:</label>
-                            <input type="date" id="warranty_end" name="warranty_end" value="{{ asset.warranty_end }}" readonly>
+                            <input type="date" id="warranty_end" name="warranty_end" value="{{ asset.warranty_end|default('') }}" readonly>
                         </div>
 
                         <div class="form-group">
@@ -207,18 +249,18 @@
                             <label for="extended_warranty_period">Extended Warranty Period:</label>
                             <div class="period-container">
                                 <input type="number" id="extended_warranty_period_years" name="extended_warranty_period_years" 
-                                       value="{{ extended_warranty_period_dict.years }}" placeholder="Years">
+                                       value="{{ extended_warranty_period_dict.years|default('0') }}" placeholder="Years">
                                 <input type="number" id="extended_warranty_period_months" name="extended_warranty_period_months" 
-                                       value="{{ extended_warranty_period_dict.months }}" placeholder="Months">
+                                       value="{{ extended_warranty_period_dict.months|default('0') }}" placeholder="Months">
                                 <input type="number" id="extended_warranty_period_days" name="extended_warranty_period_days" 
-                                       value="{{ extended_warranty_period_dict.days }}" placeholder="Days">
+                                       value="{{ extended_warranty_period_dict.days|default('0') }}" placeholder="Days">
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label for="extended_warranty_end">Extended Warranty End Date:</label>
                             <input type="date" id="extended_warranty_end" name="extended_warranty_end" 
-                                   value="{{ asset.extended_warranty_end }}" readonly>
+                                   value="{{ asset.extended_warranty_end|default('') }}" readonly>
                         </div>
                     </div>
                 </div>
@@ -244,7 +286,7 @@
 
                     <div class="form-group">
                         <label for="product_condition">Product Condition:</label>
-                        <input type="text" id="product_condition" name="product_condition" value="{{ asset.product_condition }}">
+                        <input type="text" id="product_condition" name="product_condition" value="{{ asset.product_condition|default('') }}">
                     </div>
 
                     <div class="form-group">
@@ -265,50 +307,49 @@
 
                     <div class="form-group">
                         <label for="remarks">Remarks:</label>
-                        <textarea id="remarks" name="remarks">{{ asset.remarks }}</textarea>
+                        <textarea id="remarks" name="remarks">{{ asset.remarks|default('') }}</textarea>
                     </div>
+<div class="form-group">
+    <label for="has_amc">AMC:</label>
+    <select id="has_amc" name="has_amc" onchange="toggleAMCFields()">
+        <option value="">--select an option--</option>
+        <option value="Yes" {% if asset.has_amc == 'Yes' %}selected{% endif %}>Yes</option>
+        <option value="No" {% if asset.has_amc == 'No' %}selected{% endif %}>No</option>
+    </select>
+</div>
 
-                    <div class="form-group">
-                        <label for="has_amc">AMC:</label>
-                        <select id="has_amc" name="has_amc" onchange="toggleAMCFields()">
-                            <option value="">--select an option--</option>
-                            <option value="Yes" {% if asset.has_amc %}selected{% endif %}>Yes</option>
-                            <option value="No" {% if not asset.has_amc %}selected{% endif %}>No</option>
-                        </select>
-                    </div>
-
-                    <div id="recurring-alert-section" style="display: {% if asset.has_amc %}block{% else %}none{% endif %};">
-                        <label for="recurring_alert_for_amc">Recurring Alert for AMC:</label>
-                        <div id="recurring-alert-container">
-                            {% if recurring_alert_list %}
-                                {% for key, value, unit in recurring_alert_list %}
-                                    <div class="recurring-alert-row">
-                                        <input type="text" name="recurring_alert_key[]" value="{{ key }}" placeholder="Event Type">
-                                        <input type="number" name="recurring_alert_value[]" value="{{ value }}" placeholder="Every X" min="1">
-                                        <select name="recurring_alert_unit[]">
-                                            <option value="Days" {% if unit == 'Days' %}selected{% endif %}>Days</option>
-                                            <option value="Weeks" {% if unit == 'Weeks' %}selected{% endif %}>Weeks</option>
-                                            <option value="Months" {% if unit == 'Months' %}selected{% endif %}>Months</option>
-                                            <option value="Years" {% if unit == 'Years' %}selected{% endif %}>Years</option>
-                                        </select>
-                                        <button type="button" class="add-field">+</button>
-                                    </div>
-                                {% endfor %}
-                            {% else %}
-                                <div class="recurring-alert-row">
-                                    <input type="text" name="recurring_alert_key[]" placeholder="Event Type">
-                                    <input type="number" name="recurring_alert_value[]" placeholder="Every X" min="1">
-                                    <select name="recurring_alert_unit[]">
-                                        <option value="Days">Days</option>
-                                        <option value="Weeks">Weeks</option>
-                                        <option value="Months">Months</option>
-                                        <option value="Years">Years</option>
-                                    </select>
-                                    <button type="button" class="add-field">+</button>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
+<div id="recurring-alert-section" style="display: {% if asset.has_amc == 'Yes' %}block{% else %}none{% endif %};">
+    <label for="recurring_alert_for_amc">Recurring Alert for AMC:</label>
+    <div id="recurring-alert-container">
+        {% if recurring_alert_list %}
+            {% for key, value, unit in recurring_alert_list %}
+                <div class="recurring-alert-row">
+                    <input type="text" name="recurring_alert_key[]" value="{{ key|default('') }}" placeholder="Event Type">
+                    <input type="number" name="recurring_alert_value[]" value="{{ value|default('') }}" placeholder="Every X" min="1">
+                    <select name="recurring_alert_unit[]">
+                        <option value="Days" {% if unit == 'Days' %}selected{% endif %}>Days</option>
+                        <option value="Weeks" {% if unit == 'Weeks' %}selected{% endif %}>Weeks</option>
+                        <option value="Months" {% if unit == 'Months' %}selected{% endif %}>Months</option>
+                        <option value="Years" {% if unit == 'Years' %}selected{% endif %}>Years</option>
+                    </select>
+                    <button type="button" class="add-field">+</button>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="recurring-alert-row">
+                <input type="text" name="recurring_alert_key[]" placeholder="Event Type">
+                <input type="number" name="recurring_alert_value[]" placeholder="Every X" min="1">
+                <select name="recurring_alert_unit[]">
+                    <option value="Days">Days</option>
+                    <option value="Weeks">Weeks</option>
+                    <option value="Months">Months</option>
+                    <option value="Years">Years</option>
+                </select>
+                <button type="button" class="add-field">+</button>
+            </div>
+        {% endif %}
+    </div>
+</div>
                 </div>
 
                 <div class="form-group">
