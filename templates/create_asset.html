@@ -4,347 +4,317 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IT Asset Form</title>
-	
-	<link rel="stylesheet" href="static/css/create_asset_style.css">
-
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/create_asset_style.css') }}">
 </head>
-
 <body>
-
-	<div class="header">
-		<h1>Asset Tracker</h1>
-		<div class="menu" onclick="headertoggleMenu()">☰</div>
-		<div class="menu-dropdown" id="menuDropdown"></div>
-	</div>
+    <div class="header">
+        <h1>Asset Tracker</h1>
+        <div class="menu" onclick="headertoggleMenu()">☰</div>
+        <div class="menu-dropdown" id="menuDropdown"></div>
+    </div>
    
-	<div class="main-content">
-	<div class="assets-header">
-		<h1>Create IT Asset</h1>
-	</div>
-	</div>
-	
-	
-	
-	<div class="form-container">
-
-		<form action="{{ url_for('create_asset') }}" method="post" enctype="multipart/form-data">
-		
-		
-		 {% with messages = get_flashed_messages(with_categories=true) %}
+    <div class="main-content">
+        <div class="assets-header">
+            <h1>Create IT Asset</h1>
+        </div>
+    </div>
+    
+    <div class="form-container">
+        <form id="assetForm" action="{{ url_for('create_asset') }}" method="post" enctype="multipart/form-data">
+            {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
                         <div class="flash-message {{ category }}">{{ message }}</div>
                     {% endfor %}
                 {% endif %}
             {% endwith %}
-			
-		
-		
-		<div class="form-container">
-		
-			<div class="form-column">
-			
-				<div id="modal" class="modal">
-					<div class="modal-content">
-						<span id="close_modal" class="close">&times;</span>
-						<h2>Add New Option</h2>
-						<input type="text" id="new_option_input" placeholder="Enter new option">
-						<button id="add_option_btn">Add</button> <!-- Separate Add Button -->
-					</div>
-				</div>
-						
-				
-				<!-- Asset Category Dropdown -->
-				<div class="form-group">
-					<label for="asset_category">Asset Category Type</label>
-					<select id="asset_category" name="asset_category" class="dropdown-with-add">
-						<option value="">--select an option--</option>
-						{% for category in asset_categories %}
-							<option value="{{ category }}">{{ category }}</option>
-						{% endfor %}
-						<option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
-					</select>
-				</div>
+            
+            <div class="form-container">
+                <div class="form-column">
+                    <div id="modal" class="modal">
+                        <div class="modal-content">
+                            <span id="close_modal" class="close">×</span>
+                            <h2>Add New Option</h2>
+                            <input type="text" id="new_option_input" placeholder="Enter new option">
+                            <button id="add_option_btn">Add</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="asset_category">Asset Category Type</label>
+                        <select id="asset_category" name="asset_category" class="dropdown-with-add">
+                            <option value="">--select an option--</option>
+                            {% for category in asset_categories %}
+                                <option value="{{ category }}"
+                                        {% if form_state.asset_category|first == category %}selected{% endif %}>
+                                    {{ category }}
+                                </option>
+                            {% endfor %}
+                            <option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
+                        </select>
+                    </div>
 
+                    <div class="form-group">
+                        <label for="serial_no">Serial No:</label>
+                        <input type="text" id="serial_no" name="serial_no" value="{{ form_state.serial_no|first|default('') }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="product_type">Product Type</label>
+                        <select id="product_type" name="product_type" class="dropdown-with-add">
+                            <option value="">--select an option--</option>
+                            {% for product in product_types %}
+                                <option value="{{ product }}"
+                                        {% if form_state.product_type|first == product %}selected{% endif %}>
+                                    {{ product }}
+                                </option>
+                            {% endfor %}
+                            <option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
+                        </select>
+                    </div>
 
-				<div class="form-group">
-					<label for="serial_no">Serial No:</label>
-					<input type="text" id="serial_no" name="serial_no" required>
-				</div>
-				
-				
-				<div class="form-group">
-					<label for="product_type">Product Type</label>
-					<select id="product_type" name="product_type" class="dropdown-with-add">
-						<option value="">--select an option--</option>
-						{% for product in product_types %}
-							<option value="{{ product }}">{{ product }}</option>
-						{% endfor %}
-						<option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
-					</select>
-				</div>
-				
+                    <div class="form-group">
+                        <label for="product_name">Product Name:</label>
+                        <input type="text" id="product_name" name="product_name" value="{{ form_state.product_name|first|default('') }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="make">Make:</label>
+                        <input type="text" id="make" name="make" value="{{ form_state.make|first|default('') }}" required>
+                    </div>
 
+                    <div class="form-group">
+                        <label for="model">Model:</label>
+                        <input type="text" id="model" name="model" value="{{ form_state.model|first|default('') }}" required>
+                    </div>
 
-				<div class="form-group">
-					<label for="product_name">Product Name:</label>
-					<input type="text" id="product_name" name="product_name" required>
-				</div>
-				
-				<div class="form-group">
-					<label for="make">Make:</label>
-					<input type="text" id="make" name="make" required>
-				</div>
+                    <div class="form-group">
+                        <label for="part_no">Part No:</label>
+                        <input type="text" id="part_no" name="part_no" value="{{ form_state.part_no|first|default('') }}" required>
+                    </div>    
+                </div>    
 
-				<div class="form-group">
-					<label for="model">Model:</label>
-					<input type="text" id="model" name="model" required>
-				</div>
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="description">Product Description:</label>
+                        <textarea id="description" name="description">{{ form_state.description|first|default('') }}</textarea>
+                    </div>
 
-				<div class="form-group">
-					<label for="part_no">Part No:</label>
-					<input type="text" id="part_no" name="part_no" required>
-				</div>	
-	
-			</div>	
+                    <div class="form-group">
+                        <label for="vendor_name">Vendor Name:</label>
+                        <select id="vendor_name" name="vendor_name" required>
+                            <option value="" selected>Select a vendor</option>
+                            {% for vendor in vendors %}
+                                <option value="{{ vendor.vendor_name }}" data-vendor-id="{{ vendor.vendor_id }}"
+                                        {% if form_state.vendor_name|first == vendor.vendor_name %}selected{% endif %}>
+                                    {{ vendor.vendor_name }}
+                                </option>
+                            {% endfor %}
+                            <option value="add_new_vendor" style="color: blue; font-weight: bold;">+ Add New Vendor</option>
+                        </select><br>
+                        <input type="hidden" id="vendor_id" name="vendor_id" value="{{ form_state.vendor_id|first|default('') }}">
+                        <p>Selected Vendor ID: <span id="vendor_id_display">{{ form_state.vendor_id|first|default('None') }}</span></p>
+                    </div>
 
-			<div class="form-column">
-	
-				<div class="form-group">
-					<label for="description">Product Description:</label>
-					<textarea id="description" name="description"></textarea>
-				</div>
-				
+                    <div class="form-group">
+                        <label for="company_name">Company Name</label>
+                        <select id="company_name" name="company_name" class="dropdown-with-add">
+                            <option value="">--select an option--</option>
+                            {% for company in companies %}
+                                <option value="{{ company }}"
+                                        {% if form_state.company_name|first == company %}selected{% endif %}>
+                                    {{ company }}
+                                </option>
+                            {% endfor %}
+                            <option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
+                        </select>
+                    </div>
 
-			
-			
-			
-<div class="form-group">
-    <label for="vendor_name">Vendor Name:</label>
-    <select id="vendor_name" name="vendor_name" required>
-	<option value="" selected>Select a vendor</option> 
+                    <div class="form-group">
+                        <label for="asset_type">Asset Type</label>
+                        <select id="asset_type" name="asset_type" class="dropdown-with-add">
+                            <option value="">--select an option--</option>
+                            {% for asset_type in asset_types %}
+                                <option value="{{ asset_type }}"
+                                        {% if form_state.asset_type|first == asset_type %}selected{% endif %}>
+                                    {{ asset_type }}
+                                </option>
+                            {% endfor %}
+                            <option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="purchase_value">Product Cost:</label>
+                        <input type="number" id="purchase_value" name="purchase_value" value="{{ form_state.purchase_value|first|default('') }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="purchase_date">Purchase Date:</label>
+                        <input type="date" id="purchase_date" name="purchase_date" value="{{ form_state.purchase_date|first|default('') }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="product_age">Product Age:</label>
+                        <input type="text" id="product_age" name="product_age" value="{{ form_state.product_age|first|default('') }}" readonly>
+                    </div>
+                </div>    
+
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="warranty_exists">Warranty Exists:</label>
+                        <select id="warranty_exists" name="warranty_exists" onchange="toggleWarrantyFields()">
+                            <option value="">--select an option--</option>
+                            <option value="Yes" {% if form_state.warranty_exists|first == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if form_state.warranty_exists|first == 'No' %}selected{% endif %}>No</option>
+                        </select>
+                    </div>
+
+                    <div id="warranty_fields" style="display: {% if form_state.warranty_exists|first == 'Yes' %}block{% else %}none{% endif %};">
+                        <div class="form-group">
+                            <label for="warranty_start">Warranty Start Date:</label>
+                            <input type="date" id="warranty_start" name="warranty_start" value="{{ form_state.warranty_start|first|default('') }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="warranty_period">Warranty Period:</label>
+                            <div class="period-container">
+                                <input type="number" id="warranty_period_years" name="warranty_period_years" placeholder="Years" value="{{ form_state['warranty_period_years']|first|default('') }}">
+                                <input type="number" id="warranty_period_months" name="warranty_period_months" placeholder="Months" value="{{ form_state['warranty_period_months']|first|default('') }}">
+                                <input type="number" id="warranty_period_days" name="warranty_period_days" placeholder="Days" value="{{ form_state['warranty_period_days']|first|default('') }}">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="warranty_end">Warranty End Date:</label>
+                            <input type="date" id="warranty_end" name="warranty_end" value="{{ form_state.warranty_end|first|default('') }}" readonly>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="warranty_checked">Warranty Checked:</label>
+                            <select id="warranty_checked" name="warranty_checked">
+                                <option value="">--select an option--</option>
+                                <option value="Yes" {% if form_state.warranty_checked|first == 'Yes' %}selected{% endif %}>Yes</option>
+                                <option value="No" {% if form_state.warranty_checked|first == 'No' %}selected{% endif %}>No</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="extended_warranty_exists">Extended Warranty:</label>
+                            <select id="extended_warranty_exists" name="extended_warranty_exists" onchange="toggleExtendedWarrantyFields()">
+                                <option value="">--select an option--</option>
+                                <option value="Yes" {% if form_state.extended_warranty_exists|first == 'Yes' %}selected{% endif %}>Yes</option>
+                                <option value="No" {% if form_state.extended_warranty_exists|first == 'No' %}selected{% endif %}>No</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="extended_warranty_fields" style="display: {% if form_state.extended_warranty_exists|first == 'Yes' %}block{% else %}none{% endif %};">
+                        <div class="form-group">
+                            <label for="extended_warranty_period">Extended Warranty Period:</label>
+                            <div class="period-container">
+                                <input type="number" id="extended_warranty_period_years" name="extended_warranty_period_years" placeholder="Years" value="{{ form_state['extended_warranty_period_years']|first|default('') }}">
+                                <input type="number" id="extended_warranty_period_months" name="extended_warranty_period_months" placeholder="Months" value="{{ form_state['extended_warranty_period_months']|first|default('') }}">
+                                <input type="number" id="extended_warranty_period_days" name="extended_warranty_period_days" placeholder="Days" value="{{ form_state['extended_warranty_period_days']|first|default('') }}">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="extended_warranty_end">Extended Warranty End Date:</label>
+                            <input type="date" id="extended_warranty_end" name="extended_warranty_end" value="{{ form_state.extended_warranty_end|first|default('') }}" readonly>
+                        </div>
+                    </div>
+                </div>
         
-        {% for vendor_list in vendors %}  
-            {% for vendor in vendor_list %}  
-                <option value="{{ vendor.vendor_name }}" data-vendor-id="{{ vendor.vendor_id }}">
-                    {{ vendor.vendor_name }}
-                </option>
-            {% endfor %}
-        {% endfor %}
-        <option value="add_new_vendor" style="color: blue; font-weight: bold;">+ Add New Vendor</option>
-    </select><br>
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="insurance">Insurance:</label>
+                        <select id="insurance" name="insurance">
+                            <option value="">--select an option--</option>
+                            <option value="Yes" {% if form_state.insurance|first == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if form_state.insurance|first == 'No' %}selected{% endif %}>No</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="adp_production">ADP Production:</label>
+                        <select id="adp_production" name="adp_production">
+                            <option value="">--select an option--</option>
+                            <option value="Yes" {% if form_state.adp_production|first == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if form_state.adp_production|first == 'No' %}selected{% endif %}>No</option>
+                        </select>
+                    </div>
 
-    <!-- Hidden input to store vendor_id -->
-    <input type="hidden" id="vendor_id" name="vendor_id">
+                    <div class="form-group">
+                        <label for="product_condition">Product Condition:</label>
+                        <input type="text" id="product_condition" name="product_condition" value="{{ form_state.product_condition|first|default('') }}">
+                    </div>
 
-    <!-- This span will display the selected Vendor ID -->
-    <p>Selected Vendor ID: <span id="vendor_id_display">None</span></p>
-</div>
+                    <div class="form-group">
+                        <label for="asset_image">Asset Images:</label>
+                        <input type="file" id="asset_image" name="asset_image[]" multiple>
+                    </div>
 
+                    <div class="form-group">
+                        <label for="purchase_bill">Purchase Bill:</label>
+                        <input type="file" id="purchase_bill" name="purchase_bill[]" multiple>
+                    </div>
 
-			<!-- Asset Category Dropdown -->
-				<div class="form-group">
-					<label for="company_name">Company Name</label>
-					<select id="company_name" name="company_name" class="dropdown-with-add">
-						<option value="">--select an option--</option>
-						{% for company in companies %}
-							<option value="{{ company }}">{{ company }}</option>
-						{% endfor %}
-						<option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
-					</select>
-				</div>
-				
+                    <div class="form-group">
+                        <label for="remarks">Remarks:</label>
+                        <textarea id="remarks" name="remarks">{{ form_state.remarks|first|default('') }}</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="has_amc">AMC:</label>
+                        <select id="has_amc" name="has_amc" onchange="toggleAMCFields()">
+                            <option value="">--select an option--</option>
+                            <option value="Yes" {% if form_state.has_amc|first == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if form_state.has_amc|first == 'No' %}selected{% endif %}>No</option>
+                        </select>
+                    </div>
+                            
+                    <div id="recurring-alert-section" style="display: {% if form_state.has_amc|first == 'Yes' %}block{% else %}none{% endif %};">
+                        <label for="recurring_alert_for_amc">Recurring Alert for AMC:</label>
+                        <div id="recurring-alert-container">
+                            {% if form_state['recurring_alert_key[]'] %}
+                                {% for key, value, unit in zip(form_state['recurring_alert_key[]'], form_state['recurring_alert_value[]'], form_state['recurring_alert_unit[]']) %}
+                                    <div class="recurring-alert-row">
+                                        <input type="text" name="recurring_alert_key[]" value="{{ key|default('') }}" placeholder="Event Type">
+                                        <input type="number" name="recurring_alert_value[]" value="{{ value|default('') }}" placeholder="Every X" min="1">
+                                        <select name="recurring_alert_unit[]">
+                                            <option value="Days" {% if unit == 'Days' %}selected{% endif %}>Days</option>
+                                            <option value="Weeks" {% if unit == 'Weeks' %}selected{% endif %}>Weeks</option>
+                                            <option value="Months" {% if unit == 'Months' %}selected{% endif %}>Months</option>
+                                            <option value="Years" {% if unit == 'Years' %}selected{% endif %}>Years</option>
+                                        </select>
+                                        <button type="button" class="add-field">+</button>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="recurring-alert-row">
+                                    <input type="text" name="recurring_alert_key[]" placeholder="Event Type">
+                                    <input type="number" name="recurring_alert_value[]" placeholder="Every X" min="1">
+                                    <select name="recurring_alert_unit[]">
+                                        <option value="Days">Days</option>
+                                        <option value="Weeks">Weeks</option>
+                                        <option value="Months">Months</option>
+                                        <option value="Years">Years</option>
+                                    </select>
+                                    <button type="button" class="add-field">+</button>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
 
-				
-				
-				<div class="form-group">
-					<label for="asset_type">Asset Type</label>
-					<select id="asset_type" name="asset_type" class="dropdown-with-add">
-						<option value="">--select an option--</option>
-						{% for asset_type in asset_types %}
-							<option value="{{ asset_type }}">{{ asset_type }}</option>
-						{% endfor %}
-						<option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
-					</select>
-				</div>
-				
-				
-				
+                <div class="form-group">
+                    <input type="submit" value="Submit">
+                </div>
+            </div>
+        </form>
+    </div>
 
-				<div class="form-group">
-					<label for="purchase_value">Product Cost:</label>
-					<input type="number" id="purchase_value" name="purchase_value" required>
-				</div>
-
-				<div class="form-group">
-					<label for="purchase_date">Purchase Date:</label>
-					<input type="date" id="purchase_date" name="purchase_date" required>
-				</div>
-
-				<div class="form-group">
-					<label for="product_age">Product Age:</label>
-					<input type="text" id="product_age" name="product_age" readonly>
-				</div>
-			
-			</div>	
-
-			<div class="form-column">
-
-					<div class="form-group">
-						<label for="warranty_exists">Warranty Exists:</label>
-						<select id="warranty_exists" name="warranty_exists" onchange="toggleWarrantyFields()">
-							<option value="">--select an option--</option>
-							<option value="Yes">Yes</option>
-							<option value="No">No</option>
-						</select>
-					</div>
-
-					<div id="warranty_fields" style="display: none;">
-						<div class="form-group">
-							<label for="warranty_start">Warranty Start Date:</label>
-							<input type="date" id="warranty_start" name="warranty_start">
-						</div>
-
-						<div class="form-group">
-							<label for="warranty_period">Warranty Period:</label>
-							<div class="period-container">
-								<input type="number" id="warranty_period_years" name="warranty_period_years" placeholder="Years">
-								<input type="number" id="warranty_period_months" name="warranty_period_months" placeholder="Months">
-								<input type="number" id="warranty_period_days" name="warranty_period_days" placeholder="Days">
-							</div>
-						</div>
-
-							<div class="form-group">
-								<label for="warranty_end">Warranty End Date:</label>
-								<input type="date" id="warranty_end" name="warranty_end" readonly>
-							</div>
-							
-							
-							<div class="form-group">
-								<label for="warranty_checked">Warranty Checked:</label>
-								<select id="warranty_checked" name="warranty_checked">
-									<option value="">--select an option--</option>
-									<option value="Yes">Yes</option>
-									<option value="No">No</option>
-								</select>
-							</div>
-
-
-
-							<div class="form-group">
-								<label for="extended_warranty_exists">Extended Warranty :</label>
-								<select id="extended_warranty_exists" name="extended_warranty_exists" onchange="toggleExtendedWarrantyFields()">
-									<option value="">--select an option--</option>
-									<option value="Yes">Yes</option>
-									<option value="No">No</option>
-								</select>
-							</div>
-			
-						</div>
-			
-			
-						<div id="extended_warranty_fields" style="display: none;">
-							<div class="form-group">
-								<label for="extended_warranty_period">Extended Warranty Period:</label>
-								<div class="period-container">
-									<input type="number" id="extended_warranty_period_years" name="extended_warranty_period_years" placeholder="Years">
-									<input type="number" id="extended_warranty_period_months" name="extended_warranty_period_months" placeholder="Months">
-									<input type="number" id="extended_warranty_period_days" name="extended_warranty_period_days" placeholder="Days">
-								</div>
-							</div>
-							
-							<div class="form-group">
-								<label for="extended_warranty_end">Extended Warranty End Date:</label>
-								<input type="date" id="extended_warranty_end" name="extended_warranty_end" readonly>
-							</div>
-							
-						</div>
-			</div>
-		
-			<div class="form-column">
-
-				
-				<div class="form-group">
-					<label for="insurance">Insurance:</label>
-					<select id="insurance" name="insurance">
-						<option value="">--select an option--</option>
-						<option value="Yes">Yes</option>
-						<option value="No">No</option>
-					</select>
-				</div>
-				
-		        <div class="form-group">
-					<label for="adp_production">ADP Production:</label>
-					<select id="adp_production" name="adp_production">
-						<option value="">--select an option--</option>
-						<option value="Yes">Yes</option>
-						<option value="No">No</option>
-					</select>
-				</div>
-				
-				
-
-				<div class="form-group">
-					<label for="product_condition">Product Condition:</label>
-					<input type="text" id="product_condition" name="product_condition">
-				</div>
-
-				<div class="form-group">
-					<label for="asset_image">Asset Images:</label>
-					<input type="file" id="asset_image" name="asset_image[]" multiple>
-				</div>
-
-				<div class="form-group">
-					<label for="purchase_bill">Purchase Bill:</label>
-					<input type="file" id="purchase_bill" name="purchase_bill[]" multiple>
-				</div>
-
-				<div class="form-group">
-					<label for="remarks">Remarks:</label>
-					<textarea id="remarks" name="remarks"></textarea>
-				</div>
-				
-				
-				<div class="form-group">
-					<label for="has_amc">AMC:</label>
-					<select id="has_amc" name="has_amc" onchange="toggleAMCFields()">
-						<option value="">--select an option--</option>
-						<option value="Yes">Yes</option>
-						<option value="No">No</option>
-					</select>
-				</div>
-						
-				<!-- Recurring Alert for AMC (Initially Hidden) -->
-				<div id="recurring-alert-section" style="display: none;">
-					<label for="recurring_alert_for_amc">Recurring Alert for AMC:</label>
-					<div id="recurring-alert-container">
-						<div class="recurring-alert-row">
-							<input type="text" name="recurring_alert_key[]" placeholder="Event Type">
-							<input type="number" name="recurring_alert_value[]" placeholder="Every X" min="1">
-							<select name="recurring_alert_unit[]">
-								<option value="Days">Days</option>
-								<option value="Weeks">Weeks</option>
-								<option value="Months">Months</option>
-								<option value="Years">Years</option>
-							</select>
-							<button type="button" class="add-field">+</button>
-						</div>
-					</div>
-				</div>
-
-		    </div>
-
-			<div class="form-group">
-				<input type="submit" value="Submit">
-			</div>
-    </form>
-
-<script>
-    const createVendorUrl = "{{ url_for('create_vendor') }}";  // Jinja processes this here
-</script>
-
-<script src="static/js/create_asset.js"></script>
-
-
+    <script src="{{ url_for('static', filename='js/create_asset.js') }}"></script>
 </body>
 </html>

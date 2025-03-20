@@ -31,35 +31,42 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     // Handle form submission
-    const form = document.querySelector("form");
-    form.addEventListener("submit", function(event) {
-        // Prevent default submission briefly to handle redirection
-        event.preventDefault();
+   const form = document.querySelector("form");
+    if (form) {
+        form.addEventListener("submit", function(event) {
+            event.preventDefault();
 
-        // Save form data (optional, if you want to persist vendor form state too)
-        const formData = {};
-        document.querySelectorAll("input, textarea").forEach(field => {
-            if (field.name) {
-                formData[field.name] = field.value;
-            }
-        });
-        localStorage.setItem("vendorFormState", JSON.stringify(formData)); // Optional
+            // Save form data to localStorage (optional)
+            const formData = {};
+            document.querySelectorAll("input, textarea").forEach(field => {
+                if (field.name) {
+                    formData[field.name] = field.value;
+                }
+            });
+            localStorage.setItem("vendorFormState", JSON.stringify(formData));
 
-        // Submit the form programmatically
-        fetch(form.action, {
-            method: form.method,
-            body: new FormData(form),
-        })
-        .then(response => {
-            if (response.ok) {
-                // Redirect back to create_asset after successful submission
-                window.location.href = '/create_asset';
-            } else {
-                console.error("Form submission failed");
-            }
-        })
-        .catch(error => {
-            console.error("Error submitting form:", error);
+            // Submit form via fetch with session cookies
+            fetch(form.action, {
+                method: form.method,
+                body: new FormData(form),
+                credentials: 'include'  // Include session cookies
+            })
+            .then(response => {
+                if (response.redirected) {
+                    // Follow Flask's redirect
+                    window.location.href = response.url;
+                } else if (response.ok) {
+                    // If no redirect but success, manually go to create_asset
+                    window.location.href = '/create_asset';
+                } else {
+                    return response.text().then(text => {
+                        throw new Error(`Form submission failed: ${text}`);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("Error submitting form:", error);
+            });
         });
-    });
+    }
 });

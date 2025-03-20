@@ -20,13 +20,24 @@ from werkzeug.datastructures import ImmutableMultiDict
 import json
 from datetime import date
 import ast
-
-
+from jinja2 import Environment
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Replace with a strong secret key
-app.config['SESSION_PERMANENT'] = True
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)  # Set session timeout
+app.config['SECRET_KEY'] = 'your_secret_key'  # Replace with a secure key
+app.config['UPLOAD_FOLDER'] = 'static/uploads/'
+app.config['SESSION_TYPE'] = 'filesystem'  # Optional: Use filesystem for session storage
+app.config['SESSION_PERMANENT'] = False  # Session lasts only for the browser session
+app.config['SESSION_USE_SIGNER'] = True  # Sign session cookies for security
+
+# Optional: If using filesystem session storage
+from flask_session import Session
+Session(app)
+
+# Customize Jinja2 environment to include zip
+def jinja2_zip(*args):
+    return zip(*args)
+
+app.jinja_env.globals['zip'] = jinja2_zip
 
 
 # db_config = {
@@ -441,12 +452,23 @@ def create_asset():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    product_types, companies, asset_categories, asset_types =  display_drop_down('Create_Asset').values()
-    vendors = display_drop_down('Create_Vendor').values()
-
+    dropdown_data = display_drop_down('Create_Asset')
+    product_types, companies, asset_categories, asset_types = dropdown_data.values()
+    vendors_data = display_drop_down('Create_Vendor')
+    vendors = vendors_data['vendors']
 
     cursor.close()
     conn.close()
+
+    # Only use form_state if redirected from save_form_state or create_vendor
+    if request.referrer and ('save_form_state' in request.referrer or 'create_vendor' in request.referrer):
+        form_state = session.get('form_state', {})
+    else:
+        form_state = {}
+        if 'form_state' in session:
+            session.pop('form_state')  # Clear session on fresh load
+
+    print('\n\n Form State in create_asset:', form_state)  # Debug output
 
     if request.method == 'POST':
         try:
@@ -458,8 +480,8 @@ def create_asset():
             cursor = conn.cursor()
             
             created_by = 't1'
-            created_at = datetime.now().strftime('%Y-%m-%d %H-%M-%S')
-            asset_id = generate_unique_id('IT') 
+            created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            asset_id = generate_unique_id('IT')
             product_type = request.form['product_type']
             product_name = request.form['product_name']
             serial_no = request.form['serial_no']
@@ -468,10 +490,15 @@ def create_asset():
             part_no = request.form['part_no']
             purchase_date = request.form['purchase_date']
             vendor_name = request.form['vendor_name']
-            vendor_id = 123
+            vendor_id = request.form.get('vendor_id')  # Get from hidden input, not hardcoded
             company_name = request.form['company_name']
             asset_type = request.form['asset_type']
             purchase_value = request.form['purchase_value']
+
+            # Validate vendor_id
+            if not vendor_id:
+                flash("Vendor ID is required!", "danger")
+                return redirect(url_for('create_asset'))
 
             asset_folder = os.path.join(app.config['UPLOAD_FOLDER'], asset_id)
             asset_images_folder = os.path.join(asset_folder, 'Asset_Images')
@@ -502,23 +529,20 @@ def create_asset():
                         file.save(filepath)
                         purchase_bills.append(filename)
 
-            # Convert file paths to comma-separated strings
             asset_images_str = ','.join(asset_images)
             purchase_bills_str = ','.join(purchase_bills)
 
             warranty_checked = request.form.get('warranty_checked', 'No')
             warranty_exists = request.form.get('warranty_exists', 'No')
-            warranty_start = request.form['warranty_start']
+            warranty_start = request.form.get('warranty_start') or None
 
-            # Get warranty period values from form
             warranty_period_dict = {
                 "years": int(request.form.get("warranty_period_years", 0) or 0),
                 "months": int(request.form.get("warranty_period_months", 0) or 0),
                 "days": int(request.form.get("warranty_period_days", 0) or 0),
             }
-
             warranty_period = json.dumps(warranty_period_dict)
-            warranty_end = request.form['warranty_end']
+            warranty_end = request.form.get('warranty_end') or None
 
             extended_warranty_exists = request.form.get('extended_warranty_exists', 'No')
             extended_warranty_period_dict = {
@@ -526,24 +550,21 @@ def create_asset():
                 "months": int(request.form.get("extended_warranty_period_months", 0) or 0),
                 "days": int(request.form.get("extended_warranty_period_days", 0) or 0),
             }
-
             extended_warranty_period = json.dumps(extended_warranty_period_dict)
-            # extended_warranty_period = f"{request.form.get('extended_warranty_period_years', '0')} years {request.form.get('extended_warranty_period_months', '0')} months {request.form.get('extended_warranty_period_days', '0')} days"
-            extended_warranty_end = request.form['extended_warranty_end']
+            extended_warranty_end = request.form.get('extended_warranty_end') or None
             
-            adp_production = request.form['adp_production']
-            insurance = request.form['insurance']
-            description = request.form['description']
-            remarks = request.form['remarks']
-            product_age = request.form['product_age']
-            product_condition = request.form['product_condition']
+            adp_production = request.form.get('adp_production')
+            insurance = request.form.get('insurance')
+            description = request.form.get('description')
+            remarks = request.form.get('remarks')
+            product_age = request.form.get('product_age')
+            product_condition = request.form.get('product_condition')
             asset_category = request.form['asset_category']
             
             archieved = request.form.get('archieved', 'No')
             has_user_details = request.form.get('has_user_details', 'No') == 'Yes'
             has_amc = request.form.get('has_amc', 'No') == 'Yes'
             
-            # Handling recurring alert
             recurring_alert_keys = request.form.getlist('recurring_alert_key[]')
             recurring_alert_values = request.form.getlist('recurring_alert_value[]')
             recurring_alert_units = request.form.getlist('recurring_alert_unit[]')
@@ -557,7 +578,7 @@ def create_asset():
                     extended_warranty_exists, extended_warranty_period, extended_warranty_end,
                     adp_production, insurance, description, remarks, product_age, product_condition,
                     asset_category, archieved, has_user_details, has_amc, recurring_alert_for_amc, image_path, purchase_bill_path
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
 
             values = (
@@ -570,28 +591,32 @@ def create_asset():
                 asset_images_str, purchase_bills_str
             )
 
-
             cursor.execute(query, values)
             conn.commit()
 
             cursor.close()
             conn.close()
 
-            flash("Asset successfully created!", "create_asset")
+            if 'form_state' in session:
+                session.pop('form_state')
+
+            flash("Asset successfully created!", "success")
+            return redirect(url_for('create_asset'))
 
         except Exception as e:
             flash(f'Error: {str(e)}', 'danger')
-
-        # return redirect(url_for('create_asset'))
-    
-
+            cursor.close()
+            conn.close()
+            return redirect(url_for('create_asset'))
 
     return render_template('create_asset.html', 
                            product_types=product_types, 
                            companies=companies,
                            asset_categories=asset_categories,
                            asset_types=asset_types,
-                           vendors=vendors)
+                           vendors=vendors,
+                           form_state=form_state)
+
 
 
 @app.route('/edit_asset/<asset_id>', methods=['GET', 'POST'])
@@ -815,20 +840,17 @@ def delete(id):
         return jsonify({"error": "Invalid table name"}), 400
 
 
-# Route to show the vendor creation form
 @app.route('/create_vendor', methods=['GET', 'POST'])
 def create_vendor():
-
+    print('Form State in create_vendor:', session.get('form_state', {}))  # Debug
     if request.method == 'POST':
-
-        vendor_id = generate_unique_id('VD') 
-        
+        vendor_id = generate_unique_id('VD')
         vendor_name = request.form.get('vendor_name')
         address = request.form.get('address')
         phone_number = request.form.get('phone_number')
         email = request.form.get('email')
         remarks = request.form.get('remarks')
-        created_by = "admin"  # Change this based on logged-in user
+        created_by = "admin"
         modified_by = created_by
 
         try:
@@ -843,13 +865,22 @@ def create_vendor():
             cursor.close()
             conn.close()
             flash("Vendor added successfully!", "success")
-            return redirect(url_for('create_vendor'))
+            print('\n\n Form State before redirect:', session.get('form_state', {}))  # Debug
+            return redirect(url_for('create_asset'))
         except mysql.connector.Error as err:
             flash(f"Error: {err}", "danger")
-
-
+            return render_template('create_vendor.html')
 
     return render_template('create_vendor.html')
+
+@app.route('/save_form_state', methods=['POST'])
+def save_form_state():
+    form_data = request.form.to_dict(flat=False)
+    print('\n\n Form Data:', form_data)
+    session['form_state'] = form_data
+    print('\n\n Session after setting:', session.get('form_state'))  # Debug
+    return redirect(url_for('create_vendor'))
+
 
 if __name__ == '__main__':
     
