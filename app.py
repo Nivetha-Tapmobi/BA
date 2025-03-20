@@ -371,8 +371,8 @@ def generate_unique_id( prefix):
 # Email configuration (adjust as per your SMTP settings)
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
-SMTP_USER = "nivetha@tapmobi.in"
-SMTP_PASSWORD = "Tapmobi@07"
+SMTP_USER = ""
+SMTP_PASSWORD = ""
 
 def send_email(to_email, username, asset_id, table_name, action):
     # Determine the subject and body content based on table_name
