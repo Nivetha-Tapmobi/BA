@@ -164,6 +164,7 @@
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
     <script src="{{ url_for('static', filename='js/view_assets_details_popup.js') }}"></script>
     <script src="{{ url_for('static', filename='js/view_assets_print.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/view_assets.js') }}"></script>
 </head>
 <body>
     <div class="header">
@@ -228,7 +229,7 @@
                         <div class="action-menu" id="action-menu-{{ asset.asset_id }}">
                             <button class="view-btn" onclick='viewDetails({{ asset|tojson|safe }})'>View Details</button>
                             <button class="edit-btn" onclick="editAsset('{{ asset.asset_id }}')">Edit</button>
-                            <!--<button class="delete-btn" onclick="deleteAsset('{{ asset.asset_id }}')">Delete</button>-->
+							<button class="adduser-btn" onclick="addUser('{{ asset.asset_id }}')">Add User</button>
 							<button class="delete-btn" data-table="it_assets" onclick="deleteAsset('{{ asset.asset_id }}', this)">Delete</button>
 
                         </div>
@@ -312,36 +313,36 @@
             }
         });
 
-        function editAsset(assetId) {
-            // Add your edit logic here, e.g., redirect to edit page
-            window.location.href = `/edit_asset/${assetId}`;
-        }
 
+function editAsset(assetId) {
+	// Add your edit logic here, e.g., redirect to edit page
+	window.location.href = `/edit_asset/${assetId}`;
+}
 
 		
-		function deleteAsset(assetId, button) {
-		const tableName = button.getAttribute('data-table'); // Get table name from HTML attribute
+function deleteAsset(assetId, button) {
+const tableName = button.getAttribute('data-table'); // Get table name from HTML attribute
 
-		if (confirm('Are you sure you want to delete this asset?')) {
-			fetch(`/delete_asset/${assetId}`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ table: tableName }) // Send table name in request body
-			})
-			.then(response => response.json())
-			.then(data => {
-				if (data.message) {
-					alert(data.message);
-					location.reload(); // Refresh the page or update the UI
-				} else {
-					alert('Error: ' + data.error);
-				}
-			})
-			.catch(error => console.error('Error:', error));
+if (confirm('Are you sure you want to delete this asset?')) {
+	fetch(`/delete_asset/${assetId}`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ table: tableName }) // Send table name in request body
+	})
+	.then(response => response.json())
+	.then(data => {
+		if (data.message) {
+			alert(data.message);
+			location.reload(); // Refresh the page or update the UI
+		} else {
+			alert('Error: ' + data.error);
 		}
-	}
+	})
+	.catch(error => console.error('Error:', error));
+}
+}
 
     </script>
 </body>

@@ -106,15 +106,7 @@
         button:hover {
             background-color: #0056b3;
         }
-		
-		
-		
-		
-		
-		
-		
-		
-		
+	
 		
 body {
     font-family: 'Roboto', sans-serif;
@@ -216,38 +208,15 @@ body {
         }
 
 		
-		
-		
-		
-		
-		
-		
-		
     </style>
 </head>
 <body>
 
 
-		<input type="hidden" name="source" value="{{ source }}">
-
-		    <div class="header">
+	<div class="header">
         <h1>IT Asset Tracker</h1>
         <div class="menu" onclick="headertoggleMenu()">☰</div>
         <div class="menu-dropdown" id="menuDropdown">
-		
-		   <a href="{{ url_for('it_dashboard', source=source) }}">Dashboard</a>
-           
-            <a href="{{ url_for('it_assets_index', source=source) }}">Manage IT Assets</a>
-			{% if 'view_service_details' in permissions %}
-			<a href="{{ url_for('service_details_index', source=source)}}">View Service Details</a>
-			{% endif %} 
-            
-            
-            
-            {% if 'raise_ticket' in permissions %}
-			<a href="{{ url_for('raised_ticket_details_index', source=source)}}">Raised Tickets</a>
-            {% endif %}
-
 			
         </div>
     </div>

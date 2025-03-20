@@ -48,13 +48,22 @@ app.jinja_env.globals['zip'] = jinja2_zip
 #      'port': 3306  # Added port explicitly
 # }
 
+# db_config = {
+#     'user': 'nivetha',
+#     'password': 'Nivetha@07',
+#     'host': '127.0.0.1',
+#     'port': 3306,
+#     'database': 'asset_management'
+# }
+
 db_config = {
     'user': 'nivetha',
     'password': 'Nivetha@07',
     'host': '127.0.0.1',
     'port': 3306,
-    'database': 'asset_management'
+    'database': 't1'
 }
+
 
 UPLOAD_FOLDER = os.path.join('static', 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -152,8 +161,8 @@ def create_tables():
                     created_at DATETIME,
                     assignment_code VARCHAR(255) UNIQUE NOT NULL,
                     asset_id VARCHAR(255) NOT NULL,
-                    product_id VARCHAR(255) NOT NULL,
                     assigned_user VARCHAR(255) NOT NULL,
+                    employee_code VARCHAR(255) NOT NULL,
                     email VARCHAR(255) NOT NULL,
                     effective_date DATE,
 			        end_date DATE,
@@ -163,7 +172,6 @@ def create_tables():
                     confirmation_status VARCHAR(255),
                     token VARCHAR(255),
                     token_expiration DATETIME,
-                    asset_category VARCHAR(255) NOT NULL ,
                     archieved VARCHAR(255) 
                 )
             """)
@@ -359,6 +367,45 @@ def generate_unique_id( prefix):
     
     return new_id
 
+
+# Email configuration (adjust as per your SMTP settings)
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+SMTP_USER = "nivetha@tapmobi.in"
+SMTP_PASSWORD = "Tapmobi@07"
+
+def send_email(to_email, username, asset_id, table_name, action):
+    # Determine the subject and body content based on table_name
+    if 'add_user' in table_name.lower():
+        subject = f"New Asset Assignment Notification - {action}"
+        body_content = f"Your asset has been assigned to you"
+    elif 'edit_user' in table_name.lower():
+        subject = f"Asset Assignment Update Notification - {action}"
+        body_content = f"Your asset assignment has been updated"
+
+    body = f"""
+    Dear {username},
+
+    {body_content}:
+    Asset ID: {asset_id}
+    Date: {request.form['effective_date']}
+
+    Remarks: {request.form.get('remarks', 'None')}
+
+    Regards,
+    Asset Management Team
+    """
+    msg = MIMEText(body)
+    msg['Subject'] = subject
+    msg['From'] = SMTP_USER
+    msg['To'] = to_email
+
+    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+        server.starttls()
+        server.login(SMTP_USER, SMTP_PASSWORD)
+        server.send_message(msg)
+
+
 @app.route('/')
 def home():
     return redirect(url_for('view_assets')) 
@@ -389,7 +436,7 @@ def add_new_option():
                 
                 conn = get_db_connection()
                 cursor = conn.cursor()
-                cursor.execute(f"INSERT INTO drop_down_attributes ({column_name}) VALUES (%s)", (new_option,))
+                cursor.execute(f"INSERT INTO dropdown_attributes ({column_name}) VALUES (%s)", (new_option,))
                 conn.commit()
                 cursor.close()
                 return jsonify({'message': f'New {option_type} added successfully'}), 200
@@ -405,7 +452,7 @@ def display_drop_down(page):
     if page == 'Create_Asset':
         cursor.execute("""
             SELECT DISTINCT product_type, company_name, asset_category, asset_type 
-            FROM drop_down_attributes
+            FROM dropdown_attributes
         """)
 
         product_types, companies, asset_categories, asset_types = set(), set(), set(), set()
@@ -856,6 +903,414 @@ def delete_asset(id):
     else:
         return jsonify({"error": "Invalid table name"}), 400
 
+
+# # Route for creating a new user asset assignment
+# @app.route('/create_user_asset/<asset_id>', methods=['GET', 'POST'])
+# def create_user_asset(asset_id):
+#     conn = get_db_connection()
+#     cursor = conn.cursor(dictionary=True)
+
+#     if request.method == 'POST':
+
+#         assignment_code = generate_unique_id('AU')
+#         created_by = 't1'
+#         created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+#         assigned_user_data = request.form['assigned_user']
+#         assigned_user, employee_code = assigned_user_data.split('|')
+#         # assigned_user = request.form['assigned_user']
+#         effective_date = request.form['effective_date']
+#         remarks = request.form.get('remarks', '')
+#         archieved = request.form.get('archieved', 'No')
+
+
+#         cursor.execute("""
+#             SELECT email FROM big_app_login_users.users 
+#             WHERE employee_id = %s
+#         """, (employee_code,))
+#         user = cursor.fetchone()
+#         email = user['email']
+
+#         # Insert into assets_users table
+#         cursor.execute("""
+#             INSERT INTO assets_users (created_by, created_at, assignment_code, asset_id, assigned_user, effective_date, remarks, email, archieved, employee_code)
+#             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+#         """, (created_by, created_at, assignment_code, asset_id, assigned_user, effective_date, remarks, email, archieved, employee_code))
+#         conn.commit()
+        
+#         # Send email with table name 'add_user'
+#         if user and email:
+#             send_email(email, assigned_user, asset_id, "add_user", "Created")
+
+#         cursor.close()
+#         conn.close()
+#         return redirect(url_for('view_user_details', asset_id = asset_id))  # Adjust as needed
+
+#     # GET request: fetch employees
+#     cursor.execute("""
+#         SELECT id, username, employee_id, email, phone, designation 
+#         FROM big_app_login_users.users
+#     """)
+#     employees = cursor.fetchall()
+#     cursor.close()
+#     conn.close()
+#     return render_template('create_user_asset.html', employees=employees, asset_id=asset_id)
+
+# # Route for editing an existing user asset assignment
+# @app.route('/edit_user_asset/<assignment_code>', methods=['GET', 'POST'])
+# def edit_user_asset(assignment_code):
+#     conn = get_db_connection()
+#     cursor = conn.cursor(dictionary=True)
+
+#     if request.method == 'POST':
+#         # assigned_user = request.form['assigned_user']
+#         assigned_user_data = request.form['assigned_user']
+#         assigned_user, employee_code = assigned_user_data.split('|')
+#         effective_date = request.form['effective_date']
+#         end_date = request.form.get('end_date', None)
+#         remarks = request.form.get('remarks', '')
+
+#         # Update assets_users table
+#         cursor.execute("""
+#             UPDATE assets_users 
+#             SET assigned_user = %s, effective_date = %s, end_date = %s, remarks = %s, employee_code=%s
+#             WHERE assignment_code = %s 
+            
+#         """, (assigned_user, effective_date, end_date, remarks, employee_code, assignment_code))
+#         conn.commit()
+
+#         # Fetch user's email
+#         cursor.execute("""
+#             SELECT email FROM big_app_login_users.users 
+#             WHERE employee_id = %s
+#         """, (employee_code,))
+#         user = cursor.fetchone()
+
+
+#         cursor.execute("""
+#             SELECT asset_id FROM assets_users 
+#             WHERE assignment_code = %s 
+#             ORDER BY created_at DESC 
+#             LIMIT 1
+#         """, (assignment_code,))
+#         assets = cursor.fetchone()
+
+#         if assets:
+#             asset_id = assets['asset_id']
+
+        
+#         # Send email with table name 'edit_user'
+#         if user and user['email']:
+#             send_email(user['email'], assigned_user, assignment_code, "edit_user", "Updated")
+
+
+#         cursor.close()
+#         conn.close()
+#         return redirect(url_for('view_user_details', asset_id = asset_id))  # Adjust as needed
+
+#     # GET request: fetch employees and last user data
+#     cursor.execute("""
+#         SELECT id, username, employee_id, email, phone, designation 
+#         FROM big_app_login_users.users
+#     """)
+#     employees = cursor.fetchall()
+
+#     cursor.execute("""
+#         SELECT assigned_user, effective_date, end_date, remarks 
+#         FROM assets_users 
+#         WHERE assignment_code  = %s 
+#     """, (assignment_code ,))
+#     last_user = cursor.fetchone()
+
+#     cursor.close()
+#     conn.close()
+#     return render_template('edit_user_asset.html', employees=employees, assignment_code=assignment_code, last_user=last_user)
+
+
+# # Route for viewing user details
+# @app.route('/view_user_details/<asset_id>', methods=['GET'])
+# def view_user_details(asset_id):
+#     conn = get_db_connection()
+#     cursor = conn.cursor(dictionary=True)
+
+#     # Fetch minimal data for the table
+#     cursor.execute("""
+#         SELECT assignment_code, assigned_user, email, effective_date, end_date, remarks
+#         FROM assets_users WHERE asset_id = %s
+#     """, (asset_id,))
+#     assignments = cursor.fetchall()
+
+#     # Check if full details are requested
+#     assignment_code = request.args.get('assignment_code', None)
+#     full_details = None
+#     if assignment_code:
+#         cursor.execute("""
+#             SELECT id, created_by, created_at, assignment_code, asset_id, assigned_user, 
+#                    email, effective_date, end_date, modified_by, modified_at, remarks, 
+#                    confirmation_status, token, token_expiration, archieved
+#             FROM assets_users
+#             WHERE assignment_code = %s
+#         """, (assignment_code,))
+#         full_details = cursor.fetchone()
+
+#     cursor.close()
+#     conn.close()
+#     return render_template('view_user_details.html', assignments=assignments, full_details=full_details, asset_id=asset_id)
+
+
+# Function to fetch purchase_date for an asset_id
+def get_purchase_date(asset_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT purchase_date 
+        FROM it_assets 
+        WHERE asset_id = %s
+    """, (asset_id,))
+    asset = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return asset['purchase_date'] if asset else None
+
+
+# Function to fetch the latest assignment_code and end_date for an asset_id
+def get_latest_assignment_code_and_end_date(asset_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT assignment_code, end_date 
+        FROM assets_users 
+        WHERE asset_id = %s 
+        ORDER BY created_at DESC 
+        LIMIT 1
+    """, (asset_id,))
+    latest = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return latest if latest else {'assignment_code': None, 'end_date': None}
+
+
+# Function to fetch the latest end_date for an asset_id
+def get_latest_end_date(asset_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT end_date 
+        FROM assets_users 
+        WHERE asset_id = %s AND end_date IS NOT NULL
+        ORDER BY end_date DESC 
+        LIMIT 1
+    """, (asset_id,))
+    latest = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return latest['end_date'] if latest else None
+
+# Route for creating a new user asset assignment
+@app.route('/create_user_asset/<asset_id>', methods=['GET', 'POST'])
+def create_user_asset(asset_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Fetch purchase_date and latest end_date for the asset
+    purchase_date = get_purchase_date(asset_id)
+    if not purchase_date:
+        flash("Asset not found or purchase date not available.", "danger")
+        return redirect(url_for('view_user_details', asset_id=asset_id))
+
+    latest_end_date = get_latest_end_date(asset_id)
+
+    if request.method == 'POST':
+        assignment_code = generate_unique_id('AU')
+        created_by = 't1'
+        created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        assigned_user_data = request.form['assigned_user']
+        assigned_user, employee_code = assigned_user_data.split('|')
+        effective_date_str = request.form['effective_date']
+        remarks = request.form.get('remarks', '')
+        archieved = request.form.get('archieved', 'No')
+
+        # Convert dates for comparison
+        effective_date = datetime.strptime(effective_date_str, '%Y-%m-%d').date()
+
+        # Validate effective_date
+        if effective_date < purchase_date:
+            flash(f"Effective date cannot be earlier than the purchase date ({purchase_date}).", "danger")
+            return redirect(url_for('create_user_asset', asset_id=asset_id))
+        if latest_end_date and effective_date < latest_end_date:
+            flash(f"Effective date cannot be earlier than the latest end date ({latest_end_date}).", "danger")
+            return redirect(url_for('create_user_asset', asset_id=asset_id))
+
+        cursor.execute("""
+            SELECT email FROM big_app_login_users.users 
+            WHERE employee_id = %s
+        """, (employee_code,))
+        user = cursor.fetchone()
+        email = user['email']
+
+        # Insert into assets_users table
+        cursor.execute("""
+            INSERT INTO assets_users (created_by, created_at, assignment_code, asset_id, assigned_user, effective_date, remarks, email, archieved, employee_code)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (created_by, created_at, assignment_code, asset_id, assigned_user, effective_date, remarks, email, archieved, employee_code))
+        conn.commit()
+
+        # Send email with table name 'add_user'
+        if user and email:
+            send_email(email, assigned_user, asset_id, "add_user", "Created")
+
+        cursor.close()
+        conn.close()
+        return redirect(url_for('view_user_details', asset_id=asset_id))
+
+    # GET request: fetch employees
+    cursor.execute("""
+        SELECT id, username, employee_id, email, phone, designation 
+        FROM big_app_login_users.users
+    """)
+    employees = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template('create_user_asset.html', employees=employees, asset_id=asset_id, purchase_date=purchase_date, latest_end_date=latest_end_date)
+
+# Route for editing an existing user asset assignment
+@app.route('/edit_user_asset/<assignment_code>', methods=['GET', 'POST'])
+def edit_user_asset(assignment_code):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Fetch asset_id and purchase_date
+    cursor.execute("""
+        SELECT asset_id, effective_date, end_date 
+        FROM assets_users 
+        WHERE assignment_code = %s
+    """, (assignment_code,))
+    assignment = cursor.fetchone()
+    if not assignment:
+        flash("Assignment not found.", "danger")
+        return redirect(url_for('view_user_details', asset_id=asset_id))
+
+    asset_id = assignment['asset_id']
+    purchase_date = get_purchase_date(asset_id)
+    if not purchase_date:
+        flash("Asset not found or purchase date not available.", "danger")
+        return redirect(url_for('view_user_details', asset_id=asset_id))
+
+    if request.method == 'POST':
+        assigned_user_data = request.form['assigned_user']
+        assigned_user, employee_code = assigned_user_data.split('|')
+        effective_date_str = request.form['effective_date']
+        end_date_str = request.form.get('end_date', None)
+        remarks = request.form.get('remarks', '')
+
+        # Convert dates for comparison
+        effective_date = datetime.strptime(effective_date_str, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date() if end_date_str else None
+
+        # Validate effective_date
+        if effective_date < purchase_date:
+            flash(f"Effective date cannot be earlier than the purchase date ({purchase_date}).", "danger")
+            return redirect(url_for('edit_user_asset', assignment_code=assignment_code))
+        if end_date and effective_date > end_date:
+            flash("Effective date cannot be later than the end date.", "danger")
+            return redirect(url_for('edit_user_asset', assignment_code=assignment_code))
+
+        # Update assets_users table
+        cursor.execute("""
+            UPDATE assets_users 
+            SET assigned_user = %s, effective_date = %s, end_date = %s, remarks = %s, employee_code=%s
+            WHERE assignment_code = %s
+        """, (assigned_user, effective_date, end_date, remarks, employee_code, assignment_code))
+        conn.commit()
+
+        # Fetch user's email
+        cursor.execute("""
+            SELECT email FROM big_app_login_users.users 
+            WHERE employee_id = %s
+        """, (employee_code,))
+        user = cursor.fetchone()
+
+        # Send email with table name 'edit_user'
+        if user and user['email']:
+            send_email(user['email'], assigned_user, assignment_code, "edit_user", "Updated")
+
+        cursor.close()
+        conn.close()
+        return redirect(url_for('view_user_details', asset_id=asset_id))
+
+    # GET request: fetch employees and last user data
+    cursor.execute("""
+        SELECT id, username, employee_id, email, phone, designation 
+        FROM big_app_login_users.users
+    """)
+    employees = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT assigned_user, employee_code, effective_date, end_date, remarks 
+        FROM assets_users 
+        WHERE assignment_code = %s
+    """, (assignment_code,))
+    last_user = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+    return render_template('edit_user_asset.html', employees=employees, assignment_code=assignment_code, last_user=last_user, purchase_date=purchase_date)
+
+# Route for viewing user details
+@app.route('/view_user_details/<asset_id>', methods=['GET'])
+def view_user_details(asset_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Fetch minimal data for the table
+    cursor.execute("""
+        SELECT assignment_code, assigned_user, email, effective_date, end_date, remarks
+        FROM assets_users WHERE asset_id = %s
+    """, (asset_id,))
+    assignments = cursor.fetchall()
+
+    # Get the latest assignment_code and end_date
+    latest_assignment = get_latest_assignment_code_and_end_date(asset_id)
+    latest_assignment_code = latest_assignment['assignment_code']
+    latest_end_date = latest_assignment['end_date']
+
+    # Check if full details are requested
+    assignment_code = request.args.get('assignment_code', None)
+    full_details = None
+    if assignment_code:
+        cursor.execute("""
+            SELECT id, created_by, created_at, assignment_code, asset_id, assigned_user, 
+                   email, effective_date, end_date, modified_by, modified_at, remarks, 
+                   confirmation_status, token, token_expiration, archieved
+            FROM assets_users
+            WHERE assignment_code = %s
+        """, (assignment_code,))
+        full_details = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+    return render_template('view_user_details.html', assignments=assignments, full_details=full_details, asset_id=asset_id, latest_assignment_code=latest_assignment_code, latest_end_date=latest_end_date)
+
+
+@app.route('/delete_user_asset/<assignment_code>', methods=['POST'])
+def delete_user_asset(assignment_code):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Fetch asset_id before deletion for redirect
+    cursor.execute("SELECT asset_id FROM assets_users WHERE assignment_code = %s", (assignment_code,))
+    asset_id = cursor.fetchone()
+
+    # Delete the assignment by assignment_code
+    cursor.execute("""
+        UPDATE assets_users SET archieved = 'yes'
+        WHERE assignment_code = %s
+    """, (assignment_code,))
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+    return redirect(url_for('view_user_details', asset_id=asset_id))
+
 @app.route('/create_vendor', methods=['GET', 'POST'])
 def create_vendor():
     print('Form State in create_vendor:', session.get('form_state', {}))
@@ -914,6 +1369,10 @@ def save_form_state():
             session['return_to'] = 'create_asset'
     print('\n\n Session after setting:', session)
     return redirect(url_for('create_vendor'))
+
+
+
+
 
 
 if __name__ == '__main__':

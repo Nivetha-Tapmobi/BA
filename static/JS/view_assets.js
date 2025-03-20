@@ -61,10 +61,17 @@ function closeModal() {
     document.getElementById("assetModal").style.display = "none";
 }
 
-// Function to edit asset
-function editAsset(assetId) {
-    alert("Edit asset: " + assetId);
+
+
+
+
+function addUser(assetId) {
+	// Add your edit logic here, e.g., redirect to edit page
+	//window.location.href = `/create_user_asset/${assetId}`;
+	window.location.href = `/view_user_details/${assetId}`;
 }
+
+
 
 // Function to manage insurance
 function manageInsurance(assetId) {
@@ -76,9 +83,3 @@ function manageExtendedWarranty(assetId) {
     alert("Manage extended warranty for: " + assetId);
 }
 
-// Function to delete asset
-function deleteAsset(assetId) {
-    if (confirm("Are you sure you want to delete this asset?")) {
-        alert("Asset " + assetId + " deleted!");
-    }
-}

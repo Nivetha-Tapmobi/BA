@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create User Asset Assignment</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/create_user_styles.css') }}">
+    <style>
+        .error-message {
+            color: red;
+            margin-bottom: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>IT Asset Tracker</h1>
+        <div class="menu" onclick="headertoggleMenu()">☰</div>
+        <div class="menu-dropdown" id="menuDropdown"></div>
+    </div>
+
+    <div class="form-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form action="{{ url_for('create_user_asset', asset_id=asset_id) }}" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="asset_id" value="{{ asset_id }}">
+
+            <!-- Person who is using the asset -->
+            <label for="assigned_user">Person who is using the asset:</label>
+            <select id="assigned_user" name="assigned_user" required>
+                <option value="" disabled selected>Select an employee</option>
+                {% for employee in employees %}
+                    <option value="{{ employee['username'] }}|{{ employee['employee_id'] }}">
+                        {{ employee['username'] }} - {{ employee['designation'] }} - {{ employee['employee_id'] }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <!-- Effective Date -->
+            <label for="effective_date">Effective Date:</label>
+            <input type="date" id="effective_date" name="effective_date" required onchange="validateEffectiveDate()">
+            <div id="effective_date_error" class="error-message"></div>
+            <input type="hidden" id="purchase_date" value="{{ purchase_date }}">
+            <input type="hidden" id="latest_end_date" value="{{ latest_end_date or '' }}">
+
+            <!-- Remarks -->
+            <label for="remarks">Remarks:</label>
+            <textarea id="remarks" name="remarks" rows="4" cols="50"></textarea>
+
+            <!-- Submit Button -->
+            <input type="submit" id="submit_btn" value="Submit" style="background-color:green;color:white;">
+        </form>
+    </div>
+
+    <script>
+        function validateEffectiveDate() {
+            const effectiveDateInput = document.getElementById('effective_date');
+            const effectiveDate = new Date(effectiveDateInput.value);
+            const purchaseDate = new Date(document.getElementById('purchase_date').value);
+            const latestEndDate = document.getElementById('latest_end_date').value ? new Date(document.getElementById('latest_end_date').value) : null;
+            const errorDiv = document.getElementById('effective_date_error');
+
+            // Reset error message
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+
+            // Check if effective_date is earlier than purchase_date
+            if (effectiveDate < purchaseDate) {
+                alert('Effective date cannot be earlier than the purchase date (' + purchaseDate.toISOString().split('T')[0] + ').');
+                effectiveDateInput.value = ''; // Clear the invalid date
+                return;
+            }
+
+            // Check if effective_date is earlier than the latest end_date (if exists)
+            if (latestEndDate && effectiveDate < latestEndDate) {
+                alert('Effective date cannot be earlier than the latest end date (' + latestEndDate.toISOString().split('T')[0] + ').');
+                effectiveDateInput.value = ''; // Clear the invalid date
+                return;
+            }
+        }
+    </script>
+</body>
+</html>

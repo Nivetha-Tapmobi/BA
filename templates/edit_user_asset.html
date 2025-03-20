@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit User Asset Assignment</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/create_user_styles.css') }}">
+    <style>
+        .error-message {
+            color: red;
+            margin-bottom: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>IT Asset Tracker</h1>
+        <div class="menu" onclick="headertoggleMenu()">☰</div>
+        <div class="menu-dropdown" id="menuDropdown"></div>
+    </div>
+
+    <div class="form-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form action="{{ url_for('edit_user_asset', assignment_code=assignment_code) }}" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="asset_id" value="{{ asset_id }}">
+
+            <!-- Person who is using the asset -->
+            <label for="assigned_user">Person who is using the asset:</label>
+            <select id="assigned_user" name="assigned_user" required>
+                <option value="" disabled>Select an employee</option>
+                {% for employee in employees %}
+                    <option value="{{ employee['username'] }}|{{ employee['employee_id'] }}"
+                        {% if last_user and employee['username'] == last_user['assigned_user'] and employee['employee_id'] == last_user['employee_code'] %}selected{% endif %}>
+                        {{ employee['username'] }} - {{ employee['designation'] }} - {{ employee['employee_id'] }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <!-- Effective Date -->
+            <label for="effective_date">Effective Date:</label>
+            <input type="date" id="effective_date" name="effective_date" 
+                   value="{{ last_user['effective_date'] }}" required onchange="validateEffectiveDate()">
+            <div id="effective_date_error" class="error-message"></div>
+            <input type="hidden" id="purchase_date" value="{{ purchase_date }}">
+
+            <!-- End Date -->
+            <label for="end_date">End Date:</label>
+            <input type="date" id="end_date" name="end_date" 
+                   value="{{ last_user['end_date'] or '' }}" onchange="validateEndDate()">
+            <div id="end_date_error" class="error-message"></div>
+
+            <!-- Remarks -->
+            <label for="remarks">Remarks:</label>
+            <textarea id="remarks" name="remarks" rows="4" cols="50">{{ last_user['remarks'] }}</textarea>
+
+            <!-- Submit Button -->
+            <input type="submit" id="submit_btn" value="Update User" style="background-color:green;color:white;">
+        </form>
+    </div>
+
+    <script>
+        function validateEffectiveDate() {
+            const effectiveDateInput = document.getElementById('effective_date');
+            const effectiveDate = new Date(effectiveDateInput.value);
+            const purchaseDate = new Date(document.getElementById('purchase_date').value);
+            const errorDiv = document.getElementById('effective_date_error');
+
+            // Reset error message
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+
+            // Check if effective_date is earlier than purchase_date
+            if (effectiveDate < purchaseDate) {
+                alert('Effective date cannot be earlier than the purchase date (' + purchaseDate.toISOString().split('T')[0] + ').');
+                effectiveDateInput.value = ''; // Clear the invalid date
+                return;
+            }
+
+            // Re-validate end_date if it exists
+            const endDateInput = document.getElementById('end_date');
+            if (endDateInput.value) {
+                validateEndDate();
+            }
+        }
+
+        function validateEndDate() {
+            const effectiveDateInput = document.getElementById('effective_date');
+            const endDateInput = document.getElementById('end_date');
+            const effectiveDate = new Date(effectiveDateInput.value);
+            const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
+            const errorDiv = document.getElementById('end_date_error');
+
+            // Reset error message
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+
+            // Validate end_date (if provided)
+            if (endDate && endDate < effectiveDate) {
+                alert('End date cannot be earlier than the effective date (' + effectiveDate.toISOString().split('T')[0] + ').');
+                endDateInput.value = ''; // Clear the invalid end_date
+                return;
+            }
+        }
+    </script>
+</body>
+</html>
