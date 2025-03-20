@@ -359,7 +359,6 @@ def generate_unique_id( prefix):
     
     return new_id
 
-
 @app.route('/')
 def home():
     return redirect(url_for('view_assets')) 
@@ -445,7 +444,6 @@ def display_drop_down(page):
     conn.close()
 
     return result
-
 
 @app.route('/create_asset', methods=['GET', 'POST'])
 def create_asset():
@@ -616,8 +614,6 @@ def create_asset():
                            asset_types=asset_types,
                            vendors=vendors,
                            form_state=form_state)
-
-
 
 @app.route('/edit_asset/<asset_id>', methods=['GET', 'POST'])
 def edit_asset(asset_id):
@@ -841,8 +837,8 @@ def view_assets():
     return render_template('view_assets.html', all_assets=assets_list, today=today)
 
 
-@app.route('/delete/<string:id>', methods=['POST'])
-def delete(id):
+@app.route('/delete_asset/<string:id>', methods=['POST'])
+def delete_asset(id):
     data = request.get_json()  # Get JSON data from the request body
     table_name = data.get('table')  # Extract table name from request body
 
@@ -859,41 +855,6 @@ def delete(id):
         return jsonify({"message": "Asset Deleted successfully"}), 200
     else:
         return jsonify({"error": "Invalid table name"}), 400
-
-
-# @app.route('/create_vendor', methods=['GET', 'POST'])
-# def create_vendor():
-#     print('Form State in create_vendor:', session.get('form_state', {}))  # Debug
-#     if request.method == 'POST':
-#         vendor_id = generate_unique_id('VD')
-#         vendor_name = request.form.get('vendor_name')
-#         address = request.form.get('address')
-#         phone_number = request.form.get('phone_number')
-#         email = request.form.get('email')
-#         remarks = request.form.get('remarks')
-#         created_by = "admin"
-#         modified_by = created_by
-
-#         try:
-#             conn = get_db_connection()
-#             cursor = conn.cursor()
-#             cursor.execute("""
-#                 INSERT INTO vendor_details 
-#                 (vendor_id, vendor_name, address, phone_number, email, remarks, created_by, modified_by) 
-#                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-#             """, (vendor_id, vendor_name, address, phone_number, email, remarks, created_by, modified_by))
-#             conn.commit()
-#             cursor.close()
-#             conn.close()
-#             flash("Vendor added successfully!", "success")
-#             print('\n\n Form State before redirect:', session.get('form_state', {}))  # Debug
-#             return redirect(url_for('create_asset'))
-#         except mysql.connector.Error as err:
-#             flash(f"Error: {err}", "danger")
-#             return render_template('create_vendor.html')
-
-#     return render_template('create_vendor.html')
-
 
 @app.route('/create_vendor', methods=['GET', 'POST'])
 def create_vendor():
@@ -936,14 +897,6 @@ def create_vendor():
             return render_template('create_vendor.html')
 
     return render_template('create_vendor.html')
-
-# @app.route('/save_form_state', methods=['POST'])
-# def save_form_state():
-#     form_data = request.form.to_dict(flat=False)
-#     print('\n\n Form Data:', form_data)
-#     session['form_state'] = form_data
-#     print('\n\n Session after setting:', session.get('form_state'))  # Debug
-#     return redirect(url_for('create_vendor'))
 
 @app.route('/save_form_state', methods=['POST'])
 def save_form_state():

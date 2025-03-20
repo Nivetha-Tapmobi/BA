@@ -323,7 +323,7 @@
 		const tableName = button.getAttribute('data-table'); // Get table name from HTML attribute
 
 		if (confirm('Are you sure you want to delete this asset?')) {
-			fetch(`/delete/${assetId}`, {
+			fetch(`/delete_asset/${assetId}`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'

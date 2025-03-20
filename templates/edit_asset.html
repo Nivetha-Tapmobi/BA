@@ -98,55 +98,24 @@
                         <textarea id="description" name="description">{{ asset.description|default('') }}</textarea>
                     </div>
 
-				<!--<div class="form-group">
-					<label for="vendor_name">Vendor Name:</label>
-					<select id="vendor_name" name="vendor_name" required>
-						<option value="">Select a vendor</option>
-						{% for vendor in vendors %}
-							<option value="{{ vendor.vendor_name }}" data-vendor-id="{{ vendor.vendor_id }}"
-									{% if vendor.vendor_name == asset.vendor_name %}selected{% endif %}>
-								{{ vendor.vendor_name }}
-							</option>
-						{% endfor %}
-						<option value="add_new_vendor" style="color: blue; font-weight: bold;">+ Add New Vendor</option>
-					</select>
-					<input type="hidden" id="vendor_id" name="vendor_id" value="{{ asset.vendor_id|default('') }}">
-					<p>Selected Vendor ID: <span id="vendor_id_display">{{ asset.vendor_id|default('None') }}</span></p>
-				</div>-->
-				
-				
-					<!--<div class="form-group">
-					<label for="vendor_name">Vendor Name:</label>
-					<select id="vendor_name" name="vendor_name" required>
-    <option value="">Select a vendor</option>
-    {% for vendor in vendors %}
-        <option value="{{ vendor.vendor_name }}" data-vendor-id="{{ vendor.vendor_id }}"
-                {% if vendor.vendor_name == asset.vendor_name %}selected{% endif %}>
-            {{ vendor.vendor_name }}
-        </option>
-    {% endfor %}
-    <option value="add_new_vendor" style="color: blue; font-weight: bold;">+ Add New Vendor</option>
-</select>
-					<input type="hidden" id="vendor_id" name="vendor_id" value="{{ asset.vendor_id|default('') }}">
-					<p>Selected Vendor ID: <span id="vendor_id_display">{{ asset.vendor_id|default('None') }}</span></p>
-				</div>-->
+
 				
 				<div class="form-group">
-    <label for="vendor_name">Vendor Name:</label>
-    <select id="vendor_name" name="vendor_name" required>
-        <option value="">Select a vendor</option>
-        {% for vendor in vendors %}
-            <option value="{{ vendor.vendor_name }}" data-vendor-id="{{ vendor.vendor_id }}"
-                    {% if vendor.vendor_name == asset.vendor_name %}selected{% endif %}>
-                {{ vendor.vendor_name }}
-            </option>
-        {% endfor %}
-        <option value="add_new_vendor" style="color: blue; font-weight: bold;">+ Add New Vendor</option>
-    </select>
-    <input type="hidden" id="vendor_id" name="vendor_id" value="{{ asset.vendor_id|default('') }}">
-    <p>Selected Vendor ID: <span id="vendor_id_display">{{ asset.vendor_id|default('None') }}</span></p>
-</div>
-				
+				<label for="vendor_name">Vendor Name:</label>
+				<select id="vendor_name" name="vendor_name" required>
+					<option value="">Select a vendor</option>
+					{% for vendor in vendors %}
+						<option value="{{ vendor.vendor_name }}" data-vendor-id="{{ vendor.vendor_id }}"
+								{% if vendor.vendor_name == asset.vendor_name %}selected{% endif %}>
+							{{ vendor.vendor_name }}
+						</option>
+					{% endfor %}
+					<option value="add_new_vendor" style="color: blue; font-weight: bold;">+ Add New Vendor</option>
+				</select>
+				<input type="hidden" id="vendor_id" name="vendor_id" value="{{ asset.vendor_id|default('') }}">
+				<p>Selected Vendor ID: <span id="vendor_id_display">{{ asset.vendor_id|default('None') }}</span></p>
+			</div>
+							
 				
 				
 
