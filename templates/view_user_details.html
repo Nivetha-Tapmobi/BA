@@ -152,11 +152,9 @@
     <div class="container">
         <div class="ticket-actions">
             <h1>Asset Assignments for Asset ID: {{ asset_id }}</h1>	
-
-			
 			<button 
-				class="create-btn {% if latest_end_date is none %}disabled{% endif %}" 
-				{% if latest_end_date is none %}disabled{% endif %}
+				class="create-btn {% if is_disabled %}disabled{% endif %}" 
+				{% if is_disabled %}disabled{% endif %}
 				onclick="if(this.classList.contains('disabled')) return false; else window.location.href='{{ url_for('create_user_asset', asset_id=asset_id) }}';">
 				Create New User
 			</button>

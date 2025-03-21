@@ -234,6 +234,17 @@
         .submit-ignore-btn:hover {
             background-color: #291e6c;
         }
+		
+		.replacement-btn {
+    background-color: #008CBA;
+    color: white;
+    padding: 5px 10px;
+    text-decoration: none;
+    border-radius: 4px;
+}
+.replacement-btn:hover {
+    background-color: #007B9A;
+}
     </style>
 	
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
@@ -282,7 +293,10 @@
     <td>{{ ticket.ticket_status }}</td>
     <td>{{ ticket.ignore_reason if ticket.ignore_reason else 'N/A' }}</td>
     <td> <!-- Status Column -->
-        <button class="status-btn create-service-btn" onclick="alert('Create Service functionality to be implemented')">Create Service</button><br>
+        <button class="status-btn create-service-btn" 
+            onclick="window.location.href='{{ url_for('create_service', ticket_id=ticket.ticket_id, asset_id=ticket.asset_id) }}'">
+        Create Service
+		</button><br>
         <button class="status-btn ignore-btn" onclick="openIgnorePopup('{{ ticket.ticket_id }}')">Ignore</button>
     </td>
     <td> <!-- Actions Column -->
@@ -291,9 +305,9 @@
             <button type="submit" class="actions-btn delete-btn" onclick="return confirm('Are you sure you want to delete this ticket?');">Delete</button>
         </form>
     </td>
-    <td> <!-- Replacement Column -->
-        Placeholder
-    </td>
+    <td>
+    <a href="{{ url_for('fetch_unassigned_assets') }}" class="replacement-btn">Select Replacement</a>
+	</td>
 </tr>
                 {% endfor %}
             </tbody>

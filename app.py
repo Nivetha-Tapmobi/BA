@@ -201,11 +201,11 @@ def create_tables():
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 created_by VARCHAR(100),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
-                service_id VARCHAR(255) UNIQUE NOT NULL,
-                service_type VARCHAR(255) NOT NULL,                  
+                service_id VARCHAR(255) UNIQUE NOT NULL,                 
                 ticket_id VARCHAR(255) NOT NULL,
                 asset_id VARCHAR(255) NOT NULL,
-                service_case_id VARCHAR(255) UNIQUE NOT NULL,       
+                warranty_type VARCHAR(255) NOT NULL,
+                service_case_id VARCHAR(255) UNIQUE,       
                 technician_name VARCHAR(255) NOT NULL,
                 technician_id VARCHAR(255) NOT NULL,
                 work_done TEXT,
@@ -226,8 +226,8 @@ def create_tables():
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     created_by VARCHAR(100),
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    technician_type VARCHAR(255) NOT NULL,
                     technician_id VARCHAR(255) UNIQUE NOT NULL,
+                    technician_type VARCHAR(255) NOT NULL,
                     technician_name VARCHAR(255) UNIQUE NOT NULL,       
                     phone_number VARCHAR(20),
                     address TEXT,
@@ -511,6 +511,17 @@ def display_drop_down(page):
 
         result = {
             "vendors": vendors  # List of dictionaries with 'vendor_id' & 'vendor_name'
+        }
+
+    elif page == 'Create_Technician':
+        cursor.execute("""
+            SELECT technician_id, technician_name FROM technician_details
+        """)
+
+        technicians = cursor.fetchall()
+
+        result = {
+            "technicians": technicians  # List of dictionaries with 'technician_id' & 'technician_name'
         }
 
     # Close the cursor & connection AFTER fetching the data
@@ -970,9 +981,19 @@ def get_latest_end_date(asset_id):
         LIMIT 1
     """, (asset_id,))
     latest = cursor.fetchone()
+
+    cursor.execute("""
+            SELECT COUNT(*) AS row_count
+            FROM assets_users
+            WHERE asset_id = %s AND end_date IS NOT NULL
+        """, (asset_id,))
+        
+    row_count = cursor.fetchone()['row_count']
+    is_disabled = row_count >= 1 and latest['end_date'] is None
+
     cursor.close()
     conn.close()
-    return latest['end_date'] if latest else None
+    return (latest['end_date'] if latest else None, is_disabled)
 
 # Route for creating a new user asset assignment
 @app.route('/create_user_asset/<asset_id>', methods=['GET', 'POST'])
@@ -986,7 +1007,7 @@ def create_user_asset(asset_id):
         flash("Asset not found or purchase date not available.", "danger")
         return redirect(url_for('view_user_details', asset_id=asset_id))
 
-    latest_end_date = get_latest_end_date(asset_id)
+    latest_end_date, is_disabled = get_latest_end_date(asset_id)
 
     if request.method == 'POST':
         assignment_code = generate_unique_id('AU')
@@ -1021,6 +1042,14 @@ def create_user_asset(asset_id):
             INSERT INTO assets_users (created_by, created_at, assignment_code, asset_id, assigned_user, effective_date, remarks, email, archieved, employee_code)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (created_by, created_at, assignment_code, asset_id, assigned_user, effective_date, remarks, email, archieved, employee_code))
+        
+
+        cursor.execute("""
+            UPDATE it_assets 
+            SET has_user_details = 1 
+            WHERE asset_id = %s
+        """, (asset_id,))
+
         conn.commit()
 
         # # Send email with table name 'add_user'
@@ -1039,7 +1068,13 @@ def create_user_asset(asset_id):
     employees = cursor.fetchall()
     cursor.close()
     conn.close()
-    return render_template('create_user_asset.html', employees=employees, asset_id=asset_id, purchase_date=purchase_date, latest_end_date=latest_end_date)
+    return render_template('create_user_asset.html', 
+                           employees=employees, 
+                           asset_id=asset_id, 
+                           purchase_date=purchase_date, 
+                           latest_end_date=latest_end_date,
+                        #    row_count=row_count,
+                           is_disabled=is_disabled)
 
 # Route for editing an existing user asset assignment
 @app.route('/edit_user_asset/<assignment_code>', methods=['GET', 'POST'])
@@ -1089,6 +1124,22 @@ def edit_user_asset(assignment_code):
             SET assigned_user = %s, effective_date = %s, end_date = %s, remarks = %s, employee_code=%s
             WHERE assignment_code = %s
         """, (assigned_user, effective_date, end_date, remarks, employee_code, assignment_code))
+
+        # Update has_user_details in it_assets table
+        if end_date:
+            cursor.execute("""
+                UPDATE it_assets 
+                SET has_user_details = 0 
+                WHERE asset_id = %s
+            """, (asset_id,))
+        else:
+            cursor.execute("""
+                UPDATE it_assets 
+                SET has_user_details = 1 
+                WHERE asset_id = %s
+            """, (asset_id,))
+
+
         conn.commit()
 
         # Fetch user's email
@@ -1222,22 +1273,22 @@ def create_vendor():
 
     return render_template('create_vendor.html')
 
-@app.route('/save_form_state', methods=['POST'])
-def save_form_state():
-    form_data = request.form.to_dict(flat=False)
-    print('\n\n Form Data:', form_data)
-    session['form_state'] = form_data
+# @app.route('/save_form_state', methods=['POST'])
+# def save_form_state():
+#     form_data = request.form.to_dict(flat=False)
+#     print('\n\n Form Data:', form_data)
+#     session['form_state'] = form_data
     
-    # Store the referrer to determine return destination
-    referrer = request.referrer
-    if referrer:
-        if 'edit_asset' in referrer:
-            session['return_to'] = 'edit_asset'
-            session['asset_id'] = referrer.split('/')[-1]  # Extract asset_id from URL
-        elif 'create_asset' in referrer:
-            session['return_to'] = 'create_asset'
-    print('\n\n Session after setting:', session)
-    return redirect(url_for('create_vendor'))
+#     # Store the referrer to determine return destination
+#     referrer = request.referrer
+#     if referrer:
+#         if 'edit_asset' in referrer:
+#             session['return_to'] = 'edit_asset'
+#             session['asset_id'] = referrer.split('/')[-1]  # Extract asset_id from URL
+#         elif 'create_asset' in referrer:
+#             session['return_to'] = 'create_asset'
+#     print('\n\n Session after setting:', session)
+#     return redirect(url_for('create_vendor'))
 
 # Function to fetch asset details from it_assets table
 def fetch_it_assets_info(asset_id):
@@ -1423,6 +1474,372 @@ def delete_ticket(ticket_id):
     
     flash("Ticket deleted successfully!", "success")
     return redirect(url_for('view_raised_tickets', asset_id=asset_id))
+
+@app.route('/create_replacement', methods=['GET'])
+def fetch_unassigned_assets():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Fetch unassigned assets where has_user_details = 0
+    cursor.execute("""
+        SELECT * 
+        FROM it_assets 
+        WHERE has_user_details = 0
+    """)
+    unassigned_assets = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template('create_replacement.html', assets=unassigned_assets)
+
+
+@app.route('/create_service/<ticket_id>/<asset_id>', methods=['GET', 'POST'])
+@app.route('/create_service/<ticket_id>/', methods=['GET', 'POST'])
+def create_service(ticket_id, asset_id=None):
+
+    print(f"Request path: {request.path}")
+    print(f"Entered create_service route with ticket_id={ticket_id}, asset_id={asset_id}")
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    print(f"Entered create_service route with ticket_id={ticket_id}, asset_id={asset_id}")
+
+    # Check if asset_id is None or an empty string
+    if asset_id is None or asset_id == '':
+        print("asset_id is None or empty, fetching from raised_tickets")
+        cursor.execute("""
+            SELECT asset_id FROM raised_tickets 
+            WHERE ticket_id = %s
+            LIMIT 1
+        """, (ticket_id,))
+        ticket_record = cursor.fetchone()
+
+        if ticket_record:
+            asset_id = ticket_record['asset_id']
+            print(f"Fetched asset_id from raised_tickets: {asset_id}")
+        else:
+            print(f"No asset_id found for ticket_id={ticket_id} in raised_tickets")
+            flash("No asset found for this ticket. Please select an asset.", "danger")
+            cursor.close()
+            conn.close()
+            return redirect(url_for('some_default_route'))  # Replace with your default route
+
+    print(f"Final asset_id: {asset_id}")
+
+    if request.method == 'POST':
+        service_id = generate_unique_id('SI')
+        created_by = 'service'
+        created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        technician_name = request.form['technician_name']
+        technician_id = request.form['technician_id']
+        work_done = request.form['work_done']
+        next_service_date = request.form['next_service_date'] or None
+        service_charge = request.form['service_charge'] or None
+        remarks = request.form.get('remarks', '')
+        service_case_id = request.form.get('service_case_id', None)
+        warranty_type = request.form['warranty_type']  # New field
+
+        # Handle multiple file uploads
+        service_bill_paths = []
+        if 'service_bill' in request.files:
+            files = request.files.getlist('service_bill')
+            for file in files:
+                if file and allowed_file(file.filename):
+                    # Define the upload path: UPLOAD_FOLDER/asset_id/service_bills/
+                    asset_folder = os.path.join(app.config['UPLOAD_FOLDER'], asset_id)
+                    service_bills_folder = os.path.join(asset_folder, 'service_bills')
+                    
+                    # Create folders if they don't exist
+                    os.makedirs(service_bills_folder, exist_ok=True)
+                    
+                    # Define the filename with service_id prefix
+                    filename = f"{service_id}_{file.filename}"
+                    file_path = os.path.join(service_bills_folder, filename)
+                    
+                    # Save the file
+                    file.save(file_path)
+                    # Store the relative path from UPLOAD_FOLDER
+                    relative_path = os.path.join(asset_id, 'service_bills', filename)
+                    service_bill_paths.append(relative_path)
+            service_bill_path = ','.join(service_bill_paths) if service_bill_paths else None
+        else:
+            service_bill_path = None
+
+        # Insert into service_details table with warranty_type
+        cursor.execute("""
+            INSERT INTO service_details (service_id, ticket_id, asset_id, service_case_id, technician_name, technician_id, 
+                                 work_done, next_service_date, service_charge, remarks, service_bill_path, 
+                                 created_by, created_at, warranty_type)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (service_id, ticket_id, asset_id, service_case_id, technician_name, technician_id, work_done, 
+              next_service_date, service_charge, remarks, service_bill_path, created_by, created_at, warranty_type))
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+        flash("Service created successfully!", "success")
+        return redirect(url_for('view_service', service_id=service_id))
+
+    # GET request: Fetch technicians for dropdown
+    technicians_data = display_drop_down('Create_Technician')
+    technicians = technicians_data['technicians']
+
+    cursor.close()
+    conn.close()
+    return render_template('create_service.html', ticket_id=ticket_id, asset_id=asset_id, technicians=technicians)
+
+@app.route('/edit_service/<service_id>', methods=['GET', 'POST'])
+def edit_service(service_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+
+        # Fetch asset_id and purchase_date
+    cursor.execute("""
+        SELECT asset_id from service_details
+        WHERE service_id = %s
+    """, (service_id,))
+    services = cursor.fetchone()
+
+    asset_id = services['asset_id']
+
+    if request.method == 'POST':
+        technician_name = request.form['technician_name']
+        technician_id = request.form['technician_id']
+        work_done = request.form['work_done']
+        next_service_date = request.form['next_service_date'] or None
+        service_charge = request.form['service_charge'] or None
+        remarks = request.form.get('remarks', '')
+        service_case_id = request.form.get('service_case_id', None)
+        warranty_type = request.form['warranty_type']  # New field
+        modified_by = 'service'
+        modified_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        # Handle multiple file uploads
+        cursor.execute("SELECT service_bill_path FROM service_details WHERE service_id = %s", (service_id,))
+        existing_service = cursor.fetchone()
+        existing_paths = existing_service['service_bill_path'].split(',') if existing_service['service_bill_path'] else []
+
+        if 'service_bill' in request.files:
+            files = request.files.getlist('service_bill')
+            for file in files:
+                if file and allowed_file(file.filename):
+                    # Define the upload path: UPLOAD_FOLDER/asset_id/service_bills/
+                    asset_folder = os.path.join(app.config['UPLOAD_FOLDER'], asset_id)
+                    service_bills_folder = os.path.join(asset_folder, 'service_bills')
+                    
+                    # Create folders if they don't exist
+                    os.makedirs(service_bills_folder, exist_ok=True)
+                    
+                    # Define the filename with service_id prefix
+                    filename = f"{service_id}_{file.filename}"
+                    file_path = os.path.join(service_bills_folder, filename)
+                    
+                    # Save the file
+                    file.save(file_path)
+                    # Store the relative path from UPLOAD_FOLDER
+                    relative_path = os.path.join(asset_id, 'service_bills', filename)
+                    existing_paths.append(relative_path)
+        service_bill_path = ','.join(existing_paths) if existing_paths else None
+
+        # Update services table with warranty_type
+        cursor.execute("""
+            UPDATE service_details 
+            SET technician_name = %s, technician_id = %s, work_done = %s, next_service_date = %s, 
+                service_charge = %s, remarks = %s, service_case_id = %s, service_bill_path = %s,
+                modified_by = %s, modified_at = %s, warranty_type = %s
+            WHERE service_id = %s
+        """, (technician_name, technician_id, work_done, next_service_date, service_charge, remarks, 
+              service_case_id, service_bill_path, modified_by, modified_at, warranty_type, service_id))
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+        flash("Service updated successfully!", "success")
+        return redirect(url_for('view_service', service_id=service_id))
+
+    # GET request: Fetch service details and technicians
+    cursor.execute("SELECT * FROM service_details WHERE service_id = %s", (service_id,))
+    service = cursor.fetchone()
+
+    technicians_data = display_drop_down('Create_Technician')
+    technicians = technicians_data['technicians']
+
+    cursor.close()
+    conn.close()
+    return render_template('edit_service.html', service=service, technicians=technicians)
+
+
+@app.route('/view_service', methods=['GET'])
+@app.route('/view_service/<service_id>', methods=['GET'])
+def view_service(service_id=None):  # Added default value for clarity
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if service_id:
+        cursor.execute("SELECT * FROM service_details WHERE service_id = %s", (service_id,))
+        service = cursor.fetchone()
+    else:
+        cursor.execute("SELECT * FROM service_details")
+        service = cursor.fetchall()
+        
+
+    cursor.close()
+    conn.close()
+    return render_template('view_service.html', service=service)
+
+
+# Route to delete a service
+@app.route('/delete_service/<service_id>', methods=['POST'])
+def delete_service(service_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Update the 'archieved' column instead of deleting
+    cursor.execute("""
+        UPDATE service_details 
+        SET archieved = 'yes' 
+        WHERE service_id = %s
+    """, (service_id,))
+    
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    flash("Service Deleted successfully!", "success")
+    return redirect(url_for('view_service'))  # Replace with your desired redirect route
+
+
+
+@app.route('/create_technician', methods=['GET', 'POST'])
+def create_technician():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        technician_name = request.form['technician_name']
+        technician_type = request.form['technician_type']
+        phone_number = request.form['phone_number']
+        email_address = request.form['email']
+        remarks = request.form['remarks']
+        address = request.form['address']
+        
+        created_by = 'tech1'
+        created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        modified_by = 'tech2'
+        modified_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+       
+        technician_id = generate_unique_id('TI')
+
+        try:
+            # Check for duplicates
+            cursor.execute("""
+                SELECT * FROM technician_details 
+                WHERE technician_name = %s OR phone_number = %s OR email_address = %s
+            """, (technician_name, phone_number, email_address))
+            existing_technician = cursor.fetchone()
+            
+            if existing_technician:
+                flash('Technician with the same name, phone number, or email already exists.', 'danger')
+                cursor.close()
+                conn.close()
+                return render_template('create_technician.html')
+
+            # Insert into technician_details table
+            cursor.execute("""
+                INSERT INTO technician_details 
+                (created_by, created_at, technician_name, technician_id, phone_number, email_address, 
+                 address, remarks, technician_type, modified_by, modified_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (created_by, created_at, technician_name, technician_id, phone_number, email_address, 
+                  address, remarks, technician_type, modified_by, modified_at))
+            conn.commit()
+            flash('Technician added successfully!', 'success')
+
+            # Redirect logic based on session['return_to']
+            return_to = session.get('return_to', 'create_service')  # Default to create_service
+            session.pop('return_to', None)  # Clear return_to after use
+            session.pop('technician_form_state', None)  # Clear technician_form_state after use
+
+            if return_to == 'edit_service' and 'service_id' in session:
+                service_id = session['service_id']
+                session.pop('service_id', None)  # Clear service_id
+                cursor.close()
+                conn.close()
+                return redirect(url_for('edit_service', service_id=service_id))
+            elif return_to == 'create_service' and 'ticket_id' in session and 'asset_id' in session:
+                ticket_id = session['ticket_id']
+                asset_id = session['asset_id']
+                session.pop('ticket_id', None)  # Clear ticket_id
+                session.pop('asset_id', None)  # Clear asset_id
+                cursor.close()
+                conn.close()
+                return redirect(url_for('create_service', ticket_id=ticket_id, asset_id=asset_id))
+
+            # Fallback redirect
+            cursor.close()
+            conn.close()
+            return redirect(url_for('create_service', ticket_id='default', asset_id='default'))
+
+        except Exception as e:
+            conn.rollback()
+            flash(f'Error adding technician: {str(e)}', 'danger')
+            print(f"Exception: {str(e)}")  # Debug print
+            cursor.close()
+            conn.close()
+            return render_template('create_technician.html')
+
+    cursor.close()
+    conn.close()
+    return render_template('create_technician.html')
+
+# # Modified save_form_state to handle create_technician
+@app.route('/save_form_state', methods=['POST'])
+def save_form_state():
+    form_data = request.form.to_dict(flat=False)
+    session['form_state'] = form_data
+    
+    # Store the referrer to determine return destination
+    referrer = request.referrer
+    if referrer:
+        if 'edit_asset' in referrer:
+            session['return_to'] = 'edit_asset'
+            session['asset_id'] = referrer.split('/')[-1]
+        elif 'create_asset' in referrer:
+            session['return_to'] = 'create_asset'
+    return redirect(url_for('create_vendor'))
+
+@app.route('/save_form_state_technician', methods=['POST'])
+def save_form_state_technician():
+    try:
+        print("Received request to /save_form_state_technician")
+        form_data = request.form.to_dict(flat=False)
+        print("Form data:", form_data)
+        session['technician_form_state'] = form_data
+        
+        # Store the referrer to determine return destination
+        referrer = request.referrer
+        print("Referrer:", referrer)
+        if referrer:
+            parts = referrer.split('/')
+            if 'create_service' in referrer and len(parts) >= 3:
+                session['return_to'] = 'create_service'
+                session['ticket_id'] = parts[-2]  # Extract ticket_id
+                session['asset_id'] = parts[-1]  # Extract asset_id
+            elif 'edit_service' in referrer and len(parts) >= 2:
+                session['return_to'] = 'edit_service'
+                session['service_id'] = parts[-1]  # Extract service_id
+            else:
+                session['return_to'] = 'create_service'  # Default fallback
+        else:
+            session['return_to'] = 'create_service'  # Default if no referrer
+
+        print("Session after update:", session)
+        return redirect(url_for('create_technician'))
+    except Exception as e:
+        print(f"Error in save_form_state_technician: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == '__main__':

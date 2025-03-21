@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technician Details Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            color: #333;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: auto;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            width: auto;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .flash-message {
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        .flash-message.success {
+            color: #3c763d;
+            background-color: #dff0d8;
+            border-color: #d6e9c6;
+        }
+        .flash-message.danger {
+            color: #a94442;
+            background-color: #f2dede;
+            border-color: #ebccd1;
+        }
+		
+		body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+/* Header Section */
+.header {
+    background-color: #2f276f;
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 28px;
+	color:white;
+}
+
+.header p {
+    margin: 5px 0 0;
+    font-size: 14px;
+}
+
+
+.header .add-asset-btn {
+    background-color: #2f276f ;
+    color: white;
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header .add-asset-btn:hover {
+    background-color: #291e6c;
+}
+
+        .menu {
+            cursor: pointer;
+            font-size: 24px;
+            padding: 10px;
+            background-color: #2f276f ;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        .menu:hover {
+            background-color: #291e6c;
+        }
+
+        .menu-dropdown {
+            display: none; /* Hidden by default */
+            position: absolute;
+            top: 60px; /* Below the menu button */
+            right: 20px;
+            background-color: white;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .menu-dropdown a,
+        .menu-dropdown button {
+            display: block;
+            text-decoration: none;
+            color: #2f276f ;
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            text-align: left;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .menu-dropdown a:hover,
+        .menu-dropdown button:hover {
+            background-color: #f4f4f9;
+        }r: #f4f4f9;
+        }
+		
+		
+		
+.main-content {
+            padding: 20px;
+        }
+
+        .main-content h2 {
+            font-size: 20px;
+            color: #2f276f ;
+            margin-bottom: 5px;
+        }
+
+        .main-content p {
+            font-size: 14px;
+            color: #666;
+        }
+
+
+
+
+
+
+
+
+.form-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .form-column {
+        flex: 1;
+        min-width: 400px; /* Ensure columns adjust for smaller screens */
+		
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        font-weight: bold;
+    }
+
+    .form-group input, 
+    .form-group select, 
+    .form-group textarea {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+    }
+
+    .hidden {
+        display: none;
+    }
+	
+		
+		/* Ticket Actions Section */
+.ticket-actions {
+    display: flex;
+    justify-content: space-between;  /* Align the elements to the left and right */
+    align-items: center;
+    padding: 20px;
+    background-color: #f4f4f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Ticket Actions Section (For "Raise Ticket" and "View All Raised Tickets" button) */
+.ticket-actions {
+    display: flex;
+    justify-content: space-between;  /* Align the items to the left and right */
+    align-items: center;
+    padding: 20px;
+    background-color: #f4f4f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Styling for "Raise Ticket" title */
+.ticket-actions h1 {
+    margin: 0;
+    font-size: 28px;
+    color: #2f276f;
+}
+		
+		
+		
+    </style>
+	
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <!-- Include Header JS -->
+    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
+
+</head>
+<body>
+   
+
+	
+	
+<!-- Include the header HTML -->
+    {% include 'header.html' %}
+    
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+		
+<div class="ticket-actions">
+
+<div id="message" style="display: none; background-color: #4CAF50; color: white; padding: 10px; margin-top: 10px;"></div>
+     <h1>Create Technician Form</h1>
+	
+</div>
+	
+	
+	
+   <div class="form-container">
+        <div class="form-column">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <form action="{{ url_for('create_technician') }}" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="technician_type">Technician Type:</label>
+                    <select id="technician_type" name="technician_type" required>
+                        <option value="" selected>Select Type</option>
+                        <option value="IT">IT</option>
+                        <option value="Industrial">Industrial</option>
+                        <option value="Gulabs Equipment">Gulabs Equipment</option>
+                        <option value="All">All</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="technician_name">Technician Name:</label>
+                    <input type="text" id="technician_name" name="technician_name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone_number">Contact No.:</label>
+                    <input type="text" id="phone_number" name="phone_number" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="address">Address:</label>
+                    <textarea id="address" name="address" rows="4"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="remarks">Remarks:</label>
+                    <textarea id="remarks" name="remarks" rows="4"></textarea>
+                </div>
+
+                <button type="submit">Submit</button>
+            </form>
+    </div>
+</body>
+
+
+	
+</html>

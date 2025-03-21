@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Service</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/service_styles.css') }}">
+    <style>
+        /* Add some basic styling for the table and popup */
+        .service-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .service-table th, .service-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .service-table th {
+            background-color: #2f276f;
+            color: white;
+        }
+        .action-btn {
+            padding: 5px 10px;
+            margin: 2px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .view-btn {
+            background-color: #2f276f;
+            color: white;
+        }
+        .edit-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .delete-btn {
+            background-color: #ff4444;
+            color: white;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            max-width: 600px;
+            width: 90%;
+        }
+        .popup-content {
+            display: flex;
+            justify-content: space-between;
+        }
+        .popup-column {
+            width: 48%;
+        }
+        .close-btn {
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            float: right;
+            border-radius: 4px;
+        }
+        .back-button {
+            background-color: #2f276f;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Service Details</h1>
+        <button class="back-button" onclick="window.history.back()">Back</button>
+    </div>
+
+    <div class="form-container">
+        <table class="service-table">
+            <thead>
+                <tr>
+                    <th>Service ID</th>
+                    <th>Ticket ID</th>
+                    <th>Asset ID</th>
+                    <th>Work Done</th>
+                    <th>Next Service Date</th>
+                    <th>Service Charge</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if service is mapping %}
+                    <!-- Single service record -->
+                    <tr data-service-id="{{ service.service_id }}">
+                        <td>{{ service.service_id }}</td>
+                        <td>{{ service.ticket_id }}</td>
+                        <td>{{ service.asset_id }}</td>
+                        <td>{{ service.work_done }}</td>
+                        <td>{{ service.next_service_date or 'N/A' }}</td>
+                        <td>{{ service.service_charge or 'N/A' }}</td>
+                        <td>
+                            <button class="action-btn view-btn" onclick="showPopup('{{ service.service_id }}')">View</button>
+                            <a href="{{ url_for('edit_service', service_id=service.service_id) }}" class="action-btn edit-btn">Edit</a>
+                            <form action="{{ url_for('delete_service', service_id=service.service_id) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this service?');">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <!-- List of service records -->
+                    {% for s in service %}
+                        <tr data-service-id="{{ s.service_id }}">
+                            <td>{{ s.service_id }}</td>
+                            <td>{{ s.ticket_id }}</td>
+                            <td>{{ s.asset_id }}</td>
+                            <td>{{ s.work_done }}</td>
+                            <td>{{ s.next_service_date or 'N/A' }}</td>
+                            <td>{{ s.service_charge or 'N/A' }}</td>
+                            <td>
+                                <button class="action-btn view-btn" onclick="showPopup('{{ s.service_id }}')">View</button>
+                                <a href="{{ url_for('edit_service', service_id=s.service_id) }}" class="action-btn edit-btn">Edit</a>
+                                <form action="{{ url_for('delete_service', service_id=s.service_id) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this service?');">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Popup Overlay -->
+    <div class="overlay" id="overlay" onclick="hidePopup()"></div>
+
+    <!-- Popup Window -->
+    <div class="popup" id="popup">
+        <button class="close-btn" onclick="hidePopup()">Close</button>
+        <h2>Service Details</h2>
+        <div class="popup-content" id="popup-content">
+            <!-- Popup content will be populated dynamically -->
+        </div>
+    </div>
+
+    <script>
+        // Store the service data in a JavaScript variable
+        const servicesData = {{ service | tojson }};
+
+        function showPopup(serviceId) {
+            let service;
+            if (Array.isArray(servicesData)) {
+                service = servicesData.find(s => s.service_id === serviceId);
+            } else {
+                service = servicesData;
+            }
+
+            if (service) {
+                const content = `
+                    <div class="popup-column">
+                        <p><strong>Service ID:</strong> ${service.service_id}</p>
+                        <p><strong>Ticket ID:</strong> ${service.ticket_id}</p>
+                        <p><strong>Asset ID:</strong> ${service.asset_id}</p>
+                        <p><strong>Service Case ID:</strong> ${service.service_case_id || 'N/A'}</p>
+                        <p><strong>Technician Name:</strong> ${service.technician_name}</p>
+                        <p><strong>Technician ID:</strong> ${service.technician_id || 'N/A'}</p>
+                        <p><strong>Warranty Type:</strong> ${service.warranty_type || 'N/A'}</p>
+                    </div>
+                    <div class="popup-column">
+                        <p><strong>Work Done:</strong> ${service.work_done}</p>
+                        <p><strong>Next Service Date:</strong> ${service.next_service_date || 'N/A'}</p>
+                        <p><strong>Service Charge:</strong> ${service.service_charge || 'N/A'}</p>
+                        <p><strong>Remarks:</strong> ${service.remarks || 'N/A'}</p>
+                        <p><strong>Service Bill Paths:</strong>
+                            ${
+                                service.service_bill_path ?
+                                service.service_bill_path.split(',').map(path => 
+                                    `<a href="${path}" target="_blank">${path.split('/').pop()}</a><br>`
+                                ).join('') : 'N/A'
+                            }
+                        </p>
+                        <p><strong>Created By:</strong> ${service.created_by}</p>
+                        <p><strong>Created At:</strong> ${service.created_at}</p>
+                        <p><strong>Modified By:</strong> ${service.modified_by || 'N/A'}</p>
+                        <p><strong>Modified At:</strong> ${service.modified_at || 'N/A'}</p>
+                    </div>
+                `;
+                document.getElementById('popup-content').innerHTML = content;
+                document.getElementById('popup').style.display = 'block';
+                document.getElementById('overlay').style.display = 'block';
+            }
+        }
+
+        function hidePopup() {
+            document.getElementById('popup').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('popup-content').innerHTML = '';
+        }
+    </script>
+</body>
+</html>

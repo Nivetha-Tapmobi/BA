@@ -9,6 +9,8 @@
         <div class="menu-dropdown" id="menuDropdown">
             <button class="add-asset-btn" onclick="location.href='{{ url_for('create_asset') }}';">+ Add Asset</button>
             <button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_raised_tickets') }}';">View All Tickets</button>
+			<button class="details-button" onclick="location.href='{{ url_for('view_assets') }}';">View Assets</button>
+			<button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_service') }}';">View Services</button>
 			<a href="{{ url_for('view_assets') }}" class="details-button">View Assets</a><br><br>
         </div>
     </div>

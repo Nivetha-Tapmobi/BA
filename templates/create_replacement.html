@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Replacement</title>
+    <style>
+         table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            white-space: nowrap;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #2f276f;
+            color: white;
+        }
+        .adduser-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .adduser-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+	
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <!-- Include Header JS -->
+		<script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
+</head>
+<body>
+
+<!-- Include the header HTML -->
+    {% include 'header.html' %}
+    
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <div class="container">
+        <h2>Unassigned Assets</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Asset ID</th>
+                    <th>Product Type</th>
+                    <th>Product Name</th>
+                    <th>Serial No</th>
+                    <th>Make</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asset in assets %}
+                <tr>
+                    <td>{{ asset.asset_id }}</td>
+                    <td>{{ asset.product_type }}</td>
+                    <td>{{ asset.product_name }}</td>
+                    <td>{{ asset.serial_no }}</td>
+                    <td>{{ asset.make }}</td>
+                    <td>
+                        <button class="adduser-btn" onclick="addUser('{{ asset.asset_id }}')">Add User</button>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not assets %}
+                <tr>
+                    <td colspan="6">No unassigned assets available.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function addUser(assetId) {
+            // Redirect to the create_user_asset route with the selected asset_id
+            window.location.href = `/create_user_asset/${assetId}`;
+        }
+    </script>
+</body>
+</html>
