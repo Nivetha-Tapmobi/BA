@@ -108,6 +108,7 @@ def create_tables():
     if conn:
         cursor = conn.cursor()
         try:
+            #create
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS it_assets(
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -153,7 +154,7 @@ def create_tables():
                 )
             """)
 
-
+            #asset users
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS assets_users (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -176,7 +177,7 @@ def create_tables():
                 )
             """)
 
-
+            #vendor details
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS vendor_details (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -194,7 +195,7 @@ def create_tables():
             )
             """)
 
-
+            #service details
             cursor.execute("""
                CREATE TABLE IF NOT EXISTS service_details (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -204,10 +205,7 @@ def create_tables():
                 service_type VARCHAR(255) NOT NULL,                  
                 ticket_id VARCHAR(255) NOT NULL,
                 asset_id VARCHAR(255) NOT NULL,
-                product_name VARCHAR(255),
-                serial_number VARCHAR(255),
                 service_case_id VARCHAR(255) UNIQUE NOT NULL,       
-                warranty_type VARCHAR(255) NOT NULL,
                 technician_name VARCHAR(255) NOT NULL,
                 technician_id VARCHAR(255) NOT NULL,
                 work_done TEXT,
@@ -216,13 +214,13 @@ def create_tables():
                 modified_by VARCHAR(100),
                 modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 remarks TEXT,
-                asset_category VARCHAR(255) NOT NULL,
-                archieved VARCHAR(255)    
+                archieved VARCHAR(255),
+                service_bill_path VARCHAR(255)
             )
 
             """)
 
-
+            #technician details
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS technician_details (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -240,8 +238,8 @@ def create_tables():
                     archieved VARCHAR(255)     
                 )
             """)
-
-
+            
+            #extended warranty details
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS extended_warranty_info (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -271,15 +269,14 @@ def create_tables():
                 )
             """)
 
+            #raised tickets
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS raised_tickets (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     created_by VARCHAR(255),
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     ticket_id VARCHAR(255) UNIQUE NOT NULL,
-                    asset_id VARCHAR(255) NOT NULL,     
-                    serial_number VARCHAR(255) NOT NULL,     
-                    product_name VARCHAR(255) NOT NULL,
+                    asset_id VARCHAR(255) NOT NULL, 
                     raised_by VARCHAR(255) NOT NULL,
                     problem_description TEXT,                              
                     modified_by VARCHAR(255), 
@@ -290,13 +287,12 @@ def create_tables():
                     replacement_issued VARCHAR(255),
                     replacement_asset_id VARCHAR(255),
                     replacement_reason VARCHAR(255),
-                    asset_category VARCHAR(255) NOT NULL,
                     remarks TEXT,
                     archieved VARCHAR(255)
                 )
             """)
 
-
+            #insurance
             cursor.execute("""
                CREATE TABLE IF NOT EXISTS insurance_details (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -318,6 +314,7 @@ def create_tables():
                     archieved VARCHAR(255)
                 )
             """)
+            
             conn.commit()
         except mysql.connector.Error as err:
             print(f"Error: {err}")
@@ -367,7 +364,6 @@ def generate_unique_id( prefix):
     
     return new_id
 
-
 # Email configuration (adjust as per your SMTP settings)
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
@@ -379,9 +375,13 @@ def send_email(to_email, username, asset_id, table_name, action):
     if 'add_user' in table_name.lower():
         subject = f"New Asset Assignment Notification - {action}"
         body_content = f"Your asset has been assigned to you"
+
     elif 'edit_user' in table_name.lower():
         subject = f"Asset Assignment Update Notification - {action}"
         body_content = f"Your asset assignment has been updated"
+
+    elif 'raise_ticket' in table_name.lower():
+        subject = f"New Ticket Raised "
 
     body = f"""
     Dear {username},
@@ -405,6 +405,33 @@ def send_email(to_email, username, asset_id, table_name, action):
         server.login(SMTP_USER, SMTP_PASSWORD)
         server.send_message(msg)
 
+def raise_ticket_send_email(to_email, raised_by, asset_id, ticket_id, problem_description):
+    subject = f"New Ticket Raised - {ticket_id}"
+    body = f"""
+    Dear Admin,
+
+    A new ticket has been raised:
+
+    Ticket ID: {ticket_id}
+    Asset ID: {asset_id}
+    Raised By: {raised_by}
+    Problem Description: {problem_description}
+    Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+    Please take appropriate action.
+
+    Regards,
+    Asset Management Team
+    """
+    msg = MIMEText(body)
+    msg['Subject'] = subject
+    msg['From'] = SMTP_USER
+    msg['To'] = to_email
+
+    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+        server.starttls()
+        server.login(SMTP_USER, SMTP_PASSWORD)
+        server.send_message(msg)
 
 @app.route('/')
 def home():
@@ -848,7 +875,6 @@ def edit_asset(asset_id):
                            recurring_alert_list=recurring_alert_list,
                            form_state=form_state)
 
-
 @app.route('/view_assets', methods=['GET'])
 def view_assets():
     conn = get_db_connection()
@@ -883,7 +909,6 @@ def view_assets():
 
     return render_template('view_assets.html', all_assets=assets_list, today=today)
 
-
 @app.route('/delete_asset/<string:id>', methods=['POST'])
 def delete_asset(id):
     data = request.get_json()  # Get JSON data from the request body
@@ -903,160 +928,6 @@ def delete_asset(id):
     else:
         return jsonify({"error": "Invalid table name"}), 400
 
-
-# # Route for creating a new user asset assignment
-# @app.route('/create_user_asset/<asset_id>', methods=['GET', 'POST'])
-# def create_user_asset(asset_id):
-#     conn = get_db_connection()
-#     cursor = conn.cursor(dictionary=True)
-
-#     if request.method == 'POST':
-
-#         assignment_code = generate_unique_id('AU')
-#         created_by = 't1'
-#         created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-#         assigned_user_data = request.form['assigned_user']
-#         assigned_user, employee_code = assigned_user_data.split('|')
-#         # assigned_user = request.form['assigned_user']
-#         effective_date = request.form['effective_date']
-#         remarks = request.form.get('remarks', '')
-#         archieved = request.form.get('archieved', 'No')
-
-
-#         cursor.execute("""
-#             SELECT email FROM big_app_login_users.users 
-#             WHERE employee_id = %s
-#         """, (employee_code,))
-#         user = cursor.fetchone()
-#         email = user['email']
-
-#         # Insert into assets_users table
-#         cursor.execute("""
-#             INSERT INTO assets_users (created_by, created_at, assignment_code, asset_id, assigned_user, effective_date, remarks, email, archieved, employee_code)
-#             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-#         """, (created_by, created_at, assignment_code, asset_id, assigned_user, effective_date, remarks, email, archieved, employee_code))
-#         conn.commit()
-        
-#         # Send email with table name 'add_user'
-#         if user and email:
-#             send_email(email, assigned_user, asset_id, "add_user", "Created")
-
-#         cursor.close()
-#         conn.close()
-#         return redirect(url_for('view_user_details', asset_id = asset_id))  # Adjust as needed
-
-#     # GET request: fetch employees
-#     cursor.execute("""
-#         SELECT id, username, employee_id, email, phone, designation 
-#         FROM big_app_login_users.users
-#     """)
-#     employees = cursor.fetchall()
-#     cursor.close()
-#     conn.close()
-#     return render_template('create_user_asset.html', employees=employees, asset_id=asset_id)
-
-# # Route for editing an existing user asset assignment
-# @app.route('/edit_user_asset/<assignment_code>', methods=['GET', 'POST'])
-# def edit_user_asset(assignment_code):
-#     conn = get_db_connection()
-#     cursor = conn.cursor(dictionary=True)
-
-#     if request.method == 'POST':
-#         # assigned_user = request.form['assigned_user']
-#         assigned_user_data = request.form['assigned_user']
-#         assigned_user, employee_code = assigned_user_data.split('|')
-#         effective_date = request.form['effective_date']
-#         end_date = request.form.get('end_date', None)
-#         remarks = request.form.get('remarks', '')
-
-#         # Update assets_users table
-#         cursor.execute("""
-#             UPDATE assets_users 
-#             SET assigned_user = %s, effective_date = %s, end_date = %s, remarks = %s, employee_code=%s
-#             WHERE assignment_code = %s 
-            
-#         """, (assigned_user, effective_date, end_date, remarks, employee_code, assignment_code))
-#         conn.commit()
-
-#         # Fetch user's email
-#         cursor.execute("""
-#             SELECT email FROM big_app_login_users.users 
-#             WHERE employee_id = %s
-#         """, (employee_code,))
-#         user = cursor.fetchone()
-
-
-#         cursor.execute("""
-#             SELECT asset_id FROM assets_users 
-#             WHERE assignment_code = %s 
-#             ORDER BY created_at DESC 
-#             LIMIT 1
-#         """, (assignment_code,))
-#         assets = cursor.fetchone()
-
-#         if assets:
-#             asset_id = assets['asset_id']
-
-        
-#         # Send email with table name 'edit_user'
-#         if user and user['email']:
-#             send_email(user['email'], assigned_user, assignment_code, "edit_user", "Updated")
-
-
-#         cursor.close()
-#         conn.close()
-#         return redirect(url_for('view_user_details', asset_id = asset_id))  # Adjust as needed
-
-#     # GET request: fetch employees and last user data
-#     cursor.execute("""
-#         SELECT id, username, employee_id, email, phone, designation 
-#         FROM big_app_login_users.users
-#     """)
-#     employees = cursor.fetchall()
-
-#     cursor.execute("""
-#         SELECT assigned_user, effective_date, end_date, remarks 
-#         FROM assets_users 
-#         WHERE assignment_code  = %s 
-#     """, (assignment_code ,))
-#     last_user = cursor.fetchone()
-
-#     cursor.close()
-#     conn.close()
-#     return render_template('edit_user_asset.html', employees=employees, assignment_code=assignment_code, last_user=last_user)
-
-
-# # Route for viewing user details
-# @app.route('/view_user_details/<asset_id>', methods=['GET'])
-# def view_user_details(asset_id):
-#     conn = get_db_connection()
-#     cursor = conn.cursor(dictionary=True)
-
-#     # Fetch minimal data for the table
-#     cursor.execute("""
-#         SELECT assignment_code, assigned_user, email, effective_date, end_date, remarks
-#         FROM assets_users WHERE asset_id = %s
-#     """, (asset_id,))
-#     assignments = cursor.fetchall()
-
-#     # Check if full details are requested
-#     assignment_code = request.args.get('assignment_code', None)
-#     full_details = None
-#     if assignment_code:
-#         cursor.execute("""
-#             SELECT id, created_by, created_at, assignment_code, asset_id, assigned_user, 
-#                    email, effective_date, end_date, modified_by, modified_at, remarks, 
-#                    confirmation_status, token, token_expiration, archieved
-#             FROM assets_users
-#             WHERE assignment_code = %s
-#         """, (assignment_code,))
-#         full_details = cursor.fetchone()
-
-#     cursor.close()
-#     conn.close()
-#     return render_template('view_user_details.html', assignments=assignments, full_details=full_details, asset_id=asset_id)
-
-
 # Function to fetch purchase_date for an asset_id
 def get_purchase_date(asset_id):
     conn = get_db_connection()
@@ -1070,7 +941,6 @@ def get_purchase_date(asset_id):
     cursor.close()
     conn.close()
     return asset['purchase_date'] if asset else None
-
 
 # Function to fetch the latest assignment_code and end_date for an asset_id
 def get_latest_assignment_code_and_end_date(asset_id):
@@ -1087,7 +957,6 @@ def get_latest_assignment_code_and_end_date(asset_id):
     cursor.close()
     conn.close()
     return latest if latest else {'assignment_code': None, 'end_date': None}
-
 
 # Function to fetch the latest end_date for an asset_id
 def get_latest_end_date(asset_id):
@@ -1154,9 +1023,9 @@ def create_user_asset(asset_id):
         """, (created_by, created_at, assignment_code, asset_id, assigned_user, effective_date, remarks, email, archieved, employee_code))
         conn.commit()
 
-        # Send email with table name 'add_user'
-        if user and email:
-            send_email(email, assigned_user, asset_id, "add_user", "Created")
+        # # Send email with table name 'add_user'
+        # if user and email:
+        #     send_email(email, assigned_user, asset_id, "add_user", "Created")
 
         cursor.close()
         conn.close()
@@ -1229,9 +1098,9 @@ def edit_user_asset(assignment_code):
         """, (employee_code,))
         user = cursor.fetchone()
 
-        # Send email with table name 'edit_user'
-        if user and user['email']:
-            send_email(user['email'], assigned_user, assignment_code, "edit_user", "Updated")
+        # # Send email with table name 'edit_user'
+        # if user and user['email']:
+        #     send_email(user['email'], assigned_user, assignment_code, "edit_user", "Updated")
 
         cursor.close()
         conn.close()
@@ -1290,7 +1159,6 @@ def view_user_details(asset_id):
     conn.close()
     return render_template('view_user_details.html', assignments=assignments, full_details=full_details, asset_id=asset_id, latest_assignment_code=latest_assignment_code, latest_end_date=latest_end_date)
 
-
 @app.route('/delete_user_asset/<assignment_code>', methods=['POST'])
 def delete_user_asset(assignment_code):
     conn = get_db_connection()
@@ -1298,7 +1166,8 @@ def delete_user_asset(assignment_code):
 
     # Fetch asset_id before deletion for redirect
     cursor.execute("SELECT asset_id FROM assets_users WHERE assignment_code = %s", (assignment_code,))
-    asset_id = cursor.fetchone()
+    asset_id_data = cursor.fetchone()
+    asset_id = asset_id_data[0]
 
     # Delete the assignment by assignment_code
     cursor.execute("""
@@ -1370,9 +1239,190 @@ def save_form_state():
     print('\n\n Session after setting:', session)
     return redirect(url_for('create_vendor'))
 
+# Function to fetch asset details from it_assets table
+def fetch_it_assets_info(asset_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT *
+        FROM it_assets 
+        WHERE asset_id = %s
+    """, (asset_id,))
+    asset = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return asset
+
+# Route to handle both rendering the form and ticket creation
+@app.route('/create_raise_ticket/<asset_id>', methods=['GET', 'POST'])
+def create_raise_ticket(asset_id):
+    # Fetch asset details
+    asset = fetch_it_assets_info(asset_id)
+
+    if not asset:
+        flash("Asset not found.", "danger")
+        return redirect(url_for('view_assets'))  # Redirect to view_assets if asset not found
+
+    # Assuming user_name is fetched from session or similar mechanism
+    user_name = None  # Replace with actual user session data if available
+
+    if request.method == 'POST':
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        created_by = 't1'
+        created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        ticket_id = generate_unique_id('RT')
+        raised_by = request.form['raised_by']
+        problem_description = request.form['problem_description']
+        remarks = request.form.get('remarks', '')
+        ticket_status = 'Open'  # Default status
+        archieved = 'No'  # Default value
+        
+
+        cursor.execute("""
+            INSERT INTO raised_tickets (
+                created_by, created_at, ticket_id, asset_id, raised_by, 
+                problem_description, ticket_status, remarks, archieved
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (created_by, created_at, ticket_id, asset_id, raised_by, 
+              problem_description, ticket_status, remarks, archieved))
+        conn.commit()
+
+        # Fetch admin email for notification
+        # admin_email = "nivetha@tapmobi.in"
+
+        # Send email notification to admin
+        # raise_ticket_send_email(admin_email, raised_by, asset_id, ticket_id, problem_description)
+
+        flash("Ticket raised successfully!", "success")
+        cursor.close()
+        conn.close()
+        return redirect(url_for('view_assets'))
+
+    # GET request: render the form
+    return render_template('create_raise_ticket.html', 
+                           asset_id=asset['asset_id'], 
+                           product_name=asset['product_name'], 
+                           serial_no=asset['serial_no'], 
+                           user_name=user_name)
+
+@app.route('/view_raised_tickets', methods=['GET'])
+@app.route('/view_raised_tickets/<asset_id>', methods=['GET'])
+def view_raised_tickets(asset_id=None):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if asset_id:
+        # Fetch tickets for the specific asset
+        cursor.execute("""
+            SELECT created_by, ticket_id, raised_by, problem_description, 
+                   ticket_status, ignore_reason
+            FROM raised_tickets 
+            WHERE asset_id = %s
+        """, (asset_id,))
+    else:
+        # Fetch all tickets when no asset_id is provided
+        cursor.execute("""
+            SELECT created_by, ticket_id, raised_by, problem_description, 
+                   ticket_status, ignore_reason, asset_id
+            FROM raised_tickets
+        """)
+
+    tickets = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template('view_raised_tickets.html', tickets=tickets, asset_id=asset_id)
+
+# Route to fetch ticket details for the view popup
+@app.route('/ticket_details/<ticket_id>', methods=['GET'])
+def ticket_details(ticket_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT id, created_by, created_at, ticket_id, asset_id, raised_by, 
+               problem_description, modified_by, modified_at, ticket_status, 
+               ignore_reason, progress_notes, replacement_issued, 
+               replacement_asset_id, replacement_reason, remarks, archieved
+        FROM raised_tickets 
+        WHERE ticket_id = %s
+    """, (ticket_id,))
+    ticket = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    if ticket:
+        return jsonify(ticket)
+    else:
+        return jsonify({'error': 'Ticket not found'}), 404
+
+# Route to handle ignoring a ticket
+@app.route('/ignore_ticket/<ticket_id>', methods=['POST'])
+def ignore_ticket(ticket_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    ignore_reason = request.form['ignore_reason']
+    modified_by = 't1'  # Replace with actual user if available
+    modified_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    cursor.execute("""
+        UPDATE raised_tickets 
+        SET ignore_reason = %s, ticket_status = 'Closed', 
+            modified_by = %s, modified_at = %s
+        WHERE ticket_id = %s
+    """, (ignore_reason, modified_by, modified_at, ticket_id))
+    conn.commit()
+
+    # Fetch asset_id for redirect
+    cursor.execute("SELECT asset_id FROM raised_tickets WHERE ticket_id = %s", (ticket_id,))
+    result = cursor.fetchone()
+    if result:
+        asset_id = result[0]  # If result is a tuple, use index 0
+    else:
+        asset_id = None
+
+    cursor.close()
+    conn.close()
+
+    # Get referrer and prevent infinite redirect loop
+    referrer = request.referrer
+    if referrer and "ignore_ticket" not in referrer and "delete_ticket" not in referrer:
+        return redirect(referrer)  # Redirect to the same page only if it’s not looping
+
+    flash("Ticket ignored successfully!", "success")
+    return redirect(url_for('view_raised_tickets', asset_id=asset_id))
+
+@app.route('/delete_ticket/<ticket_id>', methods=['POST'])
+def delete_ticket(ticket_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Fetch asset_id before deletion for redirect
+    cursor.execute("SELECT asset_id FROM raised_tickets WHERE ticket_id = %s", (ticket_id,))
+    asset_id_data = cursor.fetchone()
+    asset_id = asset_id_data[0]
+
+    # Delete the assignment by ticket_id
+    cursor.execute("""
+        UPDATE raised_tickets SET archieved = 'yes'
+        WHERE ticket_id = %s
+    """, (ticket_id,))
+    conn.commit()
+
+    cursor.close()
+    conn.close()
 
 
-
+    # Get referrer and prevent infinite redirect loop
+    referrer = request.referrer
+    if referrer and "ignore_ticket" not in referrer and "delete_ticket" not in referrer:
+        return redirect(referrer)  # Redirect to the same page only if it’s not looping
+    
+    flash("Ticket deleted successfully!", "success")
+    return redirect(url_for('view_raised_tickets', asset_id=asset_id))
 
 
 if __name__ == '__main__':

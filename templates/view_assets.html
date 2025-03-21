@@ -12,16 +12,6 @@
             padding: 0;
         }
 
-        .header {
-            background-color: #2f276f;
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
 
         .container {
             width: 95%;
@@ -151,6 +141,10 @@
         .action-menu .delete-btn {
             color: #dc3545;
         }
+		
+		
+
+		
     </style>
 
     <!-- DataTables CSS -->
@@ -165,11 +159,22 @@
     <script src="{{ url_for('static', filename='js/view_assets_details_popup.js') }}"></script>
     <script src="{{ url_for('static', filename='js/view_assets_print.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/view_assets.js') }}"></script>
+	
+	
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <!-- Include Header JS -->
+    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
 </head>
 <body>
-    <div class="header">
-        <h1>IT Asset Tracker</h1>
+
+
+<!-- Include the header HTML -->
+    {% include 'header.html' %}
+    
+    <div class="content">
+        {% block content %}{% endblock %}
     </div>
+
 
     <div class="container">
         <div class="button-container">
@@ -230,6 +235,7 @@
                             <button class="view-btn" onclick='viewDetails({{ asset|tojson|safe }})'>View Details</button>
                             <button class="edit-btn" onclick="editAsset('{{ asset.asset_id }}')">Edit</button>
 							<button class="adduser-btn" onclick="addUser('{{ asset.asset_id }}')">Add User</button>
+							<button class="raise-btn" onclick="raiseTicket('{{ asset.asset_id }}')">Raise Ticket</button>
 							<button class="delete-btn" data-table="it_assets" onclick="deleteAsset('{{ asset.asset_id }}', this)">Delete</button>
 
                         </div>
@@ -345,5 +351,6 @@ if (confirm('Are you sure you want to delete this asset?')) {
 }
 
     </script>
+	
 </body>
 </html>

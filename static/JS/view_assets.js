@@ -72,6 +72,11 @@ function addUser(assetId) {
 }
 
 
+function raiseTicket(assetId) {
+	// Add your edit logic here, e.g., redirect to edit page
+	window.location.href = `/create_raise_ticket/${assetId}`;
+}
+
 
 // Function to manage insurance
 function manageInsurance(assetId) {

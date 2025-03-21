@@ -1,0 +1,15 @@
+<head>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
+</head>
+<body>
+    <div class="header">
+        <h1>IT Asset Tracker</h1>
+        <div class="menu" onclick="headertoggleMenu()">☰</div>
+        <div class="menu-dropdown" id="menuDropdown">
+            <button class="add-asset-btn" onclick="location.href='{{ url_for('create_asset') }}';">+ Add Asset</button>
+            <button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_raised_tickets') }}';">View All Tickets</button>
+			<a href="{{ url_for('view_assets') }}" class="details-button">View Assets</a><br><br>
+        </div>
+    </div>
+</body>

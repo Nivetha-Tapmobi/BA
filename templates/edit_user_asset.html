@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit User Asset Assignment</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/create_user_styles.css') }}">
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <!-- Include Header JS -->
+    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
     <style>
         .error-message {
             color: red;
@@ -14,11 +17,13 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>IT Asset Tracker</h1>
-        <div class="menu" onclick="headertoggleMenu()">☰</div>
-        <div class="menu-dropdown" id="menuDropdown"></div>
+<!-- Include the header HTML -->
+    {% include 'header.html' %}
+    
+    <div class="content">
+        {% block content %}{% endblock %}
     </div>
+
 
     <div class="form-container">
         {% with messages = get_flashed_messages(with_categories=true) %}

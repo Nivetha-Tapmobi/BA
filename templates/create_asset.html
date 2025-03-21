@@ -5,13 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IT Asset Form</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/create_asset_style.css') }}">
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <!-- Include Header JS -->
+    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
 </head>
 <body>
-    <div class="header">
-        <h1>Asset Tracker</h1>
-        <div class="menu" onclick="headertoggleMenu()">☰</div>
-        <div class="menu-dropdown" id="menuDropdown"></div>
+<!-- Include the header HTML -->
+    {% include 'header.html' %}
+    
+    <div class="content">
+        {% block content %}{% endblock %}
     </div>
+
    
     <div class="main-content">
         <div class="assets-header">

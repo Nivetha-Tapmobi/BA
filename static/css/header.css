@@ -1,0 +1,47 @@
+/* static/style.css */
+
+.header {
+	background-color: #2f276f;
+	color: white;
+	padding: 20px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border-radius: 8px;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+
+/* Menu Button */
+.menu {
+    cursor: pointer;
+    font-size: 24px;
+}
+
+/* Dropdown Menu */
+.menu-dropdown {
+    display: none;
+    position: absolute;
+    right: 20px;
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    z-index: 1000;
+}
+
+.menu-dropdown button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: left;
+    color: black;
+}
+
+.menu-dropdown button:hover {
+    background: #f0f0f0;
+}

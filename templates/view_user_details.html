@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View User Asset Assignments</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/create_user_styles.css') }}">
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <!-- Include Header JS -->
+    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
     <style>
         /* Table and button styles */
         .container {
@@ -138,15 +141,13 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>IT Asset Tracker</h1>
-        <button class="menu">☰</button>
-        <div class="menu-dropdown">
-            <a href="#">Profile</a>
-            <a href="#">Settings</a>
-            <a href="#">Logout</a>
-        </div>
+<!-- Include the header HTML -->
+    {% include 'header.html' %}
+    
+    <div class="content">
+        {% block content %}{% endblock %}
     </div>
+
 
     <div class="container">
         <div class="ticket-actions">
