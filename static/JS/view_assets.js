@@ -80,7 +80,7 @@ function raiseTicket(assetId) {
 
 // Function to manage insurance
 function manageInsurance(assetId) {
-    alert("Manage insurance for: " + assetId);
+    window.location.href = `/create_insurance/${assetId}`;
 }
 
 // Function to manage extended warranty

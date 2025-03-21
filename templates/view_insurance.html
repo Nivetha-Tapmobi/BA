@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Insurance</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/service_styles.css') }}">
+    <style>
+        .header {
+            background-color: #2f276f;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .back-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .form-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .service-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        .service-table th, .service-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .service-table th {
+            background-color: #2f276f;
+            color: white;
+        }
+        .action-btn {
+            padding: 5px 10px;
+            margin: 2px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            color: white;
+        }
+        .view-btn {
+            background-color: #2f276f;
+        }
+        .edit-btn {
+            background-color: #4CAF50;
+        }
+        .delete-btn {
+            background-color: #ff4444;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            max-width: 600px;
+            width: 90%;
+        }
+        .popup-content {
+            display: flex;
+            justify-content: space-between;
+        }
+        .popup-column {
+            width: 48%;
+        }
+        .close-btn {
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            float: right;
+            border-radius: 4px;
+        }
+        .flash-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .flash-message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .flash-message.danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Insurance Details</h1>
+        <button class="back-button" onclick="window.history.back()">Back</button>
+    </div>
+
+    <div class="form-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <table class="service-table">
+            <thead>
+                <tr>
+                    <th>Insurance ID</th>
+                    <th>Asset ID</th>
+                    <th>Product Name</th>
+                    <th>Policy Number</th>
+                    <th>Insurance Value</th>
+                    <th>Insurance Start</th>
+                    <th>Insurance End</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if insurance is mapping %}
+                    <!-- Single insurance record -->
+                    <tr data-insurance-id="{{ insurance.insurance_id }}">
+                        <td>{{ insurance.insurance_id }}</td>
+                        <td>{{ insurance.asset_id }}</td>
+                        <td>{{ insurance.product_name }}</td>
+                        <td>{{ insurance.policy_number }}</td>
+                        <td>{{ insurance.insurance_value or 'N/A' }}</td>
+                        <td>{{ insurance.insurance_start }}</td>
+                        <td>{{ insurance.insurance_end }}</td>
+                        <td>
+                            <button class="action-btn view-btn" onclick="showPopup('{{ insurance.insurance_id }}')">View</button>
+                            <a href="{{ url_for('edit_insurance', insurance_id=insurance.insurance_id) }}" class="action-btn edit-btn">Edit</a>
+                            <form action="{{ url_for('delete_insurance', insurance_id=insurance.insurance_id) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to archive this insurance?');">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <!-- List of insurance records -->
+                    {% for ins in insurance %}
+                        <tr data-insurance-id="{{ ins.insurance_id }}">
+                            <td>{{ ins.insurance_id }}</td>
+                            <td>{{ ins.asset_id }}</td>
+                            <td>{{ ins.product_name }}</td>
+                            <td>{{ ins.policy_number }}</td>
+                            <td>{{ ins.insurance_value or 'N/A' }}</td>
+                            <td>{{ ins.insurance_start }}</td>
+                            <td>{{ ins.insurance_end }}</td>
+                            <td>
+                                <button class="action-btn view-btn" onclick="showPopup('{{ ins.insurance_id }}')">View</button>
+                                <a href="{{ url_for('edit_insurance', insurance_id=ins.insurance_id) }}" class="action-btn edit-btn">Edit</a>
+                                <form action="{{ url_for('delete_insurance', insurance_id=ins.insurance_id) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to archive this insurance?');">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Popup Overlay -->
+    <div class="overlay" id="overlay" onclick="hidePopup()"></div>
+
+    <!-- Popup Window -->
+    <div class="popup" id="popup">
+        <button class="close-btn" onclick="hidePopup()">Close</button>
+        <h2>Insurance Details</h2>
+        <div class="popup-content" id="popup-content">
+            <!-- Popup content will be populated dynamically -->
+        </div>
+    </div>
+
+    <script>
+        const insuranceData = {{ insurance | tojson }};
+
+        function showPopup(insuranceId) {
+            let ins;
+            if (Array.isArray(insuranceData)) {
+                ins = insuranceData.find(i => i.insurance_id === insuranceId);
+            } else {
+                ins = insuranceData;
+            }
+
+            if (ins) {
+                const content = `
+                    <div class="popup-column">
+                        <p><strong>Insurance ID:</strong> ${ins.insurance_id}</p>
+                        <p><strong>Asset ID:</strong> ${ins.asset_id}</p>
+                        <p><strong>Product Name:</strong> ${ins.product_name}</p>
+                        <p><strong>Policy Number:</strong> ${ins.policy_number}</p>
+                        <p><strong>Insurance Value:</strong> ${ins.insurance_value || 'N/A'}</p>
+                        <p><strong>Insurance Start:</strong> ${ins.insurance_start}</p>
+                        <p><strong>Insurance Period:</strong> ${ins.insurance_period}</p>
+                        <p><strong>Insurance End:</strong> ${ins.insurance_end}</p>
+                    </div>
+                    <div class="popup-column">
+                        <p><strong>Insurance Bills:</strong>
+                            ${
+                                ins.insurance_bill_path ?
+                                ins.insurance_bill_path.split(',').map(path => 
+                                    `<a href="${path}" target="_blank">${path.split('/').pop()}</a><br>`
+                                ).join('') : 'N/A'
+                            }
+                        </p>
+                        <p><strong>Remarks:</strong> ${ins.remarks || 'N/A'}</p>
+                        <p><strong>Created By:</strong> ${ins.created_by}</p>
+                        <p><strong>Created At:</strong> ${ins.created_at}</p>
+                        <p><strong>Modified By:</strong> ${ins.modified_by || 'N/A'}</p>
+                        <p><strong>Modified At:</strong> ${ins.modified_at || 'N/A'}</p>
+                        <p><strong>Archived:</strong> ${ins.archieved}</p>
+                    </div>
+                `;
+                document.getElementById('popup-content').innerHTML = content;
+                document.getElementById('popup').style.display = 'block';
+                document.getElementById('overlay').style.display = 'block';
+            }
+        }
+
+        function hidePopup() {
+            document.getElementById('popup').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('popup-content').innerHTML = '';
+        }
+    </script>
+</body>
+</html>

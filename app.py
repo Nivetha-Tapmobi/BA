@@ -298,19 +298,17 @@ def create_tables():
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     created_by VARCHAR(255),
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    insurance_id VARCHAR(255) UNIQUE NOT NULL,
-                    asset_id VARCHAR(255) NOT NULL,     
-                    serial_number VARCHAR(255) NOT NULL,     
-                    product_name VARCHAR(255) NOT NULL,
+                    insurance_id VARCHAR(255) UNIQUE NOT NULL,   
+                    asset_id VARCHAR(255) NOT NULL,
                     policy_number VARCHAR(255) UNIQUE NOT NULL,
                     insurance_value DECIMAL(10, 2),
                     insurance_start DATE,
                     insurance_period VARCHAR(255),
                     insurance_end DATE,
+                    insurance_bill_path VARCHAR(1500),
                     modified_by VARCHAR(255), 
                     modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                     remarks TEXT,
-                    asset_category VARCHAR(255) NOT NULL,
                     archieved VARCHAR(255)
                 )
             """)
@@ -995,6 +993,7 @@ def get_latest_end_date(asset_id):
     conn.close()
     return (latest['end_date'] if latest else None, is_disabled)
 
+
 # Route for creating a new user asset assignment
 @app.route('/create_user_asset/<asset_id>', methods=['GET', 'POST'])
 def create_user_asset(asset_id):
@@ -1498,12 +1497,8 @@ def fetch_unassigned_assets():
 @app.route('/create_service/<ticket_id>/', methods=['GET', 'POST'])
 def create_service(ticket_id, asset_id=None):
 
-    print(f"Request path: {request.path}")
-    print(f"Entered create_service route with ticket_id={ticket_id}, asset_id={asset_id}")
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-
-    print(f"Entered create_service route with ticket_id={ticket_id}, asset_id={asset_id}")
 
     # Check if asset_id is None or an empty string
     if asset_id is None or asset_id == '':
@@ -1670,7 +1665,6 @@ def edit_service(service_id):
     conn.close()
     return render_template('edit_service.html', service=service, technicians=technicians)
 
-
 @app.route('/view_service', methods=['GET'])
 @app.route('/view_service/<service_id>', methods=['GET'])
 def view_service(service_id=None):  # Added default value for clarity
@@ -1684,11 +1678,9 @@ def view_service(service_id=None):  # Added default value for clarity
         cursor.execute("SELECT * FROM service_details")
         service = cursor.fetchall()
         
-
     cursor.close()
     conn.close()
     return render_template('view_service.html', service=service)
-
 
 # Route to delete a service
 @app.route('/delete_service/<service_id>', methods=['POST'])
@@ -1710,8 +1702,251 @@ def delete_service(service_id):
     flash("Service Deleted successfully!", "success")
     return redirect(url_for('view_service'))  # Replace with your desired redirect route
 
+# Function to get purchase date of an asset
+def get_purchase_date(asset_id):
+    asset = fetch_it_assets_info(asset_id)
+    return asset['purchase_date'] if asset else None
 
+# Function to get the latest insurance end date for an asset
+def get_latest_insurance_end_date(asset_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
 
+    # Check the count of insurance records for the asset_id
+    cursor.execute("""
+        SELECT COUNT(*) 
+        FROM insurance_details 
+        WHERE asset_id = %s AND archieved = 'No'
+    """, (asset_id,))
+    count = cursor.fetchone()['COUNT(*)']
+
+    # Only fetch the latest end date if there is more than one record
+    if count > 1:
+        cursor.execute("""
+            SELECT insurance_end 
+            FROM insurance_details 
+            WHERE asset_id = %s AND archieved = 'No'
+            ORDER BY insurance_end DESC
+            LIMIT 1
+        """, (asset_id,))
+        insurance = cursor.fetchone()
+        latest_end_date = insurance['insurance_end'] if insurance else None
+    else:
+        latest_end_date = None
+
+    cursor.close()
+    conn.close()
+    return latest_end_date
+
+# Route to create a new insurance record
+@app.route('/create_insurance/<asset_id>', methods=['GET', 'POST'])
+def create_insurance(asset_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        product_name = request.form['product_name']
+        policy_number = request.form['policy_number']
+        insurance_value = request.form['insurance_value'] or None
+        insurance_start = request.form['insurance_start']
+        insurance_period_years = int(request.form['insurance_period_years'] or 0)
+        insurance_period_months = int(request.form['insurance_period_months'] or 0)
+        insurance_period_days = int(request.form['insurance_period_days'] or 0)
+        remarks = request.form.get('remarks', '')
+
+        # Calculate insurance_end date
+        insurance_start_date = datetime.strptime(insurance_start, '%Y-%m-%d').date()
+        total_days = (insurance_period_years * 365) + (insurance_period_months * 30) + insurance_period_days
+        insurance_end = insurance_start_date + timedelta(days=total_days)
+
+        # Handle multiple file uploads
+        insurance_bill_paths = []
+        if 'insurance_bill' in request.files:
+            files = request.files.getlist('insurance_bill')
+            for file in files:
+                if file and allowed_file(file.filename):
+                    # Define the upload path: UPLOAD_FOLDER/asset_id/insurance_bills/
+                    asset_folder = os.path.join(app.config['UPLOAD_FOLDER'], asset_id)
+                    insurance_bills_folder = os.path.join(asset_folder, 'insurance_bills')
+                    
+                    # Create folders if they don't exist
+                    os.makedirs(insurance_bills_folder, exist_ok=True)
+                    
+                    # Define the filename with insurance_id prefix
+                    insurance_id = generate_unique_id('INS')
+                    filename = f"{insurance_id}_{file.filename}"
+                    file_path = os.path.join(insurance_bills_folder, filename)
+                    
+                    # Save the file
+                    file.save(file_path)
+                    # Store the relative path from UPLOAD_FOLDER
+                    relative_path = os.path.join(asset_id, 'insurance_bills', filename)
+                    insurance_bill_paths.append(relative_path)
+            insurance_bill_path = ','.join(insurance_bill_paths) if insurance_bill_paths else None
+        else:
+            insurance_bill_path = None
+
+        # Generate insurance_id
+        insurance_id = generate_unique_id('INS')
+        created_by = 'nive'
+        created_at = datetime.now()
+
+        # Insert into insurance_details table
+        cursor.execute("""
+            INSERT INTO insurance_details 
+            (insurance_id, asset_id, policy_number, insurance_value, insurance_start, 
+             insurance_period, insurance_end, insurance_bill_path, remarks, created_by, created_at, archieved)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (insurance_id, asset_id, policy_number, insurance_value, insurance_start,
+              f"{insurance_period_years} years, {insurance_period_months} months, {insurance_period_days} days",
+              insurance_end, insurance_bill_path, remarks, created_by, created_at, 'No'))
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+        flash("Insurance created successfully!", "success")
+        return redirect(url_for('view_insurance', insurance_id=insurance_id))
+
+    # GET request: Fetch asset info, purchase date, and latest insurance end date
+    asset = fetch_it_assets_info(asset_id)
+    if not asset:
+        flash("Asset not found.", "danger")
+        cursor.close()
+        conn.close()
+        return redirect(url_for('some_default_route'))  # Replace with your default route
+
+    purchase_date = asset['purchase_date']
+    latest_insurance_end = get_latest_insurance_end_date(asset_id)
+
+    cursor.close()
+    conn.close()
+    return render_template('create_insurance.html', asset_id=asset_id, product_name=asset['product_name'],
+                          purchase_date=purchase_date, latest_insurance_end=latest_insurance_end)
+
+# Route to edit an existing insurance record
+@app.route('/edit_insurance/<insurance_id>', methods=['GET', 'POST'])
+def edit_insurance(insurance_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Fetch the existing insurance record
+    cursor.execute("SELECT * FROM insurance_details WHERE insurance_id = %s", (insurance_id,))
+    insurance = cursor.fetchone()
+
+    if not insurance:
+        flash("Insurance record not found.", "danger")
+        cursor.close()
+        conn.close()
+        return redirect(url_for('view_insurance'))
+
+    asset_id = insurance['asset_id']
+
+    if request.method == 'POST':
+
+        policy_number = request.form['policy_number']
+        insurance_value = request.form['insurance_value'] or None
+        insurance_start = request.form['insurance_start']
+        insurance_period_years = int(request.form['insurance_period_years'] or 0)
+        insurance_period_months = int(request.form['insurance_period_months'] or 0)
+        insurance_period_days = int(request.form['insurance_period_days'] or 0)
+        remarks = request.form.get('remarks', '')
+        modified_by = 'nive'
+        modified_at = datetime.now()
+
+        # Calculate insurance_end date
+        insurance_start_date = datetime.strptime(insurance_start, '%Y-%m-%d').date()
+        total_days = (insurance_period_years * 365) + (insurance_period_months * 30) + insurance_period_days
+        insurance_end = insurance_start_date + timedelta(days=total_days)
+
+        # Handle multiple file uploads (append to existing files)
+        insurance_bill_paths = insurance['insurance_bill_path'].split(',') if insurance['insurance_bill_path'] else []
+        if 'insurance_bill' in request.files:
+            files = request.files.getlist('insurance_bill')
+            for file in files:
+                if file and allowed_file(file.filename):
+                    asset_folder = os.path.join(app.config['UPLOAD_FOLDER'], asset_id)
+                    insurance_bills_folder = os.path.join(asset_folder, 'insurance_bills')
+                    os.makedirs(insurance_bills_folder, exist_ok=True)
+                    filename = f"{insurance_id}_{file.filename}"
+                    file_path = os.path.join(insurance_bills_folder, filename)
+                    file.save(file_path)
+                    relative_path = os.path.join(asset_id, 'insurance_bills', filename)
+                    insurance_bill_paths.append(relative_path)
+            insurance_bill_path = ','.join(insurance_bill_paths) if insurance_bill_paths else None
+        else:
+            insurance_bill_path = insurance['insurance_bill_path']
+
+        # Update the insurance record
+        cursor.execute("""
+            UPDATE insurance_details 
+            SET  policy_number = %s, insurance_value = %s, insurance_start = %s, 
+                insurance_period = %s, insurance_end = %s, insurance_bill_path = %s, remarks = %s, 
+                modified_by = %s, modified_at = %s
+            WHERE insurance_id = %s
+        """, ( policy_number, insurance_value, insurance_start,
+              f"{insurance_period_years} years, {insurance_period_months} months, {insurance_period_days} days",
+              insurance_end, insurance_bill_path, remarks, modified_by, modified_at, insurance_id))
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+        flash("Insurance updated successfully!", "success")
+        return redirect(url_for('view_insurance', insurance_id=insurance_id))
+
+    # GET request: Fetch asset info, purchase date, and latest insurance end date
+    asset = fetch_it_assets_info(asset_id)
+    purchase_date = asset['purchase_date'] if asset else None
+    latest_insurance_end = get_latest_insurance_end_date(asset_id)
+
+    cursor.close()
+    conn.close()
+    return render_template('edit_insurance.html', insurance=insurance, asset_id=asset_id,
+                          product_name=asset['product_name'] if asset else '',
+                          purchase_date=purchase_date, latest_insurance_end=latest_insurance_end)
+
+@app.route('/view_insurance', methods=['GET'])
+@app.route('/view_insurance/<insurance_id>', methods=['GET'])
+def view_insurance(insurance_id=None):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if insurance_id:
+        cursor.execute("SELECT * FROM insurance_details WHERE insurance_id = %s AND archieved = 'No'", (insurance_id,))
+        insurance = cursor.fetchone()
+        if insurance:
+            # Fetch product_name from it_assets using asset_id
+            asset = fetch_it_assets_info(insurance['asset_id'])
+            insurance['product_name'] = asset['product_name'] if asset else 'N/A'
+    else:
+        cursor.execute("SELECT * FROM insurance_details WHERE archieved = 'No'")
+        insurance = cursor.fetchall()
+        # Fetch product_name for each insurance record
+        for ins in insurance:
+            asset = fetch_it_assets_info(ins['asset_id'])
+            ins['product_name'] = asset['product_name'] if asset else 'N/A'
+
+    cursor.close()
+    conn.close()
+    return render_template('view_insurance.html', insurance=insurance)
+
+# Route to delete (archive) an insurance record
+@app.route('/delete_insurance/<insurance_id>', methods=['POST'])
+def delete_insurance(insurance_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Update the archieved column to 'Yes'
+    cursor.execute("""
+        UPDATE insurance_details 
+        SET archieved = 'Yes', modified_by = %s, modified_at = %s
+        WHERE insurance_id = %s
+    """, ('nive', datetime.now(), insurance_id))
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+    flash("Insurance record archived successfully!", "success")
+    return redirect(url_for('view_insurance'))
 @app.route('/create_technician', methods=['GET', 'POST'])
 def create_technician():
     conn = get_db_connection()

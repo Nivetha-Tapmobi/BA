@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Insurance</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/service_styles.css') }}">
+    <style>
+        .form-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f4f4f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .period-container {
+            display: flex;
+            gap: 10px;
+        }
+        .period-container input {
+            flex: 1;
+        }
+        button[type="submit"], .back-button {
+            background-color: #2f276f;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .back-button {
+            background-color: #4CAF50;
+        }
+        .header {
+            background-color: #2f276f;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .flash-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .flash-message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .flash-message.danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+	
+		
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <!-- Include Header JS -->
+    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
+</head>
+<body>
+<!-- Include the header HTML -->
+    {% include 'header.html' %}
+    
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+
+
+    <div class="form-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" id="insuranceForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="asset_id">Asset ID:</label>
+                <input type="text" id="asset_id" name="asset_id" value="{{ asset_id }}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="product_name">Product Name:</label>
+                <input type="text" id="product_name" name="product_name" value="{{ product_name }}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="policy_number">Policy Number:</label>
+                <input type="text" id="policy_number" name="policy_number" required>
+            </div>
+
+            <div class="form-group">
+                <label for="insurance_value">Insurance Value:</label>
+                <input type="number" id="insurance_value" name="insurance_value" step="0.01">
+            </div>
+
+            <div class="form-group">
+                <label for="insurance_start">Insurance Start Date:</label>
+                <input type="date" id="insurance_start" name="insurance_start" required>
+            </div>
+
+            <div class="form-group">
+                <label for="insurance_period">Insurance Period:</label>
+                <div class="period-container">
+                    <input type="number" id="insurance_period_years" name="insurance_period_years" placeholder="Years" min="0">
+                    <input type="number" id="insurance_period_months" name="insurance_period_months" placeholder="Months" min="0">
+                    <input type="number" id="insurance_period_days" name="insurance_period_days" placeholder="Days" min="0">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="insurance_end">Insurance End Date:</label>
+                <input type="date" id="insurance_end" name="insurance_end" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="insurance_bill">Upload Insurance Bills:</label>
+                <input type="file" id="insurance_bill" name="insurance_bill" multiple accept=".png,.jpg,.jpeg,.pdf">
+            </div>
+
+            <div class="form-group">
+                <label for="remarks">Remarks:</label>
+                <textarea id="remarks" name="remarks" rows="3"></textarea>
+            </div>
+
+            <button type="submit">Create Insurance</button>
+        </form>
+    </div>
+
+    <script>
+        const purchaseDate = new Date('{{ purchase_date }}');
+        const latestInsuranceEnd = {% if latest_insurance_end %}'{{ latest_insurance_end }}'{% else %}null{% endif %};
+        const insuranceStartInput = document.getElementById('insurance_start');
+        const insuranceEndInput = document.getElementById('insurance_end');
+        const yearsInput = document.getElementById('insurance_period_years');
+        const monthsInput = document.getElementById('insurance_period_months');
+        const daysInput = document.getElementById('insurance_period_days');
+
+        // Calculate insurance end date
+        function calculateEndDate() {
+            const startDate = new Date(insuranceStartInput.value);
+            const years = parseInt(yearsInput.value) || 0;
+            const months = parseInt(monthsInput.value) || 0;
+            const days = parseInt(daysInput.value) || 0;
+
+            if (startDate && (years || months || days)) {
+                const endDate = new Date(startDate);
+                endDate.setFullYear(endDate.getFullYear() + years);
+                endDate.setMonth(endDate.getMonth() + months);
+                endDate.setDate(endDate.getDate() + days);
+                insuranceEndInput.value = endDate.toISOString().split('T')[0];
+            } else {
+                insuranceEndInput.value = '';
+            }
+        }
+
+        // Validate insurance start date against purchase date and latest insurance end date
+        insuranceStartInput.addEventListener('change', () => {
+            const startDate = new Date(insuranceStartInput.value);
+
+            // Check if start date is before purchase date
+            if (startDate < purchaseDate) {
+                alert('Insurance start date cannot be earlier than the asset purchase date.');
+                insuranceStartInput.value = '';
+                insuranceEndInput.value = '';
+                return;
+            }
+
+            // Check if start date is before the latest insurance end date (if applicable)
+            if (latestInsuranceEnd) {
+                const latestEndDate = new Date(latestInsuranceEnd);
+                if (startDate <= latestEndDate) {
+                    alert('Insurance start date must be after the latest insurance end date.');
+                    insuranceStartInput.value = '';
+                    insuranceEndInput.value = '';
+                    return;
+                }
+            }
+
+            calculateEndDate();
+        });
+
+        // Recalculate end date when period changes
+        yearsInput.addEventListener('input', calculateEndDate);
+        monthsInput.addEventListener('input', calculateEndDate);
+        daysInput.addEventListener('input', calculateEndDate);
+    </script>
+</body>
+</html>
