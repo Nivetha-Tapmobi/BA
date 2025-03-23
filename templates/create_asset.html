@@ -269,6 +269,17 @@
                         <label for="remarks">Remarks:</label>
                         <textarea id="remarks" name="remarks">{{ form_state.remarks|first|default('') }}</textarea>
                     </div>
+					
+					
+					<div class="form-column">
+                    <div class="form-group">
+                        <label for="under_audit">Under Audit:</label>
+                        <select id="under_audit" name="insurance">
+                            <option value="">--select an option--</option>
+                            <option value="Yes" {% if form_state.under_audit|first == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if form_state.under_audit|first == 'No' %}selected{% endif %}>No</option>
+                        </select>
+                    </div>
                     
                     <div class="form-group">
                         <label for="has_amc">AMC:</label>

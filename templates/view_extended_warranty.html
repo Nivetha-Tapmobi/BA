@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>View Insurance</title>
+    <title>View Extended Warranty</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/service_styles.css') }}">
     <style>
         .header {
@@ -130,7 +130,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>Insurance Details</h1>
+        <h1>Extended Warranty Details</h1>
         <button class="back-button" onclick="window.history.back()">Back</button>
     </div>
 
@@ -143,70 +143,78 @@
             {% endif %}
         {% endwith %}
 
-        {% if insurance is mapping and insurance|length > 0 %}
-            <!-- Single insurance record -->
+        {% if warranty is mapping and warranty|length > 0 %}
+            <!-- Single warranty record -->
             <table class="service-table">
                 <thead>
                     <tr>
-                        <th>Insurance ID</th>
+                        <th>Warranty Asset ID</th>
                         <th>Asset ID</th>
                         <th>Product Name</th>
-                        <th>Policy Number</th>
-                        <th>Insurance Value</th>
-                        <th>Insurance Start</th>
-                        <th>Insurance End</th>
+                        <th>Extended Warranty Start</th>
+                        <th>Extended Warranty End</th>
+                        <th>Warranty Provider Type</th>
+                        <th>Warranty Value</th>
+                        <th>ADP Protection</th>
+                        <th>Product Condition</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr data-insurance-id="{{ insurance.insurance_id }}">
-                        <td>{{ insurance.insurance_id }}</td>
-                        <td>{{ insurance.asset_id }}</td>
-                        <td>{{ insurance.product_name }}</td>
-                        <td>{{ insurance.policy_number }}</td>
-                        <td>{{ insurance.insurance_value or 'N/A' }}</td>
-                        <td>{{ insurance.insurance_start }}</td>
-                        <td>{{ insurance.insurance_end }}</td>
+                    <tr data-warranty-id="{{ warranty.warranty_asset_id }}">
+                        <td>{{ warranty.warranty_asset_id }}</td>
+                        <td>{{ warranty.asset_id }}</td>
+                        <td>{{ warranty.product_name }}</td>
+                        <td>{{ warranty.extended_warranty_start }}</td>
+                        <td>{{ warranty.extended_warranty_end_date }}</td>
+                        <td>{{ warranty.warranty_provider_type }}</td>
+                        <td>{{ warranty.warranty_value or 'N/A' }}</td>
+                        <td>{{ warranty.adp_protection }}</td>
+                        <td>{{ warranty.product_condition }}</td>
                         <td>
-                            <button class="action-btn view-btn" onclick="showPopup('{{ insurance.insurance_id }}')">View</button>
-                            <a href="{{ url_for('edit_insurance', insurance_id=insurance.insurance_id) }}" class="action-btn edit-btn">Edit</a>
-                            <form action="{{ url_for('delete_insurance', insurance_id=insurance.insurance_id) }}" method="POST" style="display:inline;">
-                                <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to archive this insurance?');">Delete</button>
+                            <button class="action-btn view-btn" onclick="showPopup('{{ warranty.warranty_asset_id }}')">View</button>
+                            <a href="{{ url_for('edit_extended_warranty', warranty_asset_id=warranty.warranty_asset_id) }}" class="action-btn edit-btn">Edit</a>
+                            <form action="{{ url_for('delete_extended_warranty', warranty_asset_id=warranty.warranty_asset_id) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to archive this extended warranty?');">Delete</button>
                             </form>
                         </td>
                     </tr>
                 </tbody>
             </table>
-        {% elif insurance is iterable and insurance|length > 0 %}
-            <!-- List of insurance records -->
+        {% elif warranty is iterable and warranty|length > 0 %}
+            <!-- List of warranty records -->
             <table class="service-table">
                 <thead>
                     <tr>
-                        <th>Insurance ID</th>
+                        <th>Warranty Asset ID</th>
                         <th>Asset ID</th>
                         <th>Product Name</th>
-                        <th>Policy Number</th>
-                        <th>Insurance Value</th>
-                        <th>Insurance Start</th>
-                        <th>Insurance End</th>
+                        <th>Extended Warranty Start</th>
+                        <th>Extended Warranty End</th>
+                        <th>Warranty Provider Type</th>
+                        <th>Warranty Value</th>
+                        <th>ADP Protection</th>
+                        <th>Product Condition</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for ins in insurance %}
-                        <tr data-insurance-id="{{ ins.insurance_id }}">
-                            <td>{{ ins.insurance_id }}</td>
-                            <td>{{ ins.asset_id }}</td>
-                            <td>{{ ins.product_name }}</td>
-                            <td>{{ ins.policy_number }}</td>
-                            <td>{{ ins.insurance_value or 'N/A' }}</td>
-                            <td>{{ ins.insurance_start }}</td>
-                            <td>{{ ins.insurance_end }}</td>
+                    {% for w in warranty %}
+                        <tr data-warranty-id="{{ w.warranty_asset_id }}">
+                            <td>{{ w.warranty_asset_id }}</td>
+                            <td>{{ w.asset_id }}</td>
+                            <td>{{ w.product_name }}</td>
+                            <td>{{ w.extended_warranty_start }}</td>
+                            <td>{{ w.extended_warranty_end_date }}</td>
+                            <td>{{ w.warranty_provider_type }}</td>
+                            <td>{{ w.warranty_value or 'N/A' }}</td>
+                            <td>{{ w.adp_protection }}</td>
+                            <td>{{ w.product_condition }}</td>
                             <td>
-                                <button class="action-btn view-btn" onclick="showPopup('{{ ins.insurance_id }}')">View</button>
-                                <a href="{{ url_for('edit_insurance', insurance_id=ins.insurance_id) }}" class="action-btn edit-btn">Edit</a>
-                                <form action="{{ url_for('delete_insurance', insurance_id=ins.insurance_id) }}" method="POST" style="display:inline;">
-                                    <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to archive this insurance?');">Delete</button>
+                                <button class="action-btn view-btn" onclick="showPopup('{{ w.warranty_asset_id }}')">View</button>
+                                <a href="{{ url_for('edit_extended_warranty', warranty_asset_id=w.warranty_asset_id) }}" class="action-btn edit-btn">Edit</a>
+                                <form action="{{ url_for('delete_extended_warranty', warranty_asset_id=w.warranty_asset_id) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to archive this extended warranty?');">Delete</button>
                                 </form>
                             </td>
                         </tr>
@@ -216,7 +224,7 @@
         {% else %}
             <!-- No records found -->
             <div class="no-records">
-                <p>No insurance records found.</p>
+                <p>No extended warranty records found.</p>
             </div>
         {% endif %}
     </div>
@@ -227,50 +235,55 @@
     <!-- Popup Window -->
     <div class="popup" id="popup">
         <button class="close-btn" onclick="hidePopup()">Close</button>
-        <h2>Insurance Details</h2>
+        <h2>Extended Warranty Details</h2>
         <div class="popup-content" id="popup-content">
             <!-- Popup content will be populated dynamically -->
         </div>
     </div>
 
     <script>
-        const insuranceData = {{ insurance | tojson }};
+        const warrantyData = {{ warranty | tojson }};
 
-        function showPopup(insuranceId) {
-            let ins;
-            if (Array.isArray(insuranceData)) {
-                ins = insuranceData.find(i => i.insurance_id === insuranceId);
+        function showPopup(warrantyId) {
+            let w;
+            if (Array.isArray(warrantyData)) {
+                w = warrantyData.find(i => i.warranty_asset_id === warrantyId);
             } else {
-                ins = insuranceData;
+                w = warrantyData;
             }
 
-            if (ins) {
+            if (w) {
                 const content = `
                     <div class="popup-column">
-                        <p><strong>Insurance ID:</strong> ${ins.insurance_id}</p>
-                        <p><strong>Asset ID:</strong> ${ins.asset_id}</p>
-                        <p><strong>Product Name:</strong> ${ins.product_name}</p>
-                        <p><strong>Policy Number:</strong> ${ins.policy_number}</p>
-                        <p><strong>Insurance Value:</strong> ${ins.insurance_value || 'N/A'}</p>
-                        <p><strong>Insurance Start:</strong> ${ins.insurance_start}</p>
-                        <p><strong>Insurance Period:</strong> ${ins.insurance_period}</p>
-                        <p><strong>Insurance End:</strong> ${ins.insurance_end}</p>
+                        <p><strong>Warranty Asset ID:</strong> ${w.warranty_asset_id}</p>
+                        <p><strong>Asset ID:</strong> ${w.asset_id}</p>
+                        <p><strong>Product Name:</strong> ${w.product_name}</p>
+                        <p><strong>Extended Warranty Start:</strong> ${w.extended_warranty_start}</p>
+                        <p><strong>Extended Warranty Period:</strong> ${w.extended_warranty_period}</p>
+                        <p><strong>Extended Warranty End:</strong> ${w.extended_warranty_end_date}</p>
+                        <p><strong>Warranty Provider Type:</strong> ${w.warranty_provider_type}</p>
+                        <p><strong>Warranty Provider Name:</strong> ${w.warranty_provider_name || 'N/A'}</p>
+                        <p><strong>Warranty Provider Phone:</strong> ${w.warranty_provider_ph_no || 'N/A'}</p>
+                        <p><strong>Warranty Provider Location:</strong> ${w.warranty_provider_location || 'N/A'}</p>
                     </div>
                     <div class="popup-column">
-                        <p><strong>Insurance Bills:</strong>
+                        <p><strong>Warranty Value:</strong> ${w.warranty_value || 'N/A'}</p>
+                        <p><strong>ADP Protection:</strong> ${w.adp_protection}</p>
+                        <p><strong>Extended Warranty Bills:</strong>
                             ${
-                                ins.insurance_bill_path ?
-                                ins.insurance_bill_path.split(',').map(path => 
+                                w.extended_warranty_bill_path ?
+                                w.extended_warranty_bill_path.split(',').map(path => 
                                     `<a href="${path}" target="_blank">${path.split('/').pop()}</a><br>`
                                 ).join('') : 'N/A'
                             }
                         </p>
-                        <p><strong>Remarks:</strong> ${ins.remarks || 'N/A'}</p>
-                        <p><strong>Created By:</strong> ${ins.created_by}</p>
-                        <p><strong>Created At:</strong> ${ins.created_at}</p>
-                        <p><strong>Modified By:</strong> ${ins.modified_by || 'N/A'}</p>
-                        <p><strong>Modified At:</strong> ${ins.modified_at || 'N/A'}</p>
-                        <p><strong>Archived:</strong> ${ins.archieved}</p>
+                        <p><strong>Product Condition:</strong> ${w.product_condition}</p>
+                        <p><strong>Remarks:</strong> ${w.remarks || 'N/A'}</p>
+                        <p><strong>Created By:</strong> ${w.created_by}</p>
+                        <p><strong>Created At:</strong> ${w.created_at}</p>
+                        <p><strong>Modified By:</strong> ${w.modified_by || 'N/A'}</p>
+                        <p><strong>Modified At:</strong> ${w.modified_at || 'N/A'}</p>
+                        <p><strong>Archived:</strong> ${w.archieved}</p>
                     </div>
                 `;
                 document.getElementById('popup-content').innerHTML = content;

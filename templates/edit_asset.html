@@ -283,6 +283,19 @@
                         <label for="remarks">Remarks:</label>
                         <textarea id="remarks" name="remarks">{{ asset.remarks|default('') }}</textarea>
                     </div>
+					
+					<div class="form-column">
+                    <div class="form-group">
+                        <label for="under_audit">under_audit:</label>
+                        <select id="under_audit" name="under_audit">
+                            <option value="">--select an option--</option>
+                            <option value="Yes" {% if asset.under_audit == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if asset.under_audit == 'No' %}selected{% endif %}>No</option>
+                        </select>
+                    </div>
+					
+					
+					
 <div class="form-group">
     <label for="has_amc">AMC:</label>
     <select id="has_amc" name="has_amc" onchange="toggleAMCFields()">

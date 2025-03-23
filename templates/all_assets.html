@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>All Assets</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/create_multiple_service_style.css') }}">
+    <style>
+        /* [Your existing styles remain unchanged] */
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>All Assets</h1>
+        <div>
+            <button class="action-btn" onclick="createMultipleServices()">Create Multiple Services</button>
+            <button class="action-btn" onclick="editMultipleServices()">Edit Multiple Services</button>
+            <button class="back-button" onclick="window.history.back()">Back</button>
+        </div>
+    </div>
+
+    <div class="form-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Filters -->
+        <div class="filter-container">
+            <form method="GET" action="{{ url_for('all_assets') }}" id="filter-form">
+                <input type="hidden" name="search" value="{{ search_query }}">
+                <input type="hidden" name="page" value="{{ page }}">
+                <label for="product_type">Filter by Product Type:</label>
+                <select name="product_type" id="product_type" onchange="this.form.submit()">
+                    <option value="">All Product Types</option>
+                    {% for pt in product_types %}
+                        <option value="{{ pt }}" {% if selected_product_type == pt %}selected{% endif %}>{{ pt }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+
+            <div>
+                <input type="text" id="search-input" placeholder="Search by Asset ID, Product Name, or Serial No" value="{{ search_query }}">
+            </div>
+        </div>
+
+        <!-- Asset Table -->
+        <form method="POST" action="{{ url_for('all_assets') }}" id="asset-form">
+            {% if assets|length > 0 %}
+                <table class="asset-table">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="select-all" onclick="toggleSelectAll()"></th>
+                            <th>Asset ID</th>
+                            <th>Product Name</th>
+                            <th>Serial No</th>
+                            <th>Create Service</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for asset in assets %}
+                            <tr>
+                                <td><input type="checkbox" name="selected_assets" value="{{ asset.asset_id }}"></td>
+                                <td>{{ asset.asset_id }}</td>
+                                <td>{{ asset.product_name }}</td>
+                                <td>{{ asset.serial_no }}</td>
+                                <td>
+                                    <a href="{{ url_for('create_service', ticket_id=asset.asset_id, asset_id=asset.asset_id) }}">Create Service</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <div class="pagination">
+                    {% if page > 1 %}
+                        <a href="{{ url_for('all_assets', page=page-1, product_type=selected_product_type, search=search_query) }}">« Previous</a>
+                    {% endif %}
+
+                    {% for p in range(1, total_pages + 1) %}
+                        {% if p == page %}
+                            <span class="current">{{ p }}</span>
+                        {% else %}
+                            <a href="{{ url_for('all_assets', page=p, product_type=selected_product_type, search=search_query) }}">{{ p }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page < total_pages %}
+                        <a href="{{ url_for('all_assets', page=page+1, product_type=selected_product_type, search=search_query) }}">Next »</a>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="no-records">
+                    <p>No assets found.</p>
+                </div>
+            {% endif %}
+        </form>
+    </div>
+
+    <script>
+        // Simultaneous search
+        let searchTimeout;
+        const searchInput = document.getElementById('search-input');
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const searchQuery = searchInput.value.trim();
+                const urlParams = new URLSearchParams(window.location.search);
+                if (searchQuery) {
+                    urlParams.set('search', searchQuery);
+                } else {
+                    urlParams.delete('search');
+                }
+                urlParams.set('page', '1');
+                window.location.search = urlParams.toString();
+            }, 300);
+        });
+
+        // Select all checkboxes
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.getElementsByName('selected_assets');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+        }
+
+        // Redirect to create_multiple_services
+        function createMultipleServices() {
+            const selectedAssets = document.getElementsByName('selected_assets');
+            const anySelected = Array.from(selectedAssets).some(checkbox => checkbox.checked);
+            if (!anySelected) {
+                alert('Please select at least one asset to create a service.');
+                return;
+            }
+            document.getElementById('asset-form').action = "{{ url_for('all_assets') }}";
+            document.getElementById('asset-form').submit();
+        }
+
+        // Redirect to edit_multiple_services
+        function editMultipleServices() {
+            const selectedAssets = document.getElementsByName('selected_assets');
+            const selectedAssetIds = Array.from(selectedAssets)
+                .filter(checkbox => checkbox.checked)
+                .map(checkbox => checkbox.value);
+            if (!selectedAssetIds.length) {
+                alert('Please select at least one asset to edit services.');
+                return;
+            }
+            // Fetch existing services for selected assets
+            fetch('/get_services_for_assets', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ asset_ids: selectedAssetIds })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.service_ids && data.ticket_id) {
+                    window.location.href = "{{ url_for('edit_multiple_services', ticket_id='TICKET_ID') }}".replace('TICKET_ID', data.ticket_id) + 
+                        '?service_ids=' + data.service_ids.join(',');
+                } else {
+                    alert('No services found for the selected assets.');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching services:', error);
+                alert('An error occurred while fetching services.');
+            });
+        }
+    </script>
+</body>
+</html>

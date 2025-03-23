@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Multiple Services</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/service_styles.css') }}">
+    <style>
+        /* [Your existing styles remain unchanged] */
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Create Multiple Services</h1>
+        <button class="back-button" onclick="window.history.back()">Back</button>
+    </div>
+
+    <div class="form-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" enctype="multipart/form-data" id="serviceForm">
+            <div class="form-column">
+                <div class="form-group">
+                    <label>Selected Asset IDs:</label>
+                    <div class="asset-ids-list">
+                        {% for asset_id in asset_ids %}
+                            <input type="hidden" name="asset_ids" value="{{ asset_id }}">
+                            <p>{{ asset_id }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+
+
+                <div class="form-group">
+                    <label for="technician_name">Technician Name:</label>
+                    <select name="technician_name" id="technician_name" required onchange="updateTechnicianId()">
+                        <option value="">Select Technician</option>
+                        {% for tech in technicians %}
+                            <option value="{{ tech.technician_name }}" data-technician-id="{{ tech.technician_id }}">
+                                {{ tech.technician_name }}
+                            </option>
+                        {% endfor %}
+                        <option value="add_new_technician" style="color: blue; font-weight: bold;">+ Add New Technician</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="technician_id">Technician ID:</label>
+                    <input type="text" name="technician_id" id="technician_id" readonly required>
+                </div>
+            </div>
+
+            <div class="form-column">
+                <div class="form-group">
+                    <label for="work_done">Work Done:</label>
+                    <textarea name="work_done" id="work_done" rows="4" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="next_service_date">Next Service Date:</label>
+                    <input type="date" name="next_service_date" id="next_service_date">
+                </div>
+
+                <div class="form-group">
+                    <label for="service_charge">Service Charge:</label>
+                    <input type="number" name="service_charge" id="service_charge" step="0.01">
+                </div>
+
+                <div class="form-group">
+                    <label for="service_case_id">Service Case ID (Optional):</label>
+                    <input type="text" name="service_case_id" id="service_case_id">
+                </div>
+
+                <div class="form-group">
+                    <label for="remarks">Remarks:</label>
+                    <textarea name="remarks" id="remarks" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="service_bill">Service Bill Upload (Multiple Files):</label>
+                    <input type="file" name="service_bill" id="service_bill" multiple accept=".png,.jpg,.jpeg,.gif,.pdf,.docx">
+                </div>
+
+                <button type="submit">Create Services</button>
+            </div>
+        </form>
+
+        <!-- Hidden form for fallback submission -->
+        <form method="POST" id="redirectForm" action="{{ url_for('save_form_state_technician') }}" style="display: none;">
+            <input type="hidden" name="ticket_id" value="{{ ticket_id }}">
+            {% for asset_id in asset_ids %}
+                <input type="hidden" name="asset_ids" value="{{ asset_id }}">
+            {% endfor %}
+        </form>
+    </div>
+
+    <script>
+        function updateTechnicianId() {
+            const select = document.getElementById('technician_name');
+            const selectedOption = select.options[select.selectedIndex];
+            const technicianId = selectedOption.getAttribute('data-technician-id');
+            const technicianName = selectedOption.value;
+
+            if (technicianName === 'add_new_technician') {
+                fetch('/save_form_state_technician', {
+                    method: 'POST',
+                    body: new FormData(document.getElementById('serviceForm'))
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to save form state');
+                    if (response.redirected) window.location.href = response.url;
+                })
+                .catch(error => {
+                    console.error('Error saving form state:', error);
+                    document.getElementById('redirectForm').submit();
+                });
+            } else if (technicianId) {
+                document.getElementById('technician_id').value = technicianId;
+            } else {
+                document.getElementById('technician_id').value = '';
+            }
+        }
+    </script>
+</body>
+</html>

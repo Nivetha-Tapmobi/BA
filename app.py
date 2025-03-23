@@ -21,6 +21,8 @@ import json
 from datetime import date
 import ast
 from jinja2 import Environment
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'  # Replace with a secure key
@@ -149,7 +151,11 @@ def create_tables():
                     asset_category VARCHAR(255) NOT NULL,
                     archieved VARCHAR(255),
                     has_amc VARCHAR(255),
-                    recurring_alert_for_amc VARCHAR(255)
+                    recurring_alert_for_amc VARCHAR(255),
+                    status_check_frequency VARCHAR(10) DEFAULT '3M',  -- New column: '3M' or '6M'
+                    last_status_check DATE,                          -- New column: Date of last status check
+                    next_status_check DATE,
+                    under_audit VARCHAR(10) DEFAULT 'No'
                     
                 )
             """)
@@ -205,7 +211,7 @@ def create_tables():
                 ticket_id VARCHAR(255) NOT NULL,
                 asset_id VARCHAR(255) NOT NULL,
                 warranty_type VARCHAR(255) NOT NULL,
-                service_case_id VARCHAR(255) UNIQUE,       
+                service_case_id VARCHAR(255),       
                 technician_name VARCHAR(255) NOT NULL,
                 technician_id VARCHAR(255) NOT NULL,
                 work_done TEXT,
@@ -247,9 +253,6 @@ def create_tables():
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     warranty_asset_id VARCHAR(255) UNIQUE NOT NULL,
                     asset_id VARCHAR(255) NOT NULL,     
-                    serial_number VARCHAR(255) NOT NULL,     
-                    product_name VARCHAR(255) NOT NULL,
-                    purchase_date DATE,  
                     extended_warranty_start DATE,
                     extended_warranty_period VARCHAR(255),    
                     extended_warranty_end_date DATE,
@@ -264,7 +267,6 @@ def create_tables():
                     modified_by VARCHAR(255), 
                     modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                     remarks TEXT,
-                    asset_category VARCHAR(255) NOT NULL,
                     archieved VARCHAR(255)
                 )
             """)
@@ -322,7 +324,47 @@ def create_tables():
     else:
         print("Database connection failed.")
 
-def generate_unique_id( prefix):
+# def generate_unique_id( prefix):
+#     if prefix == 'IT':
+#         table_name = 'it_assets'
+#     elif prefix == 'EW':
+#         table_name = 'extended_warranty_info'
+#     elif prefix == 'AU':
+#         table_name = 'assets_users'
+#     elif prefix == 'VD':
+#         table_name = 'vendor_details'
+#     elif prefix == 'SI':
+#         table_name = 'service_details'
+#     elif prefix == 'TI':
+#         table_name = 'technician_details'
+#     elif prefix == 'RT':
+#         table_name = 'raised_tickets'
+#     elif prefix == 'INS':
+#         table_name = 'insurance_details'
+        
+#     order_column = 'created_at'
+
+#     conn = get_db_connection()
+#     cursor = conn.cursor()
+
+#     cursor.execute(f"SELECT * FROM {table_name} ORDER BY {order_column} DESC LIMIT 1")
+#     last_record = cursor.fetchone()
+    
+#     current_date = datetime.now().strftime("%Y%m%d")
+
+#     if last_record is None:
+#         new_id = f"{prefix}{current_date}-01"  # Start from 01 if no records exist
+#     else:
+#         last_unique_key = last_record[3]  # Assuming unique key is at index 3
+#         last_number = int(last_unique_key[-2:])  # Extract last 2 digits
+#         new_id = f"{prefix}{current_date}-{last_number + 1:02d}"  # Increment and format
+
+#     cursor.close()
+#     conn.close()
+    
+#     return new_id
+
+def generate_unique_id(prefix, count=1):
     if prefix == 'IT':
         table_name = 'it_assets'
     elif prefix == 'EW':
@@ -333,34 +375,49 @@ def generate_unique_id( prefix):
         table_name = 'vendor_details'
     elif prefix == 'SI':
         table_name = 'service_details'
+        
     elif prefix == 'TI':
         table_name = 'technician_details'
     elif prefix == 'RT':
         table_name = 'raised_tickets'
     elif prefix == 'INS':
         table_name = 'insurance_details'
-        
-    order_column = 'created_at'
+    else:
+        raise ValueError(f"Unsupported prefix: {prefix}")
+
+    if prefix != 'SI':
+        order_column = 'created_at'
+    elif prefix == 'SI':
+        order_column = 'service_id'
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
+    # Fetch the latest record
     cursor.execute(f"SELECT * FROM {table_name} ORDER BY {order_column} DESC LIMIT 1")
     last_record = cursor.fetchone()
-    
+
     current_date = datetime.now().strftime("%Y%m%d")
+    new_ids = []
 
     if last_record is None:
-        new_id = f"{prefix}{current_date}-01"  # Start from 01 if no records exist
+        # If no records exist, start from 01
+        last_number = 0
     else:
-        last_unique_key = last_record[3]  # Assuming unique key is at index 3
+        # Assuming the unique key (e.g., service_id) is at index 3
+        last_unique_key = last_record[3]
         last_number = int(last_unique_key[-2:])  # Extract last 2 digits
-        new_id = f"{prefix}{current_date}-{last_number + 1:02d}"  # Increment and format
+
+    # Generate the required number of IDs
+    for i in range(count):
+        new_number = last_number + i + 1
+        new_id = f"{prefix}{current_date}-{new_number:02d}"
+        new_ids.append(new_id)
 
     cursor.close()
     conn.close()
-    
-    return new_id
+
+    return new_ids if count > 1 else new_ids[0]
 
 # Email configuration (adjust as per your SMTP settings)
 SMTP_SERVER = "smtp.gmail.com"
@@ -651,6 +708,8 @@ def create_asset():
             recurring_alert_units = request.form.getlist('recurring_alert_unit[]')
             recurring_alert_for_amc = str(list(zip(recurring_alert_keys, recurring_alert_values, recurring_alert_units)))
 
+            under_audit = request.form.get('under_audit')
+
             query = """
                 INSERT INTO it_assets (
                     created_by, created_at, asset_id, product_type, product_name, serial_no, make, model, part_no, 
@@ -658,8 +717,8 @@ def create_asset():
                     warranty_checked, warranty_exists, warranty_start, warranty_period, warranty_end,
                     extended_warranty_exists, extended_warranty_period, extended_warranty_end,
                     adp_production, insurance, description, remarks, product_age, product_condition,
-                    asset_category, archieved, has_user_details, has_amc, recurring_alert_for_amc, image_path, purchase_bill_path
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    asset_category, archieved, has_user_details, has_amc, recurring_alert_for_amc, image_path, purchase_bill_path, under_audit
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
 
             values = (
@@ -669,7 +728,7 @@ def create_asset():
                 extended_warranty_exists, extended_warranty_period, extended_warranty_end,
                 adp_production, insurance, description, remarks, product_age, product_condition,
                 asset_category, archieved, has_user_details, has_amc, recurring_alert_for_amc,
-                asset_images_str, purchase_bills_str
+                asset_images_str, purchase_bills_str,under_audit
             )
 
             cursor.execute(query, values)
@@ -794,6 +853,8 @@ def edit_asset(asset_id):
             has_user_details = request.form.get('has_user_details', 'No') == 'Yes'
             has_amc = request.form.get('has_amc', 'No') == 'Yes'
 
+            under_audit = request.form['under_audit']
+
             # Handling recurring alert
             recurring_alert_keys = request.form.getlist('recurring_alert_key[]')
             recurring_alert_values = request.form.getlist('recurring_alert_value[]')
@@ -809,7 +870,7 @@ def edit_asset(asset_id):
                     extended_warranty_period=%s, extended_warranty_end=%s, adp_production=%s, 
                     insurance=%s, description=%s, remarks=%s, product_age=%s, product_condition=%s, 
                     asset_category=%s, archieved=%s, has_user_details=%s, has_amc=%s, 
-                    recurring_alert_for_amc=%s, image_path=%s, purchase_bill_path=%s, 
+                    recurring_alert_for_amc=%s, image_path=%s, purchase_bill_path=%s, under_audit = %s
                     modified_by=%s, modified_at=NOW()
                 WHERE asset_id=%s
             """
@@ -819,7 +880,7 @@ def edit_asset(asset_id):
                 warranty_exists, warranty_start, warranty_period, warranty_end, extended_warranty_exists, 
                 extended_warranty_period, extended_warranty_end, adp_production, insurance, 
                 description, remarks, product_age, product_condition, asset_category, archieved, 
-                has_user_details, has_amc, recurring_alert_for_amc, asset_images_str, purchase_bills_str,
+                has_user_details, has_amc, recurring_alert_for_amc, asset_images_str, purchase_bills_str,under_audit,
                 "current_user", asset_id  # Replace "current_user" with actual user tracking logic
             )
 
@@ -1904,30 +1965,77 @@ def edit_insurance(insurance_id):
                           product_name=asset['product_name'] if asset else '',
                           purchase_date=purchase_date, latest_insurance_end=latest_insurance_end)
 
+
 @app.route('/view_insurance', methods=['GET'])
-@app.route('/view_insurance/<insurance_id>', methods=['GET'])
-def view_insurance(insurance_id=None):
+@app.route('/view_insurance/<id>', methods=['GET'])
+def view_insurance(id=None):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    if insurance_id:
-        cursor.execute("SELECT * FROM insurance_details WHERE insurance_id = %s AND archieved = 'No'", (insurance_id,))
+    if id and id.startswith('INS'):
+        # Path 3: Treat id as insurance_id
+        cursor.execute("SELECT * FROM insurance_details WHERE insurance_id = %s AND archieved = 'No'", (id,))
         insurance = cursor.fetchone()
         if insurance:
             # Fetch product_name from it_assets using asset_id
             asset = fetch_it_assets_info(insurance['asset_id'])
             insurance['product_name'] = asset['product_name'] if asset else 'N/A'
+        else:
+            insurance = {}  # If no record is found, set to an empty dict
+    elif id and id.startswith('IT'):
+        # Path 2: Treat id as asset_id
+        cursor.execute("SELECT * FROM insurance_details WHERE asset_id = %s AND archieved = 'No'", (id,))
+        insurance = cursor.fetchall()
+        # If no records are found, set insurance to an empty list
+        if insurance is None:
+            insurance = []
+        else:
+            # Fetch product_name for each insurance record
+            for ins in insurance:
+                asset = fetch_it_assets_info(ins['asset_id'])
+                ins['product_name'] = asset['product_name'] if asset else 'N/A'
     else:
+        # Path 1: Fetch all non-archived records
         cursor.execute("SELECT * FROM insurance_details WHERE archieved = 'No'")
         insurance = cursor.fetchall()
-        # Fetch product_name for each insurance record
-        for ins in insurance:
-            asset = fetch_it_assets_info(ins['asset_id'])
-            ins['product_name'] = asset['product_name'] if asset else 'N/A'
+        # If no records are found, set insurance to an empty list
+        if insurance is None:
+            insurance = []
+        else:
+            # Fetch product_name for each insurance record
+            for ins in insurance:
+                asset = fetch_it_assets_info(ins['asset_id'])
+                ins['product_name'] = asset['product_name'] if asset else 'N/A'
 
     cursor.close()
     conn.close()
     return render_template('view_insurance.html', insurance=insurance)
+
+
+# @app.route('/view_insurance', methods=['GET'])
+# @app.route('/view_insurance/<insurance_id>', methods=['GET'])
+# def view_insurance(insurance_id=None):
+#     conn = get_db_connection()
+#     cursor = conn.cursor(dictionary=True)
+
+#     if insurance_id:
+#         cursor.execute("SELECT * FROM insurance_details WHERE insurance_id = %s AND archieved = 'No'", (insurance_id,))
+#         insurance = cursor.fetchone()
+#         if insurance:
+#             # Fetch product_name from it_assets using asset_id
+#             asset = fetch_it_assets_info(insurance['asset_id'])
+#             insurance['product_name'] = asset['product_name'] if asset else 'N/A'
+#     else:
+#         cursor.execute("SELECT * FROM insurance_details WHERE archieved = 'No'")
+#         insurance = cursor.fetchall()
+#         # Fetch product_name for each insurance record
+#         for ins in insurance:
+#             asset = fetch_it_assets_info(ins['asset_id'])
+#             ins['product_name'] = asset['product_name'] if asset else 'N/A'
+
+#     cursor.close()
+#     conn.close()
+#     return render_template('view_insurance.html', insurance=insurance)
 
 # Route to delete (archive) an insurance record
 @app.route('/delete_insurance/<insurance_id>', methods=['POST'])
@@ -1947,6 +2055,285 @@ def delete_insurance(insurance_id):
     conn.close()
     flash("Insurance record archived successfully!", "success")
     return redirect(url_for('view_insurance'))
+
+# Function to get the latest extended warranty end date for an asset
+def get_latest_extended_warranty_end_date(asset_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Check the count of extended warranty records for the asset_id
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM extended_warranty_info
+        WHERE asset_id = %s AND archieved = 'No'
+    """, (asset_id,))
+    count = cursor.fetchone()['COUNT(*)']
+
+    # Only fetch the latest end date if there is more than one record
+    if count > 1:
+        cursor.execute("""
+            SELECT extended_warranty_end_date 
+            FROM extended_warranty_info 
+            WHERE asset_id = %s AND archieved = 'No'
+            ORDER BY extended_warranty_end_date DESC
+            LIMIT 1
+        """, (asset_id,))
+        warranty = cursor.fetchone()
+        latest_end_date = warranty['extended_warranty_end_date'] if warranty else None
+    else:
+        latest_end_date = None
+
+    cursor.close()
+    conn.close()
+    return latest_end_date
+
+
+# Route to create a new extended warranty record
+@app.route('/create_extended_warranty/<asset_id>', methods=['GET', 'POST'])
+def create_extended_warranty(asset_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        extended_warranty_start = request.form['extended_warranty_start']
+        extended_warranty_period_years = int(request.form['extended_warranty_period_years'] or 0)
+        extended_warranty_period_months = int(request.form['extended_warranty_period_months'] or 0)
+        extended_warranty_period_days = int(request.form['extended_warranty_period_days'] or 0)
+        warranty_provider_type = request.form['warranty_provider_type']
+        warranty_provider_name = request.form.get('warranty_provider_name', '')
+        warranty_provider_ph_no = request.form.get('warranty_provider_ph_no', '')
+        warranty_provider_location = request.form.get('warranty_provider_location', '')
+        warranty_value = request.form['warranty_value'] or None
+        adp_protection = request.form['adp_protection']
+        product_condition = request.form['product_condition']
+        remarks = request.form.get('remarks', '')
+
+        # Calculate extended_warranty_end_date
+        extended_warranty_start_date = datetime.strptime(extended_warranty_start, '%Y-%m-%d').date()
+        total_days = (extended_warranty_period_years * 365) + (extended_warranty_period_months * 30) + extended_warranty_period_days
+        extended_warranty_end_date = extended_warranty_start_date + timedelta(days=total_days)
+
+        # Handle multiple file uploads
+        extended_warranty_bill_paths = []
+        if 'extended_warranty_bill' in request.files:
+            files = request.files.getlist('extended_warranty_bill')
+            for file in files:
+                if file and allowed_file(file.filename):
+                    asset_folder = os.path.join(app.config['UPLOAD_FOLDER'], asset_id)
+                    warranty_bills_folder = os.path.join(asset_folder, 'extended_warranty_bills')
+                    os.makedirs(warranty_bills_folder, exist_ok=True)
+                    warranty_asset_id = generate_unique_id('EW')
+                    filename = f"{warranty_asset_id}_{file.filename}"
+                    file_path = os.path.join(warranty_bills_folder, filename)
+                    file.save(file_path)
+                    relative_path = os.path.join(asset_id, 'extended_warranty_bills', filename)
+                    extended_warranty_bill_paths.append(relative_path)
+            extended_warranty_bill_path = ','.join(extended_warranty_bill_paths) if extended_warranty_bill_paths else None
+        else:
+            extended_warranty_bill_path = None
+
+        # Generate warranty_asset_id
+        warranty_asset_id = generate_unique_id('EW')
+        created_by = 'nivi'
+        created_at = datetime.now()
+
+        # Insert into extended_warranty_info table
+        cursor.execute("""
+            INSERT INTO extended_warranty_info 
+            (warranty_asset_id, asset_id, extended_warranty_start, extended_warranty_period, 
+             extended_warranty_end_date, warranty_provider_type, warranty_provider_name, 
+             warranty_provider_ph_no, warranty_provider_location, warranty_value, adp_protection, 
+             extended_warranty_bill_path, product_condition, remarks, created_by, created_at, archieved)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (warranty_asset_id, asset_id, extended_warranty_start,
+              f"{extended_warranty_period_years} years, {extended_warranty_period_months} months, {extended_warranty_period_days} days",
+              extended_warranty_end_date, warranty_provider_type, warranty_provider_name,
+              warranty_provider_ph_no, warranty_provider_location, warranty_value, adp_protection,
+              extended_warranty_bill_path, product_condition, remarks, created_by, created_at, 'No'))
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+        flash("Extended warranty created successfully!", "success")
+        return redirect(url_for('view_extended_warranty', warranty_asset_id=warranty_asset_id))
+
+    # GET request: Fetch asset info and latest extended warranty end date
+    asset = fetch_it_assets_info(asset_id)
+    if not asset:
+        flash("Asset not found.", "danger")
+        cursor.close()
+        conn.close()
+        return redirect(url_for('some_default_route'))  # Replace with your default route
+
+    purchase_date = asset['purchase_date']
+    warranty_end = asset.get('warranty_end', None)  # Assuming warranty_end is a field in it_assets
+    latest_extended_warranty_end = get_latest_extended_warranty_end_date(asset_id)
+
+    cursor.close()
+    conn.close()
+    return render_template('create_extended_warranty.html', asset_id=asset_id,
+                          purchase_date=purchase_date, warranty_end=warranty_end,
+                          latest_extended_warranty_end=latest_extended_warranty_end)
+
+# Route to edit an existing extended warranty record
+@app.route('/edit_extended_warranty/<warranty_asset_id>', methods=['GET', 'POST'])
+def edit_extended_warranty(warranty_asset_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Fetch the existing warranty record
+    cursor.execute("SELECT * FROM extended_warranty_info WHERE warranty_asset_id = %s", (warranty_asset_id,))
+    warranty = cursor.fetchone()
+
+    if not warranty:
+        flash("Extended warranty record not found.", "danger")
+        cursor.close()
+        conn.close()
+        return redirect(url_for('view_extended_warranty'))
+
+    asset_id = warranty['asset_id']
+
+    if request.method == 'POST':
+        extended_warranty_start = request.form['extended_warranty_start']
+        extended_warranty_period_years = int(request.form['extended_warranty_period_years'] or 0)
+        extended_warranty_period_months = int(request.form['extended_warranty_period_months'] or 0)
+        extended_warranty_period_days = int(request.form['extended_warranty_period_days'] or 0)
+        warranty_provider_type = request.form['warranty_provider_type']
+        warranty_provider_name = request.form.get('warranty_provider_name', '')
+        warranty_provider_ph_no = request.form.get('warranty_provider_ph_no', '')
+        warranty_provider_location = request.form.get('warranty_provider_location', '')
+        warranty_value = request.form['warranty_value'] or None
+        adp_protection = request.form['adp_protection']
+        product_condition = request.form['product_condition']
+        remarks = request.form.get('remarks', '')
+        modified_by = 'nivi'
+        modified_at = datetime.now()
+
+        # Calculate extended_warranty_end_date
+        extended_warranty_start_date = datetime.strptime(extended_warranty_start, '%Y-%m-%d').date()
+        total_days = (extended_warranty_period_years * 365) + (extended_warranty_period_months * 30) + extended_warranty_period_days
+        extended_warranty_end_date = extended_warranty_start_date + timedelta(days=total_days)
+
+        # Handle multiple file uploads (append to existing files)
+        extended_warranty_bill_paths = warranty['extended_warranty_bill_path'].split(',') if warranty['extended_warranty_bill_path'] else []
+        if 'extended_warranty_bill' in request.files:
+            files = request.files.getlist('extended_warranty_bill')
+            for file in files:
+                if file and allowed_file(file.filename):
+                    asset_folder = os.path.join(app.config['UPLOAD_FOLDER'], asset_id)
+                    warranty_bills_folder = os.path.join(asset_folder, 'extended_warranty_bills')
+                    os.makedirs(warranty_bills_folder, exist_ok=True)
+                    filename = f"{warranty_asset_id}_{file.filename}"
+                    file_path = os.path.join(warranty_bills_folder, filename)
+                    file.save(file_path)
+                    relative_path = os.path.join(asset_id, 'extended_warranty_bills', filename)
+                    extended_warranty_bill_paths.append(relative_path)
+            extended_warranty_bill_path = ','.join(extended_warranty_bill_paths) if extended_warranty_bill_paths else None
+        else:
+            extended_warranty_bill_path = warranty['extended_warranty_bill_path']
+
+        # Update the warranty record
+        cursor.execute("""
+            UPDATE extended_warranty_info 
+            SET extended_warranty_start = %s, extended_warranty_period = %s, extended_warranty_end_date = %s, 
+                warranty_provider_type = %s, warranty_provider_name = %s, warranty_provider_ph_no = %s, 
+                warranty_provider_location = %s, warranty_value = %s, adp_protection = %s, 
+                extended_warranty_bill_path = %s, product_condition = %s, remarks = %s, 
+                modified_by = %s, modified_at = %s
+            WHERE warranty_asset_id = %s
+        """, (extended_warranty_start,
+              f"{extended_warranty_period_years} years, {extended_warranty_period_months} months, {extended_warranty_period_days} days",
+              extended_warranty_end_date, warranty_provider_type, warranty_provider_name,
+              warranty_provider_ph_no, warranty_provider_location, warranty_value, adp_protection,
+              extended_warranty_bill_path, product_condition, remarks, modified_by, modified_at, warranty_asset_id))
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+        flash("Extended warranty updated successfully!", "success")
+        return redirect(url_for('view_extended_warranty', warranty_asset_id=warranty_asset_id))
+
+    # GET request: Fetch asset info and latest extended warranty end date
+    asset = fetch_it_assets_info(asset_id)
+    purchase_date = asset['purchase_date'] if asset else None
+    warranty_end = asset.get('warranty_end', None) if asset else None
+    latest_extended_warranty_end = get_latest_extended_warranty_end_date(asset_id)
+
+    cursor.close()
+    conn.close()
+    return render_template('edit_extended_warranty.html', warranty=warranty, asset_id=asset_id,
+                          purchase_date=purchase_date, warranty_end=warranty_end,
+                          latest_extended_warranty_end=latest_extended_warranty_end)
+
+
+@app.route('/view_extended_warranty', methods=['GET'])
+@app.route('/view_extended_warranty/<asset_id>', methods=['GET'])  # Updated path for asset_id
+@app.route('/view_extended_warranty/warranty/<warranty_asset_id>', methods=['GET'])
+def view_extended_warranty(asset_id=None, warranty_asset_id=None):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if warranty_asset_id:
+        # Path 3: Fetch a single record by warranty_asset_id
+        cursor.execute("SELECT * FROM extended_warranty_info WHERE warranty_asset_id = %s AND archieved = 'No'", (warranty_asset_id,))
+        warranty = cursor.fetchone()
+        if warranty:
+            # Fetch product_name from it_assets using asset_id
+            asset = fetch_it_assets_info(warranty['asset_id'])
+            warranty['product_name'] = asset['product_name'] if asset else 'N/A'
+        else:
+            warranty = {}  # If no record is found, set to an empty dict
+    elif asset_id:
+        # Path 2: Fetch all records for the given asset_id
+        cursor.execute("SELECT * FROM extended_warranty_info WHERE asset_id = %s AND archieved = 'No'", (asset_id,))
+        warranty = cursor.fetchall()
+        # If no records are found, set warranty to an empty list
+        if warranty is None:
+            warranty = []
+        else:
+            # Fetch product_name for each warranty record
+            for w in warranty:
+                asset = fetch_it_assets_info(w['asset_id'])
+                w['product_name'] = asset['product_name'] if asset else 'N/A'
+    else:
+        # Path 1: Fetch all non-archived records
+        cursor.execute("SELECT * FROM extended_warranty_info WHERE archieved = 'No'")
+        warranty = cursor.fetchall()
+        # If no records are found, set warranty to an empty list
+        if warranty is None:
+            warranty = []
+        else:
+            # Fetch product_name for each warranty record
+            for w in warranty:
+                asset = fetch_it_assets_info(w['asset_id'])
+                w['product_name'] = asset['product_name'] if asset else 'N/A'
+
+    cursor.close()
+    conn.close()
+    return render_template('view_extended_warranty.html', warranty=warranty)
+
+
+
+# Route to delete (archive) an extended warranty record
+@app.route('/delete_extended_warranty/<warranty_asset_id>', methods=['POST'])
+def delete_extended_warranty(warranty_asset_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Update the archieved column to 'Yes'
+    cursor.execute("""
+        UPDATE extended_warranty_info 
+        SET archieved = 'Yes', modified_by = %s, modified_at = %s
+        WHERE warranty_asset_id = %s
+    """, ('nivi', datetime.now(), warranty_asset_id))
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+    flash("Extended warranty record archived successfully!", "success")
+    return redirect(url_for('view_extended_warranty'))
+
+
 @app.route('/create_technician', methods=['GET', 'POST'])
 def create_technician():
     conn = get_db_connection()
@@ -2075,6 +2462,570 @@ def save_form_state_technician():
     except Exception as e:
         print(f"Error in save_form_state_technician: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
+
+# @app.route('/check_asset_status', methods=['GET', 'POST'])
+# def check_asset_status():
+#     conn = get_db_connection()
+#     cursor = conn.cursor(dictionary=True)
+
+#     # Handle POST request to update status
+#     if request.method == 'POST':
+#         asset_id = request.form.get('asset_id')
+#         new_condition = request.form.get('product_condition')
+#         frequency = request.form.get('status_check_frequency')
+
+#         # Update the asset's condition and status check dates
+#         last_status_check = datetime.now().date()
+#         if frequency == '3M':
+#             next_status_check = last_status_check + relativedelta(months=3)
+#         else:  # 6M
+#             next_status_check = last_status_check + relativedelta(months=6)
+
+#         cursor.execute("""
+#             UPDATE it_assets
+#             SET product_condition = %s,
+#                 last_status_check = %s,
+#                 next_status_check = %s,
+#                 status_check_frequency = %s,
+#                 modified_by = %s,
+#                 modified_at = NOW()
+#             WHERE asset_id = %s
+#         """, (new_condition, last_status_check, next_status_check, frequency, 'admin', asset_id))
+#         conn.commit()
+#         flash('Asset status updated successfully!', 'success')
+
+#     # Fetch all non-archived assets
+#     cursor.execute("""
+#         SELECT ia.*, au.assigned_user, au.employee_code
+#         FROM it_assets ia
+#         LEFT JOIN assets_users au ON ia.asset_id = au.asset_id AND au.archieved = 'No'
+#         WHERE ia.archieved = 'No'
+#     """)
+#     assets = cursor.fetchall()
+
+#     # Calculate next_status_check if not set
+#     current_date = datetime.now().date()
+#     for asset in assets:
+#         if not asset['last_status_check']:
+#             # If no last status check, set it to purchase_date or created_at
+#             asset['last_status_check'] = asset['purchase_date'] or asset['created_at'].date()
+#         if not asset['next_status_check']:
+#             # Calculate next_status_check based on frequency
+#             frequency = asset['status_check_frequency'] or '3M'
+#             if frequency == '3M':
+#                 asset['next_status_check'] = asset['last_status_check'] + relativedelta(months=3)
+#             else:
+#                 asset['next_status_check'] = asset['last_status_check'] + relativedelta(months=6)
+#         # Mark if the asset is overdue for a check
+#         asset['is_overdue'] = asset['next_status_check'] <= current_date
+
+#     # Get unique employees for the filter dropdown
+#     cursor.execute("SELECT DISTINCT assigned_user, employee_code FROM assets_users WHERE archieved = 'No'")
+#     employees = cursor.fetchall()
+
+#     # Filter by employee if selected
+#     selected_employee = request.args.get('employee')
+#     if selected_employee:
+#         assets = [asset for asset in assets if asset['employee_code'] == selected_employee]
+
+#     cursor.close()
+#     conn.close()
+#     return render_template('check_asset_status.html', assets=assets, employees=employees, selected_employee=selected_employee)
+
+
+
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+
+@app.route('/check_asset_status', methods=['GET', 'POST'])
+def check_asset_status():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Handle POST request to update status
+    if request.method == 'POST':
+        asset_id = request.form.get('asset_id')
+        new_condition = request.form.get('product_condition')
+        frequency = request.form.get('status_check_frequency')
+        audit_remarks = request.form.get('audit_remarks')
+
+        # Update the asset's condition, status check dates, and audit remarks
+        last_status_check = datetime.now().date()
+        if frequency == '3M':
+            next_status_check = last_status_check + relativedelta(months=3)
+        else:  # 6M
+            next_status_check = last_status_check + relativedelta(months=6)
+
+        cursor.execute("""
+            UPDATE it_assets
+            SET product_condition = %s,
+                last_status_check = %s,
+                next_status_check = %s,
+                status_check_frequency = %s,
+                audit_remarks = %s,
+                modified_by = %s,
+                modified_at = NOW()
+            WHERE asset_id = %s
+        """, (new_condition, last_status_check, next_status_check, frequency, audit_remarks, 'admin', asset_id))
+        conn.commit()
+        flash('Asset status updated successfully!', 'success')
+
+    # Get filter parameters
+    selected_employee = request.args.get('employee', '')
+    search_query = request.args.get('search', '').strip()
+    page = int(request.args.get('page', 1))
+    per_page = 10  # Number of assets per page
+
+    # Build the query for counting total assets (for pagination)
+    count_query = """
+        SELECT COUNT(*) as total
+        FROM it_assets ia
+        LEFT JOIN assets_users au ON ia.asset_id = au.asset_id AND au.archieved = 'No'
+        WHERE ia.archieved = 'No' AND ia.under_audit = 'Yes'
+    """
+    count_params = []
+
+    # Build the main query
+    query = """
+        SELECT ia.*, au.assigned_user, au.employee_code, au.effective_date
+        FROM it_assets ia
+        LEFT JOIN assets_users au ON ia.asset_id = au.asset_id AND au.archieved = 'No'
+        WHERE ia.archieved = 'No' AND ia.under_audit = 'Yes'
+    """
+    params = []
+
+    # Apply employee filter
+    if selected_employee:
+        query += " AND au.employee_code = %s"
+        count_query += " AND au.employee_code = %s"
+        params.append(selected_employee)
+        count_params.append(selected_employee)
+
+    # Apply search filter
+    if search_query:
+        query += " AND (ia.asset_id LIKE %s OR ia.product_name LIKE %s OR ia.product_type LIKE %s)"
+        count_query += " AND (ia.asset_id LIKE %s OR ia.product_name LIKE %s OR ia.product_type LIKE %s)"
+        search_pattern = f"%{search_query}%"
+        params.extend([search_pattern, search_pattern, search_pattern])
+        count_params.extend([search_pattern, search_pattern, search_pattern])
+
+    # Get total count for pagination
+    cursor.execute(count_query, count_params)
+    total_assets = cursor.fetchone()['total']
+    total_pages = (total_assets + per_page - 1) // per_page
+
+    # Apply pagination
+    query += " LIMIT %s OFFSET %s"
+    params.extend([per_page, (page - 1) * per_page])
+
+    # Fetch assets
+    cursor.execute(query, params)
+    assets = cursor.fetchall()
+
+    # Fetch the earliest last_status_check date
+    cursor.execute("SELECT MIN(last_status_check) as first_check FROM it_assets WHERE last_status_check IS NOT NULL AND under_audit = 'Yes'")
+    first_check_result = cursor.fetchone()
+    first_check_date = first_check_result['first_check'] if first_check_result['first_check'] else None
+    one_week_later = first_check_date + timedelta(days=7) if first_check_date else None
+
+    # Process assets
+    current_date = datetime.now().date()
+    for asset in assets:
+        # Determine the first assignment date from assets_users
+        first_assignment_date = None
+        if asset['effective_date']:
+            cursor.execute("""
+                SELECT MIN(effective_date) as first_assignment
+                FROM assets_users
+                WHERE asset_id = %s AND archieved = 'No'
+            """, (asset['asset_id'],))
+            result = cursor.fetchone()
+            first_assignment_date = result['first_assignment'] if result['first_assignment'] else None
+
+        # Set last_status_check and next_status_check for new entries
+        if not asset['last_status_check']:
+            base_date = first_assignment_date or asset['purchase_date'] or asset['created_at'].date()
+            asset['last_status_check'] = None
+            frequency = asset['status_check_frequency'] or '3M'
+            if frequency == '3M':
+                asset['next_status_check'] = base_date + relativedelta(months=3)
+            else:
+                asset['next_status_check'] = base_date + relativedelta(months=6)
+        else:
+            if not asset['next_status_check']:
+                frequency = asset['status_check_frequency'] or '3M'
+                if frequency == '3M':
+                    asset['next_status_check'] = asset['last_status_check'] + relativedelta(months=3)
+                else:
+                    asset['next_status_check'] = asset['last_status_check'] + relativedelta(months=6)
+
+        # Mark if the asset is overdue for a check
+        asset['is_overdue'] = asset['next_status_check'] <= current_date if asset['next_status_check'] else False
+
+        # Determine check status for color coding
+        asset['is_checked'] = asset['last_status_check'] is not None
+        asset['not_checked_within_week'] = False
+        asset['not_checked_after_week'] = False
+        if first_check_date and one_week_later and not asset['last_status_check']:
+            if current_date <= one_week_later:
+                asset['not_checked_within_week'] = True
+            else:
+                asset['not_checked_after_week'] = True
+
+    # Get unique employees for the filter dropdown
+    cursor.execute("""
+        SELECT DISTINCT assigned_user, employee_code
+        FROM assets_users
+        WHERE archieved = 'No' AND asset_id IN (
+            SELECT asset_id FROM it_assets WHERE under_audit = 'Yes' AND archieved = 'No'
+        )
+    """)
+    employees = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    return render_template(
+        'check_asset_status.html',
+        assets=assets,
+        employees=employees,
+        selected_employee=selected_employee,
+        first_check_date=first_check_date,
+        page=page,
+        total_pages=total_pages,
+        search_query=search_query
+    )
+
+
+
+def retrieve_asset_data(search_query='', product_type='', page=1, per_page=10):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Build the query for counting total assets (for pagination)
+    count_query = """
+        SELECT COUNT(*) as total
+        FROM it_assets
+        WHERE archieved = 'No'
+    """
+    count_params = []
+
+    # Build the main query
+    query = """
+        SELECT *
+        FROM it_assets
+        WHERE archieved = 'No'
+    """
+    params = []
+
+    # Apply product_type filter
+    if product_type:
+        query += " AND product_type = %s"
+        count_query += " AND product_type = %s"
+        params.append(product_type)
+        count_params.append(product_type)
+
+    # Apply search filter
+    if search_query:
+        query += " AND (asset_id LIKE %s OR product_name LIKE %s OR serial_no LIKE %s)"
+        count_query += " AND (asset_id LIKE %s OR product_name LIKE %s OR serial_no LIKE %s)"
+        search_pattern = f"%{search_query}%"
+        params.extend([search_pattern, search_pattern, search_pattern])
+        count_params.extend([search_pattern, search_pattern, search_pattern])
+
+    # Get total count for pagination
+    cursor.execute(count_query, count_params)
+    total_assets = cursor.fetchone()['total']
+    total_pages = (total_assets + per_page - 1) // per_page
+
+    # Apply pagination
+    query += " LIMIT %s OFFSET %s"
+    params.extend([per_page, (page - 1) * per_page])
+
+    # Fetch assets
+    cursor.execute(query, params)
+    assets = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    return assets, total_pages
+
+def in_warranty_out_warranty(asset_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    current_date = datetime.now().date()
+
+    # Fetch warranty details from it_assets
+    cursor.execute("""
+        SELECT warranty_end, extended_warranty_end
+        FROM it_assets
+        WHERE asset_id = %s
+    """, (asset_id,))
+    asset = cursor.fetchone()
+
+    in_warranty = False
+    if asset:
+        # Check warranty_end
+        if asset['warranty_end'] and asset['warranty_end'] >= current_date:
+            in_warranty = True
+        # Check extended_warranty_end in it_assets
+        if asset['extended_warranty_end'] and asset['extended_warranty_end'] >= current_date:
+            in_warranty = True
+
+    # Check extended_warranty_info table
+    cursor.execute("""
+        SELECT extended_warranty_end_date
+        FROM extended_warranty_info
+        WHERE asset_id = %s
+    """, (asset_id,))
+    ext_warranty = cursor.fetchone()
+
+    if ext_warranty and ext_warranty['extended_warranty_end_date'] and ext_warranty['extended_warranty_end_date'] >= current_date:
+        in_warranty = True
+
+    cursor.close()
+    conn.close()
+    return 'in_warranty' if in_warranty else 'out_warranty'
+
+
+@app.route('/all_assets', methods=['GET', 'POST'])
+def all_assets():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        selected_asset_ids = request.form.getlist('selected_assets')
+        if not selected_asset_ids:
+            flash('Please select at least one asset to create a service.', 'danger')
+            cursor.close()
+            conn.close()
+            return redirect(url_for('all_assets'))
+
+        # Redirect to the new create_multiple_services route with selected asset_ids
+        cursor.close()
+        conn.close()
+        return redirect(url_for('create_multiple_services', asset_ids=','.join(selected_asset_ids)))
+
+    # GET request: Fetch data for the page
+    product_type = request.args.get('product_type', '')
+    search_query = request.args.get('search', '')
+    page = int(request.args.get('page', 1))
+
+    # Fetch assets using the helper function
+    assets, total_pages = retrieve_asset_data(search_query=search_query, product_type=product_type, page=page)
+
+    # Fetch unique product types for the filter dropdown
+    cursor.execute("SELECT DISTINCT product_type FROM it_assets WHERE archieved = 'No'")
+    product_types = [row['product_type'] for row in cursor.fetchall()]
+
+    cursor.close()
+    conn.close()
+    return render_template(
+        'all_assets.html',
+        assets=assets,
+        product_types=product_types,
+        selected_product_type=product_type,
+        search_query=search_query,
+        page=page,
+        total_pages=total_pages
+    )
+
+
+@app.route('/create_multiple_services', methods=['GET', 'POST'])
+def create_multiple_services():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Get the selected asset_ids from the query parameter
+    asset_ids = request.args.get('asset_ids', '')
+    if not asset_ids:
+        flash('No assets selected.', 'danger')
+        cursor.close()
+        conn.close()
+        return redirect(url_for('all_assets'))
+
+    selected_asset_ids = asset_ids.split(',')
+
+    if request.method == 'POST':
+        # Generate a common ticket_id starting with 'S'
+        cursor.execute("SELECT ticket_id FROM service_details WHERE ticket_id LIKE 'S%' ORDER BY ticket_id DESC LIMIT 1")
+        last_ticket = cursor.fetchone()
+        if last_ticket:
+            last_number = int(last_ticket['ticket_id'][1:]) if last_ticket['ticket_id'][1:].isdigit() else 0
+            ticket_id = f"S{last_number + 1:04d}"
+        else:
+            ticket_id = 'S0001'
+
+        technician_name = request.form['technician_name']
+        technician_id = request.form['technician_id']
+        work_done = request.form['work_done']
+        next_service_date = request.form['next_service_date'] or None
+        service_charge = request.form['service_charge'] or None
+        remarks = request.form.get('remarks', '')
+        service_case_id = request.form.get('service_case_id', None)
+
+        # Handle multiple file uploads
+        service_bill_paths = []
+        if 'service_bill' in request.files:
+            files = request.files.getlist('service_bill')
+            for file in files:
+                if file and allowed_file(file.filename):
+                    ticket_folder = os.path.join(app.config['UPLOAD_FOLDER'], ticket_id)
+                    service_bills_folder = os.path.join(ticket_folder, 'service_bills')
+                    os.makedirs(service_bills_folder, exist_ok=True)
+                    filename = f"{ticket_id}_{file.filename}"
+                    file_path = os.path.join(service_bills_folder, filename)
+                    file.save(file_path)
+                    relative_path = os.path.join(ticket_id, 'service_bills', filename)
+                    service_bill_paths.append(relative_path)
+            service_bill_path = ','.join(service_bill_paths) if service_bill_paths else None
+        else:
+            service_bill_path = None
+
+        # Generate unique service_ids for all selected assets
+        service_ids = generate_unique_id('SI', count=len(selected_asset_ids))
+
+        # Create a service for each selected asset
+        created_service_ids = []
+        for asset_id, service_id in zip(selected_asset_ids, service_ids):
+            created_by = 'service'
+            created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            warranty_type = in_warranty_out_warranty(asset_id)  # Dynamically determine warranty status
+
+            cursor.execute("""
+                INSERT INTO service_details (service_id, ticket_id, asset_id, service_case_id, technician_name, technician_id, 
+                                     work_done, next_service_date, service_charge, remarks, service_bill_path, 
+                                     created_by, created_at, warranty_type)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (service_id, ticket_id, asset_id, service_case_id, technician_name, technician_id, work_done, 
+                  next_service_date, service_charge, remarks, service_bill_path, created_by, created_at, warranty_type))
+            created_service_ids.append(service_id)
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+        flash(f"Multiple services created successfully with ticket ID {ticket_id}!", "success")
+        return redirect(url_for('edit_multiple_services', ticket_id=ticket_id, service_ids=','.join(created_service_ids)))
+
+    # GET request: Fetch technicians for dropdown
+    technicians_data = display_drop_down('Create_Technician')
+    technicians = technicians_data['technicians']
+
+    cursor.close()
+    conn.close()
+    return render_template('create_multiple_services.html', asset_ids=selected_asset_ids, technicians=technicians)
+
+@app.route('/get_services_for_assets', methods=['POST'])
+def get_services_for_assets():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    data = request.get_json()
+    asset_ids = data.get('asset_ids', [])
+    
+    if not asset_ids:
+        return jsonify({'error': 'No asset IDs provided'}), 400
+    
+    # Fetch services for the selected assets (assuming one ticket_id per batch of services)
+    cursor.execute("""
+        SELECT ticket_id, GROUP_CONCAT(service_id) as service_ids
+        FROM service_details
+        WHERE asset_id IN (%s)
+        GROUP BY ticket_id
+        LIMIT 1
+    """, (','.join(['%s'] * len(asset_ids)),), asset_ids)
+    
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    
+    if result:
+        return jsonify({
+            'ticket_id': result['ticket_id'],
+            'service_ids': result['service_ids'].split(',')
+        })
+    return jsonify({'error': 'No services found'}), 404
+
+
+@app.route('/edit_multiple_services/<ticket_id>', methods=['GET', 'POST'])
+def edit_multiple_services(ticket_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Fetch the service_ids from the query parameter
+    service_ids = request.args.get('service_ids', '').split(',')
+    if not service_ids or service_ids == ['']:
+        flash('No services to edit.', 'danger')
+        cursor.close()
+        conn.close()
+        return redirect(url_for('all_assets'))
+
+    if request.method == 'POST':
+        for service_id in service_ids:
+            technician_name = request.form.get(f'technician_name_{service_id}')
+            technician_id = request.form.get(f'technician_id_{service_id}')
+            work_done = request.form.get(f'work_done_{service_id}')
+            next_service_date = request.form.get(f'next_service_date_{service_id}') or None
+            service_charge = request.form.get(f'service_charge_{service_id}') or None
+            remarks = request.form.get(f'remarks_{service_id}', '')
+            service_case_id = request.form.get(f'service_case_id_{service_id}', None)
+            warranty_type = request.form.get(f'warranty_type_{service_id}')
+
+            # Handle file uploads (optional, if you want to allow updating files)
+            service_bill_paths = []
+            if f'service_bill_{service_id}' in request.files:
+                files = request.files.getlist(f'service_bill_{service_id}')
+                for file in files:
+                    if file and allowed_file(file.filename):
+                        ticket_folder = os.path.join(app.config['UPLOAD_FOLDER'], ticket_id)
+                        service_bills_folder = os.path.join(ticket_folder, 'service_bills')
+                        os.makedirs(service_bills_folder, exist_ok=True)
+                        filename = f"{service_id}_{file.filename}"
+                        file_path = os.path.join(service_bills_folder, filename)
+                        file.save(file_path)
+                        relative_path = os.path.join(ticket_id, 'service_bills', filename)
+                        service_bill_paths.append(relative_path)
+                service_bill_path = ','.join(service_bill_paths) if service_bill_paths else None
+            else:
+                # If no new files are uploaded, keep the existing service_bill_path
+                cursor.execute("SELECT service_bill_path FROM service_details WHERE service_id = %s", (service_id,))
+                existing = cursor.fetchone()
+                service_bill_path = existing['service_bill_path'] if existing else None
+
+            cursor.execute("""
+                UPDATE service_details
+                SET technician_name = %s, technician_id = %s, work_done = %s, next_service_date = %s,
+                    service_charge = %s, remarks = %s, service_case_id = %s, warranty_type = %s,
+                    service_bill_path = %s, modified_at = NOW()
+                WHERE service_id = %s
+            """, (technician_name, technician_id, work_done, next_service_date, service_charge, remarks,
+                  service_case_id, warranty_type, service_bill_path, service_id))
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+        flash("Services updated successfully!", "success")
+        return redirect(url_for('all_assets'))
+
+    # GET request: Fetch the services to edit
+    services = []
+    for service_id in service_ids:
+        cursor.execute("""
+            SELECT * FROM service_details
+            WHERE service_id = %s AND ticket_id = %s
+        """, (service_id, ticket_id))
+        service = cursor.fetchone()
+        if service:
+            services.append(service)
+
+    # Fetch technicians for dropdown
+    technicians_data = display_drop_down('Create_Technician')
+    technicians = technicians_data['technicians']
+
+    cursor.close()
+    conn.close()
+    return render_template('edit_multiple_services.html', ticket_id=ticket_id, services=services, technicians=technicians)
 
 
 if __name__ == '__main__':

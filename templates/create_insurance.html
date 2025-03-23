@@ -88,6 +88,16 @@
     </div>
 
 
+	    <!-- Container for "Raise Ticket" title and "View All Raised Tickets" button below the header -->
+    <div class="ticket-actions">
+        <h1>Insurance</h1>
+        <button class="insurance-all-button" onclick="location.href='/view_insurance/{{ asset_id }}'">
+            View All Insurances
+        </button>
+    </div>
+	
+
+
     <div class="form-container">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Check Asset Status</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/service_styles.css') }}">
+    <script src="{{ url_for('static', filename='js/search_pagination.js') }}"></script>
+    <style>
+        .header {
+            background-color: #2f276f;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .back-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .form-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .filter-container {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .filter-container select, .filter-container input {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .search-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .search-button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .asset-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        .asset-table th, .asset-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .asset-table th {
+            background-color: #2f276f;
+            color: white;
+        }
+        .action-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+        }
+        .update-btn {
+            background-color: #4CAF50;
+        }
+        .checked {
+            background-color: #e6ffe6;  /* Light green for checked assets */
+        }
+        .not-checked-within-week {
+            background-color: #fff9e6;  /* Mild yellow for not checked within 1 week */
+        }
+        .not-checked-after-week {
+            background-color: #ff3333;  /* Red for not checked after 1 week */
+        }
+        .overdue {
+            background-color: #ffe6e6;  /* Light red for overdue */
+        }
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .pagination a, .pagination span {
+            margin: 0 5px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #2f276f;
+        }
+        .pagination a:hover {
+            background-color: #f0f0f0;
+        }
+        .pagination .current {
+            background-color: #2f276f;
+            color: white;
+            border-color: #2f276f;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            max-width: 400px;
+            width: 90%;
+        }
+        .popup-content label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        .popup-content select, .popup-content input, .popup-content textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .close-btn {
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            float: right;
+            border-radius: 4px;
+        }
+        .submit-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .flash-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .flash-message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .no-records {
+            text-align: center;
+            padding: 20px;
+            color: #721c24;
+        }
+        .color-legend span {
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Check Asset Status (Under Audit)</h1>
+        <button class="back-button" onclick="window.history.back()">Back</button>
+    </div>
+
+    <div class="form-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Filters -->
+        <div class="filter-container">
+            <!-- Employee Filter -->
+            <form method="GET" action="{{ url_for('check_asset_status') }}">
+                <input type="hidden" name="search" value="{{ search_query }}">
+                <input type="hidden" name="page" value="{{ page }}">
+                <label for="employee">Filter by Employee:</label>
+                <select name="employee" id="employee" onchange="this.form.submit()">
+                    <option value="">All Employees</option>
+                    {% for emp in employees %}
+                        <option value="{{ emp.employee_code }}" {% if selected_employee == emp.employee_code %}selected{% endif %}>
+                            {{ emp.assigned_user }} ({{ emp.employee_code }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </form>
+
+            <!-- Search Bar -->
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Search by Asset ID, Product Name, or Type" value="{{ search_query }}">
+                <button class="search-button" id="search-button">Search</button>
+            </div>
+        </div>
+
+        <!-- First Check Date Info -->
+        {% if first_check_date %}
+            <p>First Status Check Date: {{ first_check_date }}<br>
+            <span class="color-legend">
+                Checked: <span style="background-color: #e6ffe6;">Light Green</span> |
+                Not Checked Within 1 Week: <span style="background-color: #fff9e6;">Mild Yellow</span> |
+                Not Checked After 1 Week: <span style="background-color: #ff3333; color: white;">Red</span> |
+                Overdue: <span style="background-color: #ffe6e6;">Light Red</span>
+            </span></p>
+        {% endif %}
+
+        <!-- Asset Table -->
+        {% if assets|length > 0 %}
+            <table class="asset-table">
+                <thead>
+                    <tr>
+                        <th>Asset ID</th>
+                        <th>Product Name</th>
+                        <th>Product Type</th>
+                        <th>Assigned User</th>
+                        <th>Product Condition</th>
+                        <th>Product Age</th>
+                        <th>Last Status Check</th>
+                        <th>Next Status Check</th>
+                        <th>Check Frequency</th>
+                        <th>Audit Remarks</th>
+                        <th>Under Audit</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for asset in assets %}
+                        <tr class="{% if asset.is_overdue %}overdue{% elif asset.is_checked %}checked{% elif asset.not_checked_after_week %}not-checked-after-week{% elif asset.not_checked_within_week %}not-checked-within-week{% endif %}" data-asset-id="{{ asset.asset_id }}">
+                            <td>{{ asset.asset_id }}</td>
+                            <td>{{ asset.product_name }}</td>
+                            <td>{{ asset.product_type }}</td>
+                            <td>{{ asset.assigned_user or 'Not Assigned' }} ({{ asset.employee_code or 'N/A' }})</td>
+                            <td>{{ asset.product_condition or 'N/A' }}</td>
+                            <td>{{ asset.product_age or 'N/A' }}</td>
+                            <td>{{ asset.last_status_check or 'Not Checked Yet' }}</td>
+                            <td>{{ asset.next_status_check or '' }}</td>
+                            <td>{{ asset.status_check_frequency or '3M' }}</td>
+                            <td>{{ asset.audit_remarks or '' }}</td>
+                            <td>{{ asset.under_audit or 'No' }}</td>
+                            <td>
+                                <button class="action-btn update-btn" onclick="showPopup('{{ asset.asset_id }}')">Update Status</button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                {% if page > 1 %}
+                    <a href="{{ url_for('check_asset_status', page=page-1, employee=selected_employee, search=search_query) }}">&laquo; Previous</a>
+                {% endif %}
+
+                {% for p in range(1, total_pages + 1) %}
+                    {% if p == page %}
+                        <span class="current">{{ p }}</span>
+                    {% else %}
+                        <a href="{{ url_for('check_asset_status', page=p, employee=selected_employee, search=search_query) }}">{{ p }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page < total_pages %}
+                    <a href="{{ url_for('check_asset_status', page=page+1, employee=selected_employee, search=search_query) }}">Next &raquo;</a>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="no-records">
+                <p>No assets found.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Popup Overlay -->
+    <div class="overlay" id="overlay" onclick="hidePopup()"></div>
+
+    <!-- Popup Window -->
+    <div class="popup" id="popup">
+        <button class="close-btn" onclick="hidePopup()">Close</button>
+        <h2>Update Asset Status</h2>
+        <form method="POST" action="{{ url_for('check_asset_status') }}">
+            <div class="popup-content">
+                <input type="hidden" name="asset_id" id="popup-asset-id">
+                <label for="product_condition">Product Condition:</label>
+                <select name="product_condition" id="product_condition" required>
+                    <option value="Good">Good</option>
+                    <option value="Fair">Fair</option>
+                    <option value="Poor">Poor</option>
+                    <option value="Damaged">Damaged</option>
+                </select>
+                <label for="status_check_frequency">Check Frequency:</label>
+                <select name="status_check_frequency" id="status_check_frequency" required>
+                    <option value="3M">Every 3 Months</option>
+                    <option value="6M">Every 6 Months</option>
+                </select>
+                <label for="audit_remarks">Audit Remarks:</label>
+                <textarea name="audit_remarks" id="audit_remarks" rows="3" placeholder="Enter audit remarks"></textarea>
+                <button type="submit" class="submit-btn">Update</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const assetsData = {{ assets | tojson }};
+
+        function showPopup(assetId) {
+            const asset = assetsData.find(a => a.asset_id === assetId);
+            if (asset) {
+                document.getElementById('popup-asset-id').value = asset.asset_id;
+                document.getElementById('product_condition').value = asset.product_condition || 'Good';
+                document.getElementById('status_check_frequency').value = asset.status_check_frequency || '3M';
+                document.getElementById('audit_remarks').value = asset.audit_remarks || '';
+                document.getElementById('popup').style.display = 'block';
+                document.getElementById('overlay').style.display = 'block';
+            }
+        }
+
+        function hidePopup() {
+            document.getElementById('popup').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

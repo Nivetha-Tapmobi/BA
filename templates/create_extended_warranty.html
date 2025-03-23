@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Extended Warranty</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/service_styles.css') }}">
+    <style>
+        .form-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f4f4f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .period-container {
+            display: flex;
+            gap: 10px;
+        }
+        .period-container input {
+            flex: 1;
+        }
+        button[type="submit"], .back-button {
+            background-color: #2f276f;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .back-button {
+            background-color: #4CAF50;
+        }
+        .header {
+            background-color: #2f276f;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .flash-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .flash-message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .flash-message.danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .provider-details {
+            display: none;
+        }
+    </style>
+	
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <!-- Include Header JS -->
+    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
+</head>
+<body>
+<!-- Include the header HTML -->
+    {% include 'header.html' %}
+    
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+	
+	
+	    <!-- Container for "Raise Ticket" title and "View All Raised Tickets" button below the header -->
+    <div class="ticket-actions">
+        <h1>Extended Warranty</h1>
+        <button class="view-all-button" onclick="location.href='/view_extended_warranty/{{ asset_id }}'">
+            View All EXtended  Warranties
+        </button>
+    </div>
+	
+	
+	
+    <div class="form-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" id="warrantyForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="asset_id">Asset ID:</label>
+                <input type="text" id="asset_id" name="asset_id" value="{{ asset_id }}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="extended_warranty_start">Extended Warranty Start Date:</label>
+                <input type="date" id="extended_warranty_start" name="extended_warranty_start" required>
+            </div>
+
+            <div class="form-group">
+                <label for="extended_warranty_period">Extended Warranty Period:</label>
+                <div class="period-container">
+                    <input type="number" id="extended_warranty_period_years" name="extended_warranty_period_years" placeholder="Years" min="0">
+                    <input type="number" id="extended_warranty_period_months" name="extended_warranty_period_months" placeholder="Months" min="0">
+                    <input type="number" id="extended_warranty_period_days" name="extended_warranty_period_days" placeholder="Days" min="0">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="extended_warranty_end_date">Extended Warranty End Date:</label>
+                <input type="date" id="extended_warranty_end_date" name="extended_warranty_end_date" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="warranty_provider_type">Warranty Provider Type:</label>
+                <select id="warranty_provider_type" name="warranty_provider_type" required>
+                    <option value="Company Provider">Company Provider</option>
+                    <option value="3rd Party Provider">3rd Party Provider</option>
+                </select>
+            </div>
+
+            <div id="provider_details" class="provider-details">
+                <div class="form-group">
+                    <label for="warranty_provider_name">Warranty Provider Name:</label>
+                    <input type="text" id="warranty_provider_name" name="warranty_provider_name">
+                </div>
+
+                <div class="form-group">
+                    <label for="warranty_provider_ph_no">Warranty Provider Phone Number:</label>
+                    <input type="text" id="warranty_provider_ph_no" name="warranty_provider_ph_no">
+                </div>
+
+                <div class="form-group">
+                    <label for="warranty_provider_location">Warranty Provider Location:</label>
+                    <input type="text" id="warranty_provider_location" name="warranty_provider_location">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="warranty_value">Warranty Value:</label>
+                <input type="number" id="warranty_value" name="warranty_value" step="0.01">
+            </div>
+
+            <div class="form-group">
+                <label for="adp_protection">ADP Protection:</label>
+                <select id="adp_protection" name="adp_protection" required>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="extended_warranty_bill">Upload Extended Warranty Bills:</label>
+                <input type="file" id="extended_warranty_bill" name="extended_warranty_bill" multiple accept=".png,.jpg,.jpeg,.pdf">
+            </div>
+
+            <div class="form-group">
+                <label for="product_condition">Product Condition:</label>
+                <input type="text" id="product_condition" name="product_condition" required>
+            </div>
+
+            <div class="form-group">
+                <label for="remarks">Remarks:</label>
+                <textarea id="remarks" name="remarks" rows="3"></textarea>
+            </div>
+
+            <button type="submit">Create Extended Warranty</button>
+        </form>
+    </div>
+
+    <script>
+        const purchaseDate = new Date('{{ purchase_date }}');
+        const warrantyEnd = {% if warranty_end %}'{{ warranty_end }}'{% else %}null{% endif %};
+        const latestExtendedWarrantyEnd = {% if latest_extended_warranty_end %}'{{ latest_extended_warranty_end }}'{% else %}null{% endif %};
+        const extendedWarrantyStartInput = document.getElementById('extended_warranty_start');
+        const extendedWarrantyEndInput = document.getElementById('extended_warranty_end_date');
+        const yearsInput = document.getElementById('extended_warranty_period_years');
+        const monthsInput = document.getElementById('extended_warranty_period_months');
+        const daysInput = document.getElementById('extended_warranty_period_days');
+        const warrantyProviderTypeInput = document.getElementById('warranty_provider_type');
+        const providerDetailsDiv = document.getElementById('provider_details');
+        const providerNameInput = document.getElementById('warranty_provider_name');
+        const providerPhNoInput = document.getElementById('warranty_provider_ph_no');
+        const providerLocationInput = document.getElementById('warranty_provider_location');
+
+        // Calculate extended warranty end date
+        function calculateEndDate() {
+            const startDate = new Date(extendedWarrantyStartInput.value);
+            const years = parseInt(yearsInput.value) || 0;
+            const months = parseInt(monthsInput.value) || 0;
+            const days = parseInt(daysInput.value) || 0;
+
+            if (startDate && (years || months || days)) {
+                const endDate = new Date(startDate);
+                endDate.setFullYear(endDate.getFullYear() + years);
+                endDate.setMonth(endDate.getMonth() + months);
+                endDate.setDate(endDate.getDate() + days);
+                extendedWarrantyEndInput.value = endDate.toISOString().split('T')[0];
+            } else {
+                extendedWarrantyEndInput.value = '';
+            }
+        }
+
+        // Validate extended warranty start date
+        extendedWarrantyStartInput.addEventListener('change', () => {
+            const startDate = new Date(extendedWarrantyStartInput.value);
+
+            // Check if start date is before purchase date
+            if (startDate < purchaseDate) {
+                alert('Extended warranty start date cannot be earlier than the asset purchase date.');
+                extendedWarrantyStartInput.value = '';
+                extendedWarrantyEndInput.value = '';
+                return;
+            }
+
+            // Check if start date is before warranty end date (if exists)
+            if (warrantyEnd) {
+                const warrantyEndDate = new Date(warrantyEnd);
+                if (startDate < warrantyEndDate) {
+                    alert('Extended warranty start date cannot be earlier than the asset warranty end date.');
+                    extendedWarrantyStartInput.value = '';
+                    extendedWarrantyEndInput.value = '';
+                    return;
+                }
+            }
+
+            // Check if start date is before the latest extended warranty end date (if applicable)
+            if (latestExtendedWarrantyEnd) {
+                const latestEndDate = new Date(latestExtendedWarrantyEnd);
+                if (startDate <= latestEndDate) {
+                    alert('Extended warranty start date must be after the latest extended warranty end date.');
+                    extendedWarrantyStartInput.value = '';
+                    extendedWarrantyEndInput.value = '';
+                    return;
+                }
+            }
+
+            calculateEndDate();
+        });
+
+        // Recalculate end date when period changes
+        yearsInput.addEventListener('input', calculateEndDate);
+        monthsInput.addEventListener('input', calculateEndDate);
+        daysInput.addEventListener('input', calculateEndDate);
+
+        // Show/hide provider details based on warranty provider type
+        warrantyProviderTypeInput.addEventListener('change', () => {
+            if (warrantyProviderTypeInput.value === '3rd Party Provider') {
+                providerDetailsDiv.style.display = 'block';
+                providerNameInput.setAttribute('required', 'required');
+                providerPhNoInput.setAttribute('required', 'required');
+                providerLocationInput.setAttribute('required', 'required');
+            } else {
+                providerDetailsDiv.style.display = 'none';
+                providerNameInput.removeAttribute('required');
+                providerPhNoInput.removeAttribute('required');
+                providerLocationInput.removeAttribute('required');
+            }
+        });
+    </script>
+</body>
+</html>

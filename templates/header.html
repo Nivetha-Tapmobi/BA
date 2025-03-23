@@ -8,11 +8,14 @@
         <div class="menu" onclick="headertoggleMenu()">☰</div>
         <div class="menu-dropdown" id="menuDropdown">
             <button class="add-asset-btn" onclick="location.href='{{ url_for('create_asset') }}';">+ Add Asset</button>
-            <button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_raised_tickets') }}';">View All Tickets</button>
-			<button class="details-button" onclick="location.href='{{ url_for('view_assets') }}';">View Assets</button>
-			<button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_service') }}';">View Services</button>
-			<button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_insurance') }}';">View Insurance</button>
-			<a href="{{ url_for('view_assets') }}" class="details-button">View Assets</a><br><br>
+            <button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_raised_tickets') }}';">Raised Tickets</button>
+			<button class="details-button" onclick="location.href='{{ url_for('view_assets') }}';"> IT Assets</button>
+			<button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_service') }}';"> Services</button>
+			<button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_insurance') }}';">Insurance</button>
+			<button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_extended_warranty') }}';">EXW</button>
+			<button class="view-all-tickets-btn" onclick="location.href='{{ url_for('check_asset_status') }}';">Audit</button>
+			<button class="view-all-tickets-btn" onclick="location.href='{{ url_for('all_assets') }}';">M Services</button>
+			
         </div>
     </div>
 </body>

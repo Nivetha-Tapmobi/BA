@@ -85,6 +85,6 @@ function manageInsurance(assetId) {
 
 // Function to manage extended warranty
 function manageExtendedWarranty(assetId) {
-    alert("Manage extended warranty for: " + assetId);
+     window.location.href = `/create_extended_warranty/${assetId}`;
 }
 
