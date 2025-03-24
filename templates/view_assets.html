@@ -151,33 +151,142 @@
         .action-menu .delete-btn {
             color: #dc3545;
         }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+		.modal-content {
+			background-color: white;
+			margin: 2% auto;          /* Reduced margin to give more space */
+			padding: 25px;
+			border: none;
+			width: 90%;              /* Increased width to 90% of viewport */
+			max-width: 1200px;       /* Increased max-width for larger screens */
+			border-radius: 8px;
+			box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+			position: relative;
+			max-height: 90vh;        /* Increased height to 90% of viewport */
+			overflow-y: auto;
+		}
+
+        .close {
+            color: #ff4444;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            transition: color 0.3s;
+        }
+
+        .close:hover {
+            color: #cc0000;
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+            border-bottom: 2px solid #2f276f;
+            padding-bottom: 10px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #2f276f;
+            font-size: 24px;
+        }
+
+        .two-column-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 10px 0;
+        }
+
+        .detail-item {
+            margin: 8px 0;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .detail-item:hover {
+            background-color: #f0f1f2;
+        }
+
+        .detail-item strong {
+            color: #2f276f;
+            display: block;
+            margin-bottom: 4px;
+            text-transform: capitalize;
+        }
+
+        .detail-item span {
+            color: #333;
+            word-break: break-word;
+        }
+
+        .print-btn {
+            background-color: #2f276f;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+            float: right;
+            transition: background-color 0.3s;
+        }
+
+        .print-btn:hover {
+            background-color: #1f1a4f;
+        }
+
+        .modal-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+
+        .modal-table th, .modal-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .modal-table th {
+            background-color: #2f276f;
+            color: white;
+        }
     </style>
 
-    <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/view_assets_popup.css') }}">
 
-    <!-- jQuery & DataTables -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
-    <script src="{{ url_for('static', filename='js/view_assets_details_popup.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/view_assets_print.js') }}"></script>
-
-    
-	
-	    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <script src="{{ url_for('static', filename='js/view_assets_details_print.js') }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
     <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
-
 </head>
 <body>
     {% include 'header.html' %}  
     <div class="content">
         {% block content %}{% endblock %}
     </div>
-	
-	
 
     <div class="container">
         <div class="button-container">
@@ -261,104 +370,354 @@
         </div>
     </div>
 
-    <script>
-        $(document).ready(function () {
-            $("#assetTable").DataTable();
+<script>
+    $(document).ready(function () {
+        $("#assetTable").DataTable();
 
-            {% for asset in all_assets %}
-                JsBarcode("#barcode-{{ asset.asset_id }}", "{{ asset.asset_id }}", { 
-                    format: "CODE128", 
-                    width: 1.8, 
-                    height: 40 
-                });
-            {% endfor %}
-        });
-
-        function downloadBarcode(barcodeId) {
-            const svg = document.getElementById(barcodeId);
-            if (!svg) return;
-
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
-            const svgData = new XMLSerializer().serializeToString(svg);
-            const img = new Image();
-
-            img.onload = function () {
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0);
-                const a = document.createElement("a");
-                a.href = canvas.toDataURL("image/png");
-                a.download = barcodeId + ".png";
-                a.click();
-            };
-            img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
-        }
-
-        function toggleActionMenu(menuId) {
-            const menu = document.getElementById(menuId);
-            if (menu.style.display === 'block') {
-                menu.style.display = 'none';
-            } else {
-                // Close all other menus first
-                document.querySelectorAll('.action-menu').forEach(m => m.style.display = 'none');
-                menu.style.display = 'block';
-            }
-        }
-
-        // Close menus when clicking outside
-        document.addEventListener('click', function(event) {
-            const menus = document.querySelectorAll('.action-menu');
-            const cells = document.querySelectorAll('.actions-cell');
-            let clickedInside = false;
-
-            cells.forEach(cell => {
-                if (cell.contains(event.target)) {
-                    clickedInside = true;
-                }
+        {% for asset in all_assets %}
+            JsBarcode("#barcode-{{ asset.asset_id }}", "{{ asset.asset_id }}", { 
+                format: "CODE128", 
+                width: 1.8, 
+                height: 40 
             });
+        {% endfor %}
+    });
 
-            if (!clickedInside) {
-                menus.forEach(menu => menu.style.display = 'none');
+    function downloadBarcode(barcodeId) {
+        const svg = document.getElementById(barcodeId);
+        if (!svg) return;
+
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        const svgData = new XMLSerializer().serializeToString(svg);
+        const img = new Image();
+
+        img.onload = function () {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            const a = document.createElement("a");
+            a.href = canvas.toDataURL("image/png");
+            a.download = barcodeId + ".png";
+            a.click();
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+    }
+
+    function toggleActionMenu(menuId) {
+        const menu = document.getElementById(menuId);
+        if (menu.style.display === 'block') {
+            menu.style.display = 'none';
+        } else {
+            document.querySelectorAll('.action-menu').forEach(m => m.style.display = 'none');
+            menu.style.display = 'block';
+        }
+    }
+
+    document.addEventListener('click', function(event) {
+        const menus = document.querySelectorAll('.action-menu');
+        const cells = document.querySelectorAll('.actions-cell');
+        let clickedInside = false;
+
+        cells.forEach(cell => {
+            if (cell.contains(event.target)) {
+                clickedInside = true;
             }
         });
 
-        function editAsset(assetId) {
-            // Add your edit logic here, e.g., redirect to edit page
-            window.location.href = `/edit_asset/${assetId}`;
+        if (!clickedInside) {
+            menus.forEach(menu => menu.style.display = 'none');
+        }
+    });
+
+    function editAsset(assetId) {
+        window.location.href = `/edit_asset/${assetId}`;
+    }
+
+    function deleteAsset(assetId) {
+        if (confirm('Are you sure you want to delete this asset?')) {
+            window.location.href = `/delete_asset/${assetId}`;
+        }
+    }
+
+    function addUser(assetId) {
+        window.location.href = `/view_user_details/${assetId}`;
+    }
+
+    function raiseTicket(assetId) {
+        window.location.href = `/create_raise_ticket/${assetId}`;
+    }
+
+    function manageInsurance(assetId) {
+        window.location.href = `/create_insurance/${assetId}`;
+    }
+
+    function manageExtendedWarranty(assetId) {
+        window.location.href = `/create_extended_warranty/${assetId}`;
+    }
+
+    // Define formatValue and formatKey functions
+    function formatValue(key, value) {
+        if (value === null || value === undefined) {
+            return 'N/A';
+        }
+        if (key.includes('_date') || key.includes('_at') || key.includes('_end')) {
+            return new Date(value).toLocaleDateString() || value;
+        }
+        return value;
+    }
+
+    function formatKey(key) {
+        return key.replace(/_/g, ' ').split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    }
+	
+	function formatDate(dateString) {
+    if (!dateString) return ''; // Handle null or undefined values
+    const date = new Date(dateString);
+    return date.toISOString().split('T')[0]; // Extract YYYY-MM-DD
+}
+
+
+    async function viewDetails(assetJson) {
+        console.log("viewDetails called with assetJson:", assetJson);
+        let modalBody = document.getElementById("modal-body");
+        if (!modalBody) {
+            console.error("Modal body not found");
+            return;
         }
 
-        function deleteAsset(assetId) {
-            if (confirm('Are you sure you want to delete this asset?')) {
-                // Add your delete logic here, e.g., AJAX call or redirect
-                window.location.href = `/delete_asset/${assetId}`;
+        const fieldOrder = [
+            'id', 'created_by', 'created_at', 'asset_id', 'asset_category', 'product_type', 
+            'product_name', 'serial_no', 'make', 'model', 'part_no', 'description', 
+            'purchase_date', 'product_age', 'vendor_name', 'vendor_id', 'company_name', 
+            'asset_type', 'purchase_value', 'product_condition', 'adp_production', 
+            'insurance', 'warranty_checked', 'warranty_exists', 'warranty_start', 
+            'warranty_period', 'warranty_end', 'extended_warranty_exists', 
+            'extended_warranty_period', 'extended_warranty_end', 'has_amc', 
+            'recurring_alert_for_amc', 'image_path', 'purchase_bill_path', 
+            'modified_by', 'modified_at', 'remarks'
+        ];
+
+        let leftColumn = '';
+        let rightColumn = '';
+        const midPoint = Math.ceil(fieldOrder.length / 2);
+        const leftFields = fieldOrder.slice(0, midPoint);
+        const rightFields = fieldOrder.slice(midPoint);
+
+        leftFields.forEach(key => {
+            if (key in assetJson) {
+                let value = formatValue(key, assetJson[key]);
+                if (key === 'created_by' && 'created_at' in assetJson) {
+                    leftColumn += `
+                        <div class="detail-item">
+                            <strong>Created By at Created At:</strong>
+                            <span>${value} at ${formatValue('created_at', assetJson['created_at'])}</span>
+                        </div>
+                    `;
+                } else if (key === 'created_at') {
+                    // Skip as it's handled with created_by
+                } else {
+                    leftColumn += `
+                        <div class="detail-item">
+                            <strong>${formatKey(key)}:</strong>
+                            <span>${value}</span>
+                        </div>
+                    `;
+                }
             }
+        });
+
+        rightFields.forEach(key => {
+            if (key in assetJson) {
+                let value = formatValue(key, assetJson[key]);
+                if (key === 'modified_by' && 'modified_at' in assetJson) {
+                    rightColumn += `
+                        <div class="detail-item">
+                            <strong>Modified By at Modified At:</strong>
+                            <span>${value} at ${formatValue('modified_at', assetJson['modified_at'])}</span>
+                        </div>
+                    `;
+                } else if (key === 'modified_at') {
+                    // Skip as it's handled with modified_by
+                } else {
+                    rightColumn += `
+                        <div class="detail-item">
+                            <strong>${formatKey(key)}:</strong>
+                            <span>${value}</span>
+                        </div>
+                    `;
+                }
+            }
+        });
+
+        modalBody.innerHTML = `
+            <div class="two-column-grid">
+                <div>${leftColumn}</div>
+                <div>${rightColumn}</div>
+            </div>
+            <div id="related-data">
+                <p>Loading related data...</p>
+            </div>
+            <button class="print-btn" onclick="printModal()">Print</button>
+        `;
+        document.getElementById("assetModal").style.display = "block";
+
+        const url = `/get_asset_details/${assetJson.asset_id}`;
+        console.log("Fetching related data from:", url);
+
+        try {
+            const response = await fetch(url);
+            console.log("Fetch response status:", response.status, response.statusText);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const relatedData = await response.json();
+            console.log("Related data received:", relatedData);
+
+            let serviceRows = '';
+            if (relatedData.service_details && relatedData.service_details.length > 0) {
+                relatedData.service_details.forEach(service => {
+                    serviceRows += `
+                        <tr>
+                            <td>${service.service_id || 'N/A'}</td>
+                            <td>${service.warranty_type || 'N/A'}</td>
+                            <td>${service.ticket_id || 'N/A'}</td>
+                            <td>${service.work_done || 'N/A'}</td>
+                            <td>${formatDate( service.next_service_date)}</td>
+                            <td>${service.service_charge || 'N/A'}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                serviceRows = '<tr><td colspan="6">No service details available</td></tr>';
+            }
+
+            let ticketRows = '';
+            if (relatedData.raised_tickets && relatedData.raised_tickets.length > 0) {
+                relatedData.raised_tickets.forEach(ticket => {
+                    ticketRows += `
+                        <tr>
+                            <td>${ticket.ticket_id || 'N/A'}</td>
+                            <td>${ticket.problem_description || 'N/A'}</td>
+                            <td>${ticket.ticket_status || 'N/A'}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                ticketRows = '<tr><td colspan="3">No raised tickets available</td></tr>';
+            }
+
+            let warrantyRows = '';
+            if (relatedData.extended_warranty_info && relatedData.extended_warranty_info.length > 0) {
+                relatedData.extended_warranty_info.forEach(warranty => {
+                    warrantyRows += `
+                        <tr>
+                            <td>${warranty.warranty_asset_id || 'N/A'}</td>
+                            <td>${formatDate( warranty.warranty_purchase_date)}</td>
+                            <td>${warranty.extended_warranty || 'N/A'}</td>
+							<td>${formatDate(warranty.warranty_end_date)}</td>
+                            <td>${warranty.value || 'N/A'}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                warrantyRows = '<tr><td colspan="4">No extended warranty info available</td></tr>';
+            }
+
+            let insuranceRows = '';
+            if (relatedData.insurance_details && relatedData.insurance_details.length > 0) {
+                relatedData.insurance_details.forEach(insurance => {
+                    insuranceRows += `
+                        <tr>
+                            <td>${insurance.policy_number || 'N/A'}</td>
+                            <td>${insurance.insurance_value || 'N/A'}</td>
+                            <td>${formatDate(insurance.insurance_start)}</td>
+                            <td>${insurance.insurance_period || 'N/A'}</td>
+                            <td>${formatDate( insurance.insurance_end)}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                insuranceRows = '<tr><td colspan="5">No insurance details available</td></tr>';
+            }
+
+            document.getElementById('related-data').innerHTML = `
+                <h3>Service Details</h3>
+                <table class="modal-table asset-table">
+                    <thead>
+                        <tr>
+                            <th>Service ID</th>
+                            <th>Service Type</th>
+                            <th>Ticket ID</th>
+                            <th>Work Done</th>
+                            <th>Next Service Date</th>
+                            <th>Charge</th>
+                        </tr>
+                    </thead>
+                    <tbody>${serviceRows}</tbody>
+                </table>
+                <h3>Raised Tickets</h3>
+                <table class="modal-table asset-table">
+                    <thead>
+                        <tr>
+                            <th>Ticket ID</th>
+                            <th>Problem Description</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>${ticketRows}</tbody>
+                </table>
+                <h3>Extended Warranty Info</h3>
+                <table class="modal-table asset-table">
+                    <thead>
+                        <tr>
+                            <th>Warranty Asset ID</th>
+                            <th>Warranty Purchase Date</th>
+                            <th>Extended Warranty</th>
+							<th>Warranty End Date</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>${warrantyRows}</tbody>
+                </table>
+                <h3>Insurance Details</h3>
+                <table class="modal-table asset-table">
+                    <thead>
+                        <tr>
+                            <th>Policy Number</th>
+                            <th>Insurance Value</th>
+                            <th>Start Date</th>
+                            <th>Period</th>
+                            <th>End Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>${insuranceRows}</tbody>
+                </table>
+            `;
+        } catch (error) {
+            console.error('Error fetching related data:', error);
+            document.getElementById('related-data').innerHTML = '<p>Error loading related data.</p>';
         }
-		
-		
-		function addUser(assetId) {
-			// Add your edit logic here, e.g., redirect to edit page
-			//window.location.href = `/create_user_asset/${assetId}`;
-			window.location.href = `/view_user_details/${assetId}`;
-		}
+    }
 
+    function closeModal() {
+        document.getElementById("assetModal").style.display = "none";
+    }
 
-		function raiseTicket(assetId) {
-			// Add your edit logic here, e.g., redirect to edit page
-			window.location.href = `/create_raise_ticket/${assetId}`;
-		}
+    function printModal() {
+        window.print();
+    }
 
-
-		// Function to manage insurance
-		function manageInsurance(assetId) {
-			window.location.href = `/create_insurance/${assetId}`;
-		}
-
-		// Function to manage extended warranty
-		function manageExtendedWarranty(assetId) {
-			 window.location.href = `/create_extended_warranty/${assetId}`;
-		}
-
-    </script>
+    window.onclick = function(event) {
+        let modal = document.getElementById("assetModal");
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+</script>
 </body>
 </html>

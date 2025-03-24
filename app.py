@@ -989,6 +989,73 @@ def view_assets():
     return render_template('view_assets.html', all_assets=assets_list, today=today)
 
 
+@app.route('/get_asset_details/<asset_id>', methods=['GET'])
+def get_asset_details(asset_id):
+    # print(f"Entering get_asset_details for asset_id: {asset_id}")
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        # print("Database connection established")
+
+        # Fetch service details
+        cursor.execute("""
+            SELECT service_id, warranty_type , ticket_id, work_done, 
+                   next_service_date, service_charge 
+            FROM service_details 
+            WHERE asset_id = %s AND (archieved IS NULL OR archieved = 'No')
+        """, (asset_id,))
+        service_details = cursor.fetchall()
+        # print(f"Service details fetched: {service_details}")
+
+        # Fetch raised tickets
+        cursor.execute("""
+            SELECT ticket_id, problem_description, ticket_status 
+            FROM raised_tickets 
+            WHERE asset_id = %s AND (archieved IS NULL OR archieved = 'No')
+        """, (asset_id,))
+        raised_tickets = cursor.fetchall()
+        # print(f"Raised tickets fetched: {raised_tickets}")
+
+        # Fetch extended warranty info
+        cursor.execute("""
+            SELECT warranty_asset_id, extended_warranty_start AS warranty_purchase_date, 
+                   extended_warranty_period AS extended_warranty, 
+                       extended_warranty_end_date as warranty_end_date, warranty_value AS value 
+            FROM extended_warranty_info 
+            WHERE asset_id = %s AND (archieved IS NULL OR archieved = 'No')
+        """, (asset_id,))
+        extended_warranty_info = cursor.fetchall()
+        # print(f"Extended warranty info fetched: {extended_warranty_info}")
+
+        # Fetch insurance details
+        cursor.execute("""
+            SELECT policy_number, insurance_value, insurance_start, insurance_period, 
+                   insurance_end 
+            FROM insurance_details 
+            WHERE asset_id = %s AND (archieved IS NULL OR archieved = 'No')
+        """, (asset_id,))
+        insurance_details = cursor.fetchall()
+        # print(f"Insurance details fetched: {insurance_details}")
+
+        cursor.close()
+        conn.close()
+        print("Database connection closed")
+
+        # Return the related data as JSON
+        response = {
+            'service_details': service_details,
+            'raised_tickets': raised_tickets,
+            'extended_warranty_info': extended_warranty_info,
+            'insurance_details': insurance_details
+        }
+        print(f"Returning response: {response}")
+        return jsonify(response)
+
+    except Exception as e:
+        print(f"Error in get_asset_details: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/delete_asset/<string:id>', methods=['POST'])
 def delete_asset(id):
     data = request.get_json()  # Get JSON data from the request body
@@ -1025,79 +1092,6 @@ def delete_asset(id):
         cursor.close()
         conn.close()
 
-
-@app.route('/get_asset_details/<asset_id>', methods=['GET'])
-def get_asset_details(asset_id):
-    print('get')
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    try:
-        # Fetch asset details
-        cursor.execute("""
-            SELECT asset_id, product_type, product_name, serial_no, make, model, part_no, 
-                   description, purchase_date, vendor_name, vendor_id, company_name, 
-                   asset_type, purchase_value, product_condition, adp_production, insurance, 
-                   warranty_exists, warranty_start, warranty_period, warranty_end, 
-                   extended_warranty_exists, extended_warranty_period, extended_warranty_end, 
-                   has_amc, image_path, purchase_bill_path, created_by, created_at, 
-                   modified_by, modified_at, remarks, product_age, asset_category, 
-                   recurring_alert_for_amc, has_user_details, archieved
-            FROM it_assets WHERE asset_id = %s AND archieved = 'No'
-        """, (asset_id,))
-        asset = cursor.fetchone()
-
-        # Fetch asset users
-        cursor.execute("""
-            SELECT assignment_code, assigned_user, employee_code, effective_date, end_date 
-            FROM assets_users WHERE asset_id = %s AND archieved = 'No'
-        """, (asset_id,))
-        asset_users = cursor.fetchall()
-
-        # Fetch service details
-        cursor.execute("""
-            SELECT service_id, warranty_type, ticket_id, work_done, next_service_date, service_charge 
-            FROM service_details WHERE asset_id = %s AND archieved = 'No'
-        """, (asset_id,))
-        service_details = cursor.fetchall()
-
-        # Fetch raised tickets
-        cursor.execute("""
-            SELECT ticket_id, problem_description, ticket_status 
-            FROM raised_tickets WHERE asset_id = %s AND archieved = 'No'
-        """, (asset_id,))
-        raised_tickets = cursor.fetchall()
-
-        # Fetch extended warranty info
-        cursor.execute("""
-            SELECT warranty_asset_id, extended_warranty_start, extended_warranty_period, warranty_value 
-            FROM extended_warranty_info WHERE asset_id = %s AND archieved = 'No'
-        """, (asset_id,))
-        extended_warranty = cursor.fetchall()
-
-        # Fetch insurance details
-        cursor.execute("""
-            SELECT policy_number, insurance_value, insurance_start, insurance_period, insurance_end 
-            FROM insurance_details WHERE asset_id = %s AND archieved = 'No'
-        """, (asset_id,))
-        insurance_details = cursor.fetchall()
-
-        if not asset:
-            return jsonify({'error': 'Asset not found'}), 404
-
-        return jsonify({
-            'asset': asset,
-            'asset_users': asset_users,
-            'service_details': service_details,
-            'raised_tickets': raised_tickets,
-            'extended_warranty': extended_warranty,
-            'insurance_details': insurance_details
-        })
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-    finally:
-        cursor.close()
-        conn.close()
 
 
 # Function to fetch purchase_date for an asset_id

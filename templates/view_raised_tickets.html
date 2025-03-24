@@ -166,23 +166,122 @@
             background-color: #cccccc;
         }
 
-        .popup, .ignore-popup {
+        /* Updated Popup Styles to Match Extended Warranty Layout */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 999;
+        }
+
+        .popup {
             display: none;
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 20px;
+            background-color: #fff;
             border: 1px solid #ccc;
             border-radius: 5px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
             z-index: 1000;
-            max-width: 500px;
+            max-width: 600px;
             width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
-        .popup-overlay, .ignore-overlay {
+        .popup-header {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .popup-header h3 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: bold;
+            color: #2f276f;
+        }
+
+        .popup-header .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .popup-body {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px 20px;
+        }
+
+        .ticket-detail {
+            display: flex;
+            flex-direction: column;
+            font-size: 14px;
+        }
+
+        .ticket-detail label {
+            font-weight: bold;
+            color: #2f276f;
+            margin-bottom: 5px;
+        }
+
+        .ticket-detail span {
+            color: #333;
+            word-wrap: break-word;
+        }
+
+        .print-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .print-btn:hover {
+            background-color: #218838;
+        }
+
+        .close-btn {
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .close-btn:hover {
+            background-color: #cc0000;
+        }
+
+        /* Responsive Adjustments for Popup */
+        @media (max-width: 600px) {
+            .popup {
+                width: 95%;
+            }
+
+            .popup-body {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Ignore Popup Styles */
+        .ignore-overlay {
             display: none;
             position: fixed;
             top: 0;
@@ -193,27 +292,24 @@
             z-index: 999;
         }
 
-        .close-btn {
-            background-color: #ff4444;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            float: right;
-            border-radius: 4px;
+        .ignore-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            max-width: 500px;
+            width: 90%;
         }
 
-        .close-btn:hover {
-            background-color: #cc0000;
-        }
-
-        .popup h3, .ignore-popup h3 {
+        .ignore-popup h3 {
             margin-top: 0;
             color: #2f276f;
-        }
-
-        .popup p, .ignore-popup p {
-            margin: 5px 0;
         }
 
         .ignore-popup textarea {
@@ -244,6 +340,7 @@
             text-decoration: none;
             border-radius: 4px;
         }
+
         .replacement-btn:hover {
             background-color: #007B9A;
         }
@@ -318,12 +415,19 @@
         </table>
     </div>
 
-    <!-- View Popup -->
+    <!-- Updated View Popup to Match Extended Warranty Layout -->
     <div class="popup-overlay" id="viewPopupOverlay"></div>
     <div class="popup" id="viewPopup">
-        <h3>Ticket Details</h3>
-        <div id="ticketDetailsContent"></div>
-        <button class="close-btn" onclick="closeViewPopup()">Close</button>
+        <div class="popup-header">
+            <h3>Ticket Details</h3>
+            <div class="btn-group">
+                <button class="print-btn" onclick="printTicketDetails()">Print</button>
+                <button class="close-btn" onclick="closeViewPopup()">Close</button>
+            </div>
+        </div>
+        <div class="popup-body" id="ticketDetailsContent">
+            <!-- Content will be dynamically inserted here -->
+        </div>
     </div>
 
     <!-- Ignore Popup -->
@@ -341,6 +445,12 @@
     </div>
 
     <script>
+        // Menu Toggle
+        document.querySelector('.menu').addEventListener('click', function() {
+            const dropdown = document.querySelector('.menu-dropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        });
+
         // Character count and validation for ignore reason
         document.getElementById('ignore_reason').addEventListener('input', function() {
             const text = this.value;
@@ -358,29 +468,79 @@
             return true;
         }
 
-        // View Popup Functions
+        // Updated View Popup Functions
         function openViewPopup(ticketId) {
             fetch(`/ticket_details/${ticketId}`)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to fetch ticket details');
+                    return response.json();
+                })
                 .then(data => {
                     const content = `
-                        <p><strong>ID:</strong> ${data.id}</p>
-                        <p><strong>Created By:</strong> ${data.created_by}</p>
-                        <p><strong>Created At:</strong> ${data.created_at}</p>
-                        <p><strong>Ticket ID:</strong> ${data.ticket_id}</p>
-                        <p><strong>Asset ID:</strong> ${data.asset_id}</p>
-                        <p><strong>Raised By:</strong> ${data.raised_by}</p>
-                        <p><strong>Problem Description:</strong> ${data.problem_description}</p>
-                        <p><strong>Modified By:</strong> ${data.modified_by || 'N/A'}</p>
-                        <p><strong>Modified At:</strong> ${data.modified_at || 'N/A'}</p>
-                        <p><strong>Ticket Status:</strong> ${data.ticket_status}</p>
-                        <p><strong>Ignore Reason:</strong> ${data.ignore_reason || 'N/A'}</p>
-                        <p><strong>Progress Notes:</strong> ${data.progress_notes || 'N/A'}</p>
-                        <p><strong>Replacement Issued:</strong> ${data.replacement_issued || 'N/A'}</p>
-                        <p><strong>Replacement Asset ID:</strong> ${data.replacement_asset_id || 'N/A'}</p>
-                        <p><strong>Replacement Reason:</strong> ${data.replacement_reason || 'N/A'}</p>
-                        <p><strong>Remarks:</strong> ${data.remarks || 'N/A'}</p>
-                        <p><strong>Archived:</strong> ${data.archieved || 'N/A'}</p>
+                        <div class="ticket-detail">
+                            <label>Ticket ID:</label>
+                            <span>${data.ticket_id}</span>
+                        </div>
+                        <div class="ticket-detail">
+                            <label>Asset ID:</label>
+                            <span>${data.asset_id}</span>
+                        </div>
+                        <div class="ticket-detail">
+                            <label>Problem Description:</label>
+                            <span>${data.problem_description}</span>
+                        </div>
+                        <div class="ticket-detail">
+                            <label>Ticket Status:</label>
+                            <span>${data.ticket_status}</span>
+                        </div>
+                        <div class="ticket-detail">
+                            <label>Created By:</label>
+                            <span>${data.created_by}</span>
+                        </div>
+                        <div class="ticket-detail">
+                            <label>Raised By:</label>
+                            <span>${data.raised_by}</span>
+                        </div>
+                        <div class="ticket-detail">
+                            <label>Created At:</label>
+                            <span>${data.created_at}</span>
+                        </div>
+                        <div class="ticket-detail">
+                            <label>Modified By:</label>
+                            <span>${data.modified_by || 'N/A'}</span>
+                        </div>
+                        <div class="ticket-detail">
+                            <label>Modified At:</label>
+                            <span>${data.modified_at || 'N/A'}</span>
+                        </div>
+                        <div class="ticket-detail">
+                            <label>Ignore Reason:</label>
+                            <span>${data.ignore_reason || 'N/A'}</span>
+                        </div>
+                        <div class="ticket-detail">
+                            <label>Progress Notes:</label>
+                            <span>${data.progress_notes || 'N/A'}</span>
+                        </div>
+                        <div class="ticket-detail">
+                            <label>Replacement Issued:</label>
+                            <span>${data.replacement_issued || 'N/A'}</span>
+                        </div>
+                        <div class="ticket-detail">
+                            <label>Replacement Asset ID:</label>
+                            <span>${data.replacement_asset_id || 'N/A'}</span>
+                        </div>
+                        <div class="ticket-detail">
+                            <label>Replacement Reason:</label>
+                            <span>${data.replacement_reason || 'N/A'}</span>
+                        </div>
+                        <div class="ticket-detail">
+                            <label>Remarks:</label>
+                            <span>${data.remarks || 'N/A'}</span>
+                        </div>
+                        <div class="ticket-detail">
+                            <label>Archived:</label>
+                            <span>${data.archieved || 'N/A'}</span>
+                        </div>
                     `;
                     document.getElementById('ticketDetailsContent').innerHTML = content;
                     document.getElementById('viewPopup').style.display = 'block';
@@ -388,7 +548,9 @@
                 })
                 .catch(error => {
                     console.error('Error fetching ticket details:', error);
-                    alert('Failed to load ticket details.');
+                    document.getElementById('ticketDetailsContent').innerHTML = `<p style="color: red;">Failed to load ticket details: ${error.message}</p>`;
+                    document.getElementById('viewPopup').style.display = 'block';
+                    document.getElementById('viewPopupOverlay').style.display = 'block';
                 });
         }
 
@@ -396,6 +558,33 @@
             document.getElementById('viewPopup').style.display = 'none';
             document.getElementById('viewPopupOverlay').style.display = 'none';
             document.getElementById('ticketDetailsContent').innerHTML = '';
+        }
+
+        function printTicketDetails() {
+            const printContent = document.getElementById('ticketDetailsContent').innerHTML;
+            const originalContent = document.body.innerHTML;
+
+            // Create a new window for printing
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Print Ticket Details</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        .ticket-detail { display: flex; flex-direction: column; margin-bottom: 15px; }
+                        .ticket-detail label { font-weight: bold; color: #2f276f; margin-bottom: 5px; }
+                        .ticket-detail span { color: #333; }
+                    </style>
+                </head>
+                <body>
+                    <h3>Ticket Details</h3>
+                    ${printContent}
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
         }
 
         // Ignore Popup Functions
