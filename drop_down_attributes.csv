@@ -1,20 +1,20 @@
-﻿slno,product_type,company_name,asset_category,asset_type
-1,Laptop,Muzik247,IT,Home
-2,Monitor,AmaraMuzik,Industrial,Office
-3,Keyboard,Texonic,Gulabs Equipment,
-4,Mouse,Tapmobi,,
-5,Mousepad,Vayu Drones,,
-6,Memory (RAM),,,
-7,Hard drive,,,
-8,Pendrive,,,
-9,Desktop,,,
-10,Switch,,,
-11,SSD,,,
-12,SATA,,,
-13,Lacio Hard disk,,,
-14,NAS Box,,,
-15,Cables (RJ45),,,
-16,Camera,,,
-17,Ethernet Adapter External,,,
-18,Printer,,,
-19,Modem/Router,,,
+﻿slno,product_type,company_name,asset_category,asset_type,product_condition,location
+1,Laptop,Muzik247,IT,Home,Excellent,Texonic Front Office
+2,Monitor,AmaraMuzik,Industrial,Office,Good,Muzik247 Back Office
+3,Keyboard,Texonic,Gulabs Equipment,,Fair,Gulabs Office
+4,Mouse,Tapmobi,,,Not in Good State,Texonic Head Office
+5,Mousepad,Vayu Drones,,,Scraped,
+6,Memory (RAM),,,,,
+7,Hard drive,,,,,
+8,Pendrive,,,,,
+9,Desktop,,,,,
+10,Switch,,,,,
+11,SSD,,,,,
+12,SATA,,,,,
+13,Lacio Hard disk,,,,,
+14,NAS Box,,,,,
+15,Cables (RJ45),,,,,
+16,Camera,,,,,
+17,Ethernet Adapter External,,,,,
+18,Printer,,,,,
+19,Modem/Router,,,,,

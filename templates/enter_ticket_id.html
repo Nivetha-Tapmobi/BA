@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Enter Ticket ID</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/create_multiple_service_style.css') }}">
+    <style>
+        .form-container { max-width: 400px; margin: 50px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; }
+        .form-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        .flash-message { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .flash-message.danger { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <h2>Enter Ticket ID to Edit Services</h2>
+        <form method="POST" action="{{ url_for('edit_related_multiple_services') }}">
+            <div class="form-group">
+                <label for="ticket_id">Ticket ID - Reference Name:</label>
+                <select name="ticket_id" id="ticket_id" required>
+                    <option value="">Select Ticket ID - Reference Name</option>
+                    {% for ticket in ticket_ids %}
+                        <option value="{{ ticket.ticket_id }}">{{ ticket.ticket_id }} - {{ ticket.reference_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</body>
+</html>

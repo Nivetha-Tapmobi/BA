@@ -2,15 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Create Multiple Services</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/service_styles.css') }}">
+    <title>Edit Multiple Services - Ticket {{ ticket_id }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/create_multiple_service_style.css') }}">
     <style>
-        /* [Your existing styles remain unchanged] */
+        .header { background-color: #2f276f; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
+        .header h1 { margin: 0; font-size: 28px; }
+        .back-button { background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        .form-container { max-width: 1200px; margin: 20px auto; padding: 20px; }
+        .form-column { display: inline-block; width: 48%; vertical-align: top; padding: 10px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .form-group textarea { resize: vertical; }
+        button[type="submit"] { background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        .flash-message { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .flash-message.success { background-color: #d4edda; color: #155724; }
+        .flash-message.danger { background-color: #f8d7da; color: #721c24; }
+        .asset-ids-list { margin-bottom: 15px; }
+        .work-done-history { background-color: #f9f9f9; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Create Multiple Services</h1>
+        <h1>Edit Multiple Services - Ticket {{ ticket_id }}</h1>
         <button class="back-button" onclick="window.history.back()">Back</button>
     </div>
 
@@ -35,14 +49,13 @@
                     </div>
                 </div>
 
-
-
                 <div class="form-group">
                     <label for="technician_name">Technician Name:</label>
                     <select name="technician_name" id="technician_name" required onchange="updateTechnicianId()">
                         <option value="">Select Technician</option>
                         {% for tech in technicians %}
-                            <option value="{{ tech.technician_name }}" data-technician-id="{{ tech.technician_id }}">
+                            <option value="{{ tech.technician_name }}" data-technician-id="{{ tech.technician_id }}"
+                                    {% if tech.technician_name == service.technician_name %}selected{% endif %}>
                                 {{ tech.technician_name }}
                             </option>
                         {% endfor %}
@@ -52,56 +65,58 @@
 
                 <div class="form-group">
                     <label for="technician_id">Technician ID:</label>
-                    <input type="text" name="technician_id" id="technician_id" readonly required>
+                    <input type="text" name="technician_id" id="technician_id" value="{{ service.technician_id }}" readonly required>
                 </div>
+				
+				                <div class="form-group">
+                    <label>Work Done History:</label>
+                    <div class="work-done-history">
+                        {% for entry in work_done_display %}
+                            <p><strong>{{ entry.label }}</strong><br>{{ entry.work_done }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+				
             </div>
-			
-			     <div class="form-group">
-                    <label for="reference_name">Reference Name for the Service:</label>
-                    <textarea name="reference_name" id="reference_name" rows="4" required></textarea>
-                </div>
 
             <div class="form-column">
+
+
                 <div class="form-group">
-                    <label for="work_done">Work Done:</label>
-                    <textarea name="work_done" id="work_done" rows="4" required></textarea>
+                    <label for="work_done">New Work Done (will be appended to all assets):</label>
+                    <textarea name="work_done" id="work_done" rows="4" placeholder="Enter new work to be appended"></textarea>
                 </div>
 
                 <div class="form-group">
                     <label for="next_service_date">Next Service Date:</label>
-                    <input type="date" name="next_service_date" id="next_service_date">
+                    <input type="date" name="next_service_date" id="next_service_date" value="{{ service.next_service_date.strftime('%Y-%m-%d') if service.next_service_date else '' }}">
                 </div>
 
                 <div class="form-group">
                     <label for="service_charge">Service Charge:</label>
-                    <input type="number" name="service_charge" id="service_charge" step="1">
+                    <input type="number" name="service_charge" id="service_charge" step="0.01" value="{{ service.service_charge if service.service_charge else '' }}">
                 </div>
 
                 <div class="form-group">
                     <label for="service_case_id">Service Case ID (Optional):</label>
-                    <input type="text" name="service_case_id" id="service_case_id">
+                    <input type="text" name="service_case_id" id="service_case_id" value="{{ service.service_case_id if service.service_case_id else '' }}">
                 </div>
 
                 <div class="form-group">
                     <label for="remarks">Remarks:</label>
-                    <textarea name="remarks" id="remarks" rows="3"></textarea>
+                    <textarea name="remarks" id="remarks" rows="3">{{ service.remarks if service.remarks else '' }}</textarea>
                 </div>
 
                 <div class="form-group">
                     <label for="service_bill">Service Bill Upload (Multiple Files):</label>
                     <input type="file" name="service_bill" id="service_bill" multiple accept=".png,.jpg,.jpeg,.gif,.pdf,.docx">
+                    {% if service.service_bill_path %}
+                        <p>Current files: {{ service.service_bill_path }}</p>
+                    {% endif %}
                 </div>
 
-                <button type="submit">Create Services</button>
+                <button type="submit">Update Services</button>
             </div>
-        </form>
-
-        <!-- Hidden form for fallback submission -->
-        <form method="POST" id="redirectForm" action="{{ url_for('save_form_state_technician') }}" style="display: none;">
-            <input type="hidden" name="ticket_id" value="{{ ticket_id }}">
-            {% for asset_id in asset_ids %}
-                <input type="hidden" name="asset_ids" value="{{ asset_id }}">
-            {% endfor %}
         </form>
     </div>
 
@@ -123,7 +138,7 @@
                 })
                 .catch(error => {
                     console.error('Error saving form state:', error);
-                    document.getElementById('redirectForm').submit();
+                    document.getElementById('serviceForm').submit();
                 });
             } else if (technicianId) {
                 document.getElementById('technician_id').value = technicianId;

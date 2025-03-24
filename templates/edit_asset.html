@@ -136,6 +136,21 @@
                             <option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
                         </select>
                     </div>
+					
+					<div class="form-group">
+                        <label for="location">Location</label>
+                        <select id="location" name="location" class="dropdown-with-add">
+                            <option value="">--select an option--</option>
+                            {% for location in locations %}
+                                <option value="{{ location }}" {% if location == asset.location %}selected{% endif %}>
+                                    {{ location }}
+                                </option>
+                            {% endfor %}
+                            <option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
+                        </select>
+                    </div>
+					
+					
 
                     <div class="form-group">
                         <label for="asset_type">Asset Type</label>
@@ -258,10 +273,26 @@
                         </select>
                     </div>
 
-                    <div class="form-group">
+                   <!-- <div class="form-group">
                         <label for="product_condition">Product Condition:</label>
                         <input type="text" id="product_condition" name="product_condition" value="{{ asset.product_condition|default('') }}">
+                    </div>-->
+					
+					
+					<div class="form-group">
+                        <label for="product_condition">product condition</label>
+                        <select id="product_condition" name="product_condition" class="dropdown-with-add">
+                            <option value="">--select an option--</option>
+                            {% for product_condition in product_conditions %}
+                                <option value="{{ product_condition }}" {% if product_condition == asset.product_condition %}selected{% endif %}>
+                                    {{ product_condition }}
+                                </option>
+                            {% endfor %}
+                            <option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
+                        </select>
                     </div>
+					
+					
 
                     <div class="form-group">
                         <label for="asset_image">Asset Images:</label>

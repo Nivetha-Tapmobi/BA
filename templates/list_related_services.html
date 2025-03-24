@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Services for Ticket {{ ticket_id }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/create_multiple_service_style.css') }}">
+    <style>
+        .header { background-color: #2f276f; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
+        .header h1 { margin: 0; font-size: 28px; }
+        .action-btn, .back-button { background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        .form-container { max-width: 1200px; margin: 20px auto; padding: 20px; }
+        .service-table { width: 100%; border-collapse: collapse; margin: 20px 0; background-color: white; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
+        .service-table th, .service-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        .service-table th { background-color: #2f276f; color: white; }
+        .pagination { margin-top: 20px; text-align: center; }
+        .pagination a, .pagination span { margin: 0 5px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #2f276f; }
+        .pagination a:hover { background-color: #f0f0f0; }
+        .pagination .current { background-color: #2f276f; color: white; border-color: #2f276f; }
+        .flash-message { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .flash-message.success { background-color: #d4edda; color: #155724; }
+        .flash-message.danger { background-color: #f8d7da; color: #721c24; }
+        .select-all { margin-bottom: 10px; }
+    </style>
+    <script>
+        function enableCheckboxes() {
+            if (confirm("Are you sure you want to enable editing multiple services? This will allow you to select services for bulk editing.")) {
+                document.querySelectorAll('.service-checkbox').forEach(cb => cb.disabled = false);
+                document.getElementById('select-all').disabled = false;
+                document.getElementById('edit-btn').disabled = true; // Disable button until selection
+            }
+        }
+
+        function toggleSelectAll() {
+            const selectAllCheckbox = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.service-checkbox');
+            checkboxes.forEach(cb => cb.checked = selectAllCheckbox.checked);
+            updateEditButton();
+        }
+
+        function updateEditButton() {
+            const checkedCount = document.querySelectorAll('.service-checkbox:checked').length;
+            document.getElementById('edit-btn').disabled = (checkedCount === 0);
+        }
+
+        function submitSelectedServices() {
+            const selectedServices = [];
+            document.querySelectorAll('.service-checkbox:checked').forEach(cb => {
+                selectedServices.push(cb.value);
+            });
+            if (selectedServices.length > 0) {
+                window.location.href = "{{ url_for('edit_related_multiple_services_form', ticket_id=ticket_id) }}?selected_services=" + selectedServices.join(',');
+            } else {
+                alert("Please select at least one service to edit.");
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="header">
+        <h1>Services for Ticket {{ ticket_id }}</h1>
+        <div>
+            <button class="action-btn" onclick="enableCheckboxes()">Edit Multiple Services</button>
+            <button class="back-button" onclick="window.history.back()">Back</button>
+        </div>
+    </div>
+
+    <div class="form-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% if services|length > 0 %}
+            <div class="select-all">
+                <label><input type="checkbox" id="select-all" disabled onclick="toggleSelectAll()"> Select All</label>
+            </div>
+            <table class="service-table">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Service ID</th>
+                        <th>Asset ID</th>
+                        <th>Technician Name</th>
+                        <th>Work Done</th>
+                        <th>Edit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for service in services %}
+                        <tr>
+                            <td><input type="checkbox" class="service-checkbox" value="{{ service.service_id }}" disabled onchange="updateEditButton()"></td>
+                            <td>{{ service.service_id }}</td>
+                            <td>{{ service.asset_id }}</td>
+                            <td>{{ service.technician_name }}</td>
+                            <td>{{ service.work_done }}</td>
+                            <td><a href="{{ url_for('edit_service', service_id=service.service_id) }}">Edit</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button type="button" id="edit-btn" disabled onclick="submitSelectedServices()">Edit Selected Services</button>
+
+            <div class="pagination">
+                {% if page > 1 %}
+                    <a href="{{ url_for('edit_related_multiple_services', page=page-1, ticket_id=ticket_id) }}">« Previous</a>
+                {% endif %}
+                {% for p in range(1, total_pages + 1) %}
+                    {% if p == page %}
+                        <span class="current">{{ p }}</span>
+                    {% else %}
+                        <a href="{{ url_for('edit_related_multiple_services', page=p, ticket_id=ticket_id) }}">{{ p }}</a>
+                    {% endif %}
+                {% endfor %}
+                {% if page < total_pages %}
+                    <a href="{{ url_for('edit_related_multiple_services', page=page+1, ticket_id=ticket_id) }}">Next »</a>
+                {% endif %}
+            </div>
+        {% else %}
+            <p>No services found for this ticket.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
