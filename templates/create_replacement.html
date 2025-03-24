@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Replacement</title>
     <style>
-         table {
+        table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
@@ -33,15 +33,42 @@
         .adduser-btn:hover {
             background-color: #45a049;
         }
+        .search-filter-container {
+            margin: 20px 0;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .search-filter-container input, .search-filter-container select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .pagination {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .pagination button {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            background-color: #f4f4f4;
+            cursor: pointer;
+        }
+        .pagination button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .pagination button.active {
+            background-color: #2f276f;
+            color: white;
+        }
     </style>
-	
-		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
-    <!-- Include Header JS -->
-		<script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
 </head>
 <body>
-
-<!-- Include the header HTML -->
     {% include 'header.html' %}
     
     <div class="content">
@@ -50,7 +77,20 @@
 
     <div class="container">
         <h2>Unassigned Assets</h2>
-        <table>
+
+        <!-- Search and Filter Section -->
+        <div class="search-filter-container">
+            <input type="text" id="searchInput" placeholder="Search by Asset ID, Product Name, or Serial No" onkeyup="filterAndPaginate()">
+            <select id="productTypeFilter" onchange="filterAndPaginate()">
+                <option value="">All Product Types</option>
+                {% for product_type in product_types %}
+                <option value="{{ product_type }}">{{ product_type }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Assets Table -->
+        <table id="assetsTable">
             <thead>
                 <tr>
                     <th>Asset ID</th>
@@ -61,33 +101,121 @@
                     <th>Action</th>
                 </tr>
             </thead>
-            <tbody>
-                {% for asset in assets %}
-                <tr>
-                    <td>{{ asset.asset_id }}</td>
-                    <td>{{ asset.product_type }}</td>
-                    <td>{{ asset.product_name }}</td>
-                    <td>{{ asset.serial_no }}</td>
-                    <td>{{ asset.make }}</td>
-                    <td>
-                        <button class="adduser-btn" onclick="addUser('{{ asset.asset_id }}')">Add User</button>
-                    </td>
-                </tr>
-                {% endfor %}
-                {% if not assets %}
-                <tr>
-                    <td colspan="6">No unassigned assets available.</td>
-                </tr>
-                {% endif %}
+            <tbody id="assetsBody">
+                <!-- Table body will be populated dynamically -->
             </tbody>
         </table>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination">
+            <!-- Pagination buttons will be populated dynamically -->
+        </div>
     </div>
 
     <script>
+        // Initial data from Flask
+        const allAssets = {{ assets | tojson | safe }};
+        const itemsPerPage = 5; // Adjust as needed
+        let currentPage = 1;
+
+        // Filter and paginate assets
+        function filterAndPaginate() {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const productType = document.getElementById('productTypeFilter').value;
+
+            // Filter assets
+            let filteredAssets = allAssets.filter(asset => {
+                const matchesSearch = (
+                    asset.asset_id.toLowerCase().includes(searchQuery) ||
+                    asset.product_name.toLowerCase().includes(searchQuery) ||
+                    asset.serial_no.toLowerCase().includes(searchQuery)
+                );
+                const matchesProductType = !productType || asset.product_type === productType;
+                return matchesSearch && matchesProductType;
+            });
+
+            // Calculate pagination
+            const totalItems = filteredAssets.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            currentPage = Math.min(currentPage, Math.max(1, totalPages)); // Adjust current page if needed
+
+            // Slice assets for current page
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedAssets = filteredAssets.slice(startIndex, endIndex);
+
+            // Update table and pagination
+            updateTable(paginatedAssets);
+            updatePagination(totalPages);
+        }
+
+        // Update table with assets
+        function updateTable(assets) {
+            const tbody = document.getElementById('assetsBody');
+            tbody.innerHTML = '';
+
+            if (assets.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6">No unassigned assets available.</td></tr>';
+                return;
+            }
+
+            assets.forEach(asset => {
+                const row = `
+                    <tr>
+                        <td>${asset.asset_id}</td>
+                        <td>${asset.product_type}</td>
+                        <td>${asset.product_name}</td>
+                        <td>${asset.serial_no}</td>
+                        <td>${asset.make}</td>
+                        <td>
+                            <button class="adduser-btn" onclick="addUser('${asset.asset_id}')">Add User</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // Update pagination controls
+        function updatePagination(totalPages) {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+
+            if (totalPages <= 1) return; // No pagination needed for 1 page
+
+            // Previous button
+            const prevButton = `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>`;
+            pagination.innerHTML += prevButton;
+
+            // Page numbers (limited to 5 for simplicity)
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, startPage + 4);
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = `<button onclick="changePage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
+                pagination.innerHTML += pageButton;
+            }
+
+            // Next button
+            const nextButton = `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>`;
+            pagination.innerHTML += nextButton;
+        }
+
+        // Change page and update display
+        function changePage(page) {
+            if (page < 1) return;
+            currentPage = page;
+            filterAndPaginate();
+        }
+
+        // Add user function (unchanged)
         function addUser(assetId) {
-            // Redirect to the create_user_asset route with the selected asset_id
             window.location.href = `/create_user_asset/${assetId}`;
         }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            filterAndPaginate();
+        });
     </script>
 </body>
 </html>

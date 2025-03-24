@@ -85,28 +85,73 @@
             transform: translate(-50%, -50%);
             background-color: white;
             padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             z-index: 1000;
-            max-width: 600px;
+            max-width: 700px;
             width: 90%;
+        }
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .popup-header h2 {
+            margin: 0;
+            color: #2f276f;
+            font-size: 24px;
         }
         .popup-content {
             display: flex;
             justify-content: space-between;
+            gap: 20px;
         }
         .popup-column {
             width: 48%;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .detail-item {
+            margin: 10px 0;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        .detail-item strong {
+            color: #2f276f;
+            display: block;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .detail-item span, .detail-item a {
+            color: #333;
+            word-break: break-word;
+        }
+        .detail-item a {
+            text-decoration: none;
+            color: #2f276f;
+        }
+        .detail-item a:hover {
+            text-decoration: underline;
+        }
+        .close-btn, .print-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
         }
         .close-btn {
             background-color: #ff4444;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            float: right;
-            border-radius: 4px;
+        }
+        .print-btn {
+            background-color: #4CAF50;
+            margin-left: 10px;
         }
         .flash-message {
             padding: 10px;
@@ -126,6 +171,35 @@
             padding: 20px;
             color: #721c24;
         }
+        .search-container {
+            margin: 20px 0;
+        }
+        .search-container input {
+            padding: 8px;
+            width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .pagination {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .pagination button {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            background-color: #f4f4f4;
+            cursor: pointer;
+        }
+        .pagination button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .pagination button.active {
+            background-color: #2f276f;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -143,82 +217,39 @@
             {% endif %}
         {% endwith %}
 
-        {% if insurance is mapping and insurance|length > 0 %}
-            <!-- Single insurance record -->
-            <table class="service-table">
-                <thead>
-                    <tr>
-                        <th>Insurance ID</th>
-                        <th>Asset ID</th>
-                        <th>Product Name</th>
-                        <th>Policy Number</th>
-                        <th>Insurance Value</th>
-                        <th>Insurance Start</th>
-                        <th>Insurance End</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr data-insurance-id="{{ insurance.insurance_id }}">
-                        <td>{{ insurance.insurance_id }}</td>
-                        <td>{{ insurance.asset_id }}</td>
-                        <td>{{ insurance.product_name }}</td>
-                        <td>{{ insurance.policy_number }}</td>
-                        <td>{{ insurance.insurance_value or 'N/A' }}</td>
-                        <td>{{ insurance.insurance_start }}</td>
-                        <td>{{ insurance.insurance_end }}</td>
-                        <td>
-                            <button class="action-btn view-btn" onclick="showPopup('{{ insurance.insurance_id }}')">View</button>
-                            <a href="{{ url_for('edit_insurance', insurance_id=insurance.insurance_id) }}" class="action-btn edit-btn">Edit</a>
-                            <form action="{{ url_for('delete_insurance', insurance_id=insurance.insurance_id) }}" method="POST" style="display:inline;">
-                                <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to archive this insurance?');">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        {% elif insurance is iterable and insurance|length > 0 %}
-            <!-- List of insurance records -->
-            <table class="service-table">
-                <thead>
-                    <tr>
-                        <th>Insurance ID</th>
-                        <th>Asset ID</th>
-                        <th>Product Name</th>
-                        <th>Policy Number</th>
-                        <th>Insurance Value</th>
-                        <th>Insurance Start</th>
-                        <th>Insurance End</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for ins in insurance %}
-                        <tr data-insurance-id="{{ ins.insurance_id }}">
-                            <td>{{ ins.insurance_id }}</td>
-                            <td>{{ ins.asset_id }}</td>
-                            <td>{{ ins.product_name }}</td>
-                            <td>{{ ins.policy_number }}</td>
-                            <td>{{ ins.insurance_value or 'N/A' }}</td>
-                            <td>{{ ins.insurance_start }}</td>
-                            <td>{{ ins.insurance_end }}</td>
-                            <td>
-                                <button class="action-btn view-btn" onclick="showPopup('{{ ins.insurance_id }}')">View</button>
-                                <a href="{{ url_for('edit_insurance', insurance_id=ins.insurance_id) }}" class="action-btn edit-btn">Edit</a>
-                                <form action="{{ url_for('delete_insurance', insurance_id=ins.insurance_id) }}" method="POST" style="display:inline;">
-                                    <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to archive this insurance?');">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <!-- No records found -->
-            <div class="no-records">
-                <p>No insurance records found.</p>
-            </div>
-        {% endif %}
+        <!-- Search Bar -->
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search by Insurance ID, Asset ID, or Product Name" onkeyup="filterAndPaginate()">
+        </div>
+
+        <!-- Insurance Table -->
+        <table class="service-table" id="insuranceTable">
+            <thead>
+                <tr>
+                    <th>Insurance ID</th>
+                    <th>Asset ID</th>
+                    <th>Product Name</th>
+                    <th>Policy Number</th>
+                    <th>Insurance Value</th>
+                    <th>Insurance Start</th>
+                    <th>Insurance End</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="insuranceBody">
+                <!-- Table body will be populated dynamically -->
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination">
+            <!-- Pagination buttons will be populated dynamically -->
+        </div>
+
+        <!-- No Records Message -->
+        <div class="no-records" id="noRecords" style="display: none;">
+            <p>No insurance records found.</p>
+        </div>
     </div>
 
     <!-- Popup Overlay -->
@@ -226,51 +257,184 @@
 
     <!-- Popup Window -->
     <div class="popup" id="popup">
-        <button class="close-btn" onclick="hidePopup()">Close</button>
-        <h2>Insurance Details</h2>
+        <div class="popup-header">
+            <h2>Insurance Details</h2>
+            <div>
+                <button class="print-btn" onclick="printModal()">Print</button>
+                <button class="close-btn" onclick="hidePopup()">Close</button>
+            </div>
+        </div>
         <div class="popup-content" id="popup-content">
             <!-- Popup content will be populated dynamically -->
         </div>
     </div>
 
     <script>
-        const insuranceData = {{ insurance | tojson }};
+        const allInsuranceData = {{ insurance | tojson | safe }};
+        const itemsPerPage = 5; // Adjust as needed
+        let currentPage = 1;
 
-        function showPopup(insuranceId) {
-            let ins;
-            if (Array.isArray(insuranceData)) {
-                ins = insuranceData.find(i => i.insurance_id === insuranceId);
-            } else {
-                ins = insuranceData;
+        // Normalize insurance data to array
+        const insuranceArray = Array.isArray(allInsuranceData) ? allInsuranceData : (allInsuranceData && Object.keys(allInsuranceData).length > 0 ? [allInsuranceData] : []);
+
+        // Filter and paginate insurance records
+        function filterAndPaginate() {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+
+            let filteredInsurance = insuranceArray.filter(ins => {
+                return (
+                    ins.insurance_id.toLowerCase().includes(searchQuery) ||
+                    ins.asset_id.toLowerCase().includes(searchQuery) ||
+                    ins.product_name.toLowerCase().includes(searchQuery)
+                );
+            });
+
+            const totalItems = filteredInsurance.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+            currentPage = Math.min(currentPage, totalPages);
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedInsurance = filteredInsurance.slice(startIndex, endIndex);
+
+            updateTable(paginatedInsurance);
+            updatePagination(totalPages);
+            toggleNoRecords(totalItems === 0);
+        }
+
+        // Update table with insurance records
+        function updateTable(insurance) {
+            const tbody = document.getElementById('insuranceBody');
+            tbody.innerHTML = '';
+
+            insurance.forEach(ins => {
+                const row = `
+                    <tr data-insurance-id="${ins.insurance_id}">
+                        <td>${ins.insurance_id}</td>
+                        <td>${ins.asset_id}</td>
+                        <td>${ins.product_name}</td>
+                        <td>${ins.policy_number}</td>
+                        <td>${ins.insurance_value || 'N/A'}</td>
+                        <td>${ins.insurance_start}</td>
+                        <td>${ins.insurance_end}</td>
+                        <td>
+                            <button class="action-btn view-btn" onclick="showPopup('${ins.insurance_id}')">View</button>
+                            <a href="{{ url_for('edit_insurance', insurance_id='') }}${ins.insurance_id}" class="action-btn edit-btn">Edit</a>
+                            <form action="{{ url_for('delete_insurance', insurance_id='') }}${ins.insurance_id}" method="POST" style="display:inline;">
+                                <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to archive this insurance?');">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // Update pagination controls (always show, even for 1 page)
+        function updatePagination(totalPages) {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+
+            const prevButton = `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>`;
+            pagination.innerHTML += prevButton;
+
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, startPage + 4);
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = `<button onclick="changePage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
+                pagination.innerHTML += pageButton;
             }
 
+            const nextButton = `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>`;
+            pagination.innerHTML += nextButton;
+        }
+
+        // Change page and update display
+        function changePage(page) {
+            if (page < 1 || page > Math.ceil(insuranceArray.length / itemsPerPage) && insuranceArray.length > 0) return;
+            currentPage = page;
+            filterAndPaginate();
+        }
+
+        // Toggle no records message
+        function toggleNoRecords(show) {
+            document.getElementById('noRecords').style.display = show ? 'block' : 'none';
+            document.getElementById('insuranceTable').style.display = show ? 'none' : 'table';
+        }
+
+        // Show popup with insurance details
+        function showPopup(insuranceId) {
+            const ins = insuranceArray.find(i => i.insurance_id === insuranceId);
             if (ins) {
                 const content = `
                     <div class="popup-column">
-                        <p><strong>Insurance ID:</strong> ${ins.insurance_id}</p>
-                        <p><strong>Asset ID:</strong> ${ins.asset_id}</p>
-                        <p><strong>Product Name:</strong> ${ins.product_name}</p>
-                        <p><strong>Policy Number:</strong> ${ins.policy_number}</p>
-                        <p><strong>Insurance Value:</strong> ${ins.insurance_value || 'N/A'}</p>
-                        <p><strong>Insurance Start:</strong> ${ins.insurance_start}</p>
-                        <p><strong>Insurance Period:</strong> ${ins.insurance_period}</p>
-                        <p><strong>Insurance End:</strong> ${ins.insurance_end}</p>
+                        <div class="detail-item">
+                            <strong>Insurance ID</strong>
+                            <span>${ins.insurance_id}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Asset ID</strong>
+                            <span>${ins.asset_id}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Product Name</strong>
+                            <span>${ins.product_name}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Policy Number</strong>
+                            <span>${ins.policy_number}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Insurance Value</strong>
+                            <span>${ins.insurance_value || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Insurance Start</strong>
+                            <span>${ins.insurance_start}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Insurance Period</strong>
+                            <span>${ins.insurance_period}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Insurance End</strong>
+                            <span>${ins.insurance_end}</span>
+                        </div>
                     </div>
                     <div class="popup-column">
-                        <p><strong>Insurance Bills:</strong>
-                            ${
+                        <div class="detail-item">
+                            <strong>Insurance Bills</strong>
+                            <span>${
                                 ins.insurance_bill_path ?
                                 ins.insurance_bill_path.split(',').map(path => 
                                     `<a href="${path}" target="_blank">${path.split('/').pop()}</a><br>`
                                 ).join('') : 'N/A'
-                            }
-                        </p>
-                        <p><strong>Remarks:</strong> ${ins.remarks || 'N/A'}</p>
-                        <p><strong>Created By:</strong> ${ins.created_by}</p>
-                        <p><strong>Created At:</strong> ${ins.created_at}</p>
-                        <p><strong>Modified By:</strong> ${ins.modified_by || 'N/A'}</p>
-                        <p><strong>Modified At:</strong> ${ins.modified_at || 'N/A'}</p>
-                        <p><strong>Archived:</strong> ${ins.archieved}</p>
+                            }</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Remarks</strong>
+                            <span>${ins.remarks || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Created By</strong>
+                            <span>${ins.created_by}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Created At</strong>
+                            <span>${ins.created_at}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Modified By</strong>
+                            <span>${ins.modified_by || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Modified At</strong>
+                            <span>${ins.modified_at || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Archived</strong>
+                            <span>${ins.archieved}</span>
+                        </div>
                     </div>
                 `;
                 document.getElementById('popup-content').innerHTML = content;
@@ -279,11 +443,78 @@
             }
         }
 
+        // Hide popup
         function hidePopup() {
             document.getElementById('popup').style.display = 'none';
             document.getElementById('overlay').style.display = 'none';
             document.getElementById('popup-content').innerHTML = '';
         }
+
+        // Print modal function
+        function printModal() {
+            const modalContent = document.getElementById('popup-content');
+            if (!modalContent) return;
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Print Insurance Details</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            padding: 20px;
+                        }
+                        h2 {
+                            color: #2f276f;
+                            border-bottom: 2px solid #2f276f;
+                            padding-bottom: 10px;
+                        }
+                        .two-column-grid {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 20px;
+                            padding: 10px 0;
+                        }
+                        .detail-item {
+                            margin: 8px 0;
+                            padding: 8px;
+                            background-color: #f8f9fa;
+                        }
+                        .detail-item strong {
+                            color: #2f276f;
+                            display: block;
+                            margin-bottom: 4px;
+                        }
+                        .detail-item span {
+                            color: #333;
+                            word-break: break-word;
+                        }
+                        .no-print {
+                            display: none;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h2>Insurance Details</h2>
+                    ${modalContent.innerHTML}
+                </body>
+                </html>
+            `);
+
+            printWindow.document.querySelector('.close-btn')?.classList.add('no-print');
+            printWindow.document.querySelector('.print-btn')?.classList.add('no-print');
+
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            filterAndPaginate();
+        });
     </script>
 </body>
 </html>

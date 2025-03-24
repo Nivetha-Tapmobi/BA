@@ -72,6 +72,44 @@
             background-color: #f8d7da;
             color: #721c24;
         }
+		
+		        .view-all-button {
+            background-color: #2f276f;
+            color: white;
+            padding: 10px 20px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center; /* Ensures that text is centered */
+            transition: background-color 0.3s ease, transform 0.1s;
+            display: inline-block; /* Keeps it on the same line as the title */
+        }
+
+        .view-all-button:hover {
+            background-color: #291e6c;
+            transform: translateY(-2px);
+        }
+		
+		
+		
+
+        .insurance-actions {
+            display: flex;
+            justify-content: space-between; /* Align the elements to the left and right */
+            align-items: center;
+            padding: 20px;
+            background-color: #f4f4f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+
+        .insurance-actions h1 {
+            margin: 0;
+            font-size: 28px;
+            color: #2f276f;
+        }
     </style>
 	
 		
@@ -89,9 +127,9 @@
 
 
 	    <!-- Container for "Raise Ticket" title and "View All Raised Tickets" button below the header -->
-    <div class="ticket-actions">
+    <div class="insurance-actions">
         <h1>Insurance</h1>
-        <button class="insurance-all-button" onclick="location.href='/view_insurance/{{ asset_id }}'">
+        <button class="view-all-button" onclick="location.href='/view_insurance/{{ asset_id }}'">
             View All Insurances
         </button>
     </div>

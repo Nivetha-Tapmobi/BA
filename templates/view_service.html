@@ -5,15 +5,43 @@
     <title>View Service</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/service_styles.css') }}">
     <style>
-        /* Add some basic styling for the table and popup */
+        .header {
+            background-color: #2f276f;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .back-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .form-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
         .service-table {
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
+            background-color: white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
         .service-table th, .service-table td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 10px;
             text-align: left;
         }
         .service-table th {
@@ -28,18 +56,16 @@
             cursor: pointer;
             text-decoration: none;
             display: inline-block;
+            color: white;
         }
         .view-btn {
             background-color: #2f276f;
-            color: white;
         }
         .edit-btn {
             background-color: #4CAF50;
-            color: white;
         }
         .delete-btn {
             background-color: #ff4444;
-            color: white;
         }
         .overlay {
             display: none;
@@ -59,36 +85,107 @@
             transform: translate(-50%, -50%);
             background-color: white;
             padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             z-index: 1000;
-            max-width: 600px;
+            max-width: 700px;
             width: 90%;
+        }
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .popup-header h2 {
+            margin: 0;
+            color: #2f276f;
+            font-size: 24px;
         }
         .popup-content {
             display: flex;
             justify-content: space-between;
+            gap: 20px;
         }
         .popup-column {
             width: 48%;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .detail-item {
+            margin: 10px 0;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        .detail-item strong {
+            color: #2f276f;
+            display: block;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .detail-item span, .detail-item a {
+            color: #333;
+            word-break: break-word;
+        }
+        .detail-item a {
+            text-decoration: none;
+            color: #2f276f;
+        }
+        .detail-item a:hover {
+            text-decoration: underline;
+        }
+        .close-btn, .print-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
         }
         .close-btn {
             background-color: #ff4444;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            float: right;
+        }
+        .print-btn {
+            background-color: #4CAF50;
+            margin-left: 10px;
+        }
+        .search-container {
+            margin: 20px 0;
+        }
+        .search-container input {
+            padding: 8px;
+            width: 300px;
+            border: 1px solid #ddd;
             border-radius: 4px;
         }
-        .back-button {
+        .pagination {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .pagination button {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            background-color: #f4f4f4;
+            cursor: pointer;
+        }
+        .pagination button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .pagination button.active {
             background-color: #2f276f;
             color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+        }
+        .no-records {
+            text-align: center;
+            padding: 20px;
+            color: #721c24;
         }
     </style>
 </head>
@@ -99,7 +196,13 @@
     </div>
 
     <div class="form-container">
-        <table class="service-table">
+        <!-- Search Bar -->
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search by Service ID, Ticket ID, or Asset ID" onkeyup="filterAndPaginate()">
+        </div>
+
+        <!-- Service Table -->
+        <table class="service-table" id="serviceTable">
             <thead>
                 <tr>
                     <th>Service ID</th>
@@ -111,46 +214,20 @@
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody>
-                {% if service is mapping %}
-                    <!-- Single service record -->
-                    <tr data-service-id="{{ service.service_id }}">
-                        <td>{{ service.service_id }}</td>
-                        <td>{{ service.ticket_id }}</td>
-                        <td>{{ service.asset_id }}</td>
-                        <td>{{ service.work_done }}</td>
-                        <td>{{ service.next_service_date or 'N/A' }}</td>
-                        <td>{{ service.service_charge or 'N/A' }}</td>
-                        <td>
-                            <button class="action-btn view-btn" onclick="showPopup('{{ service.service_id }}')">View</button>
-                            <a href="{{ url_for('edit_service', service_id=service.service_id) }}" class="action-btn edit-btn">Edit</a>
-                            <form action="{{ url_for('delete_service', service_id=service.service_id) }}" method="POST" style="display:inline;">
-                                <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this service?');">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% else %}
-                    <!-- List of service records -->
-                    {% for s in service %}
-                        <tr data-service-id="{{ s.service_id }}">
-                            <td>{{ s.service_id }}</td>
-                            <td>{{ s.ticket_id }}</td>
-                            <td>{{ s.asset_id }}</td>
-                            <td>{{ s.work_done }}</td>
-                            <td>{{ s.next_service_date or 'N/A' }}</td>
-                            <td>{{ s.service_charge or 'N/A' }}</td>
-                            <td>
-                                <button class="action-btn view-btn" onclick="showPopup('{{ s.service_id }}')">View</button>
-                                <a href="{{ url_for('edit_service', service_id=s.service_id) }}" class="action-btn edit-btn">Edit</a>
-                                <form action="{{ url_for('delete_service', service_id=s.service_id) }}" method="POST" style="display:inline;">
-                                    <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this service?');">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                {% endif %}
+            <tbody id="serviceBody">
+                <!-- Table body will be populated dynamically -->
             </tbody>
         </table>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination">
+            <!-- Pagination buttons will be populated dynamically -->
+        </div>
+
+        <!-- No Records Message -->
+        <div class="no-records" id="noRecords" style="display: none;">
+            <p>No service records found.</p>
+        </div>
     </div>
 
     <!-- Popup Overlay -->
@@ -158,53 +235,189 @@
 
     <!-- Popup Window -->
     <div class="popup" id="popup">
-        <button class="close-btn" onclick="hidePopup()">Close</button>
-        <h2>Service Details</h2>
+        <div class="popup-header">
+            <h2>Service Details</h2>
+            <div>
+                <button class="print-btn" onclick="printModal()">Print</button>
+                <button class="close-btn" onclick="hidePopup()">Close</button>
+            </div>
+        </div>
         <div class="popup-content" id="popup-content">
             <!-- Popup content will be populated dynamically -->
         </div>
     </div>
 
     <script>
-        // Store the service data in a JavaScript variable
-        const servicesData = {{ service | tojson }};
+        const allServicesData = {{ service | tojson | safe }};
+        const itemsPerPage = 5; // Adjust as needed
+        let currentPage = 1;
 
-        function showPopup(serviceId) {
-            let service;
-            if (Array.isArray(servicesData)) {
-                service = servicesData.find(s => s.service_id === serviceId);
-            } else {
-                service = servicesData;
+        // Normalize service data to array
+        const servicesArray = Array.isArray(allServicesData) ? allServicesData : (allServicesData && Object.keys(allServicesData).length > 0 ? [allServicesData] : []);
+
+        // Filter and paginate services
+        function filterAndPaginate() {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+
+            let filteredServices = servicesArray.filter(s => {
+                return (
+                    s.service_id.toLowerCase().includes(searchQuery) ||
+                    s.ticket_id.toLowerCase().includes(searchQuery) ||
+                    s.asset_id.toLowerCase().includes(searchQuery)
+                );
+            });
+
+            const totalItems = filteredServices.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+            currentPage = Math.min(currentPage, totalPages);
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedServices = filteredServices.slice(startIndex, endIndex);
+
+            updateTable(paginatedServices);
+            updatePagination(totalPages);
+            toggleNoRecords(totalItems === 0);
+        }
+
+        // Update table with services
+        function updateTable(services) {
+            const tbody = document.getElementById('serviceBody');
+            tbody.innerHTML = '';
+
+            services.forEach(s => {
+                const row = `
+                    <tr data-service-id="${s.service_id}">
+                        <td>${s.service_id}</td>
+                        <td>${s.ticket_id}</td>
+                        <td>${s.asset_id}</td>
+                        <td>${s.work_done}</td>
+                        <td>${s.next_service_date || 'N/A'}</td>
+                        <td>${s.service_charge || 'N/A'}</td>
+                        <td>
+                            <button class="action-btn view-btn" onclick="showPopup('${s.service_id}')">View</button>
+                            <a href="{{ url_for('edit_service', service_id='') }}${s.service_id}" class="action-btn edit-btn">Edit</a>
+                            <form action="{{ url_for('delete_service', service_id='') }}${s.service_id}" method="POST" style="display:inline;">
+                                <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this service?');">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // Update pagination controls (always show, even for 1 page)
+        function updatePagination(totalPages) {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+
+            const prevButton = `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>`;
+            pagination.innerHTML += prevButton;
+
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, startPage + 4);
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = `<button onclick="changePage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
+                pagination.innerHTML += pageButton;
             }
 
+            const nextButton = `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>`;
+            pagination.innerHTML += nextButton;
+        }
+
+        // Change page and update display
+        function changePage(page) {
+            if (page < 1 || page > Math.ceil(servicesArray.length / itemsPerPage) && servicesArray.length > 0) return;
+            currentPage = page;
+            filterAndPaginate();
+        }
+
+        // Toggle no records message
+        function toggleNoRecords(show) {
+            document.getElementById('noRecords').style.display = show ? 'block' : 'none';
+            document.getElementById('serviceTable').style.display = show ? 'none' : 'table';
+        }
+
+        // Show popup with service details
+        function showPopup(serviceId) {
+            const service = servicesArray.find(s => s.service_id === serviceId);
             if (service) {
                 const content = `
                     <div class="popup-column">
-                        <p><strong>Service ID:</strong> ${service.service_id}</p>
-                        <p><strong>Ticket ID:</strong> ${service.ticket_id}</p>
-                        <p><strong>Asset ID:</strong> ${service.asset_id}</p>
-                        <p><strong>Service Case ID:</strong> ${service.service_case_id || 'N/A'}</p>
-                        <p><strong>Technician Name:</strong> ${service.technician_name}</p>
-                        <p><strong>Technician ID:</strong> ${service.technician_id || 'N/A'}</p>
-                        <p><strong>Warranty Type:</strong> ${service.warranty_type || 'N/A'}</p>
+                        <div class="detail-item">
+                            <strong>Service ID</strong>
+                            <span>${service.service_id}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Ticket ID</strong>
+                            <span>${service.ticket_id}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Asset ID</strong>
+                            <span>${service.asset_id}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Service Case ID</strong>
+                            <span>${service.service_case_id || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Technician Name</strong>
+                            <span>${service.technician_name}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Technician ID</strong>
+                            <span>${service.technician_id || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Warranty Type</strong>
+                            <span>${service.warranty_type || 'N/A'}</span>
+                        </div>
+						
+						 <div class="detail-item">
+                            <strong>Work Done</strong>
+                            <span>${service.work_done}</span>
+                        </div>
                     </div>
                     <div class="popup-column">
-                        <p><strong>Work Done:</strong> ${service.work_done}</p>
-                        <p><strong>Next Service Date:</strong> ${service.next_service_date || 'N/A'}</p>
-                        <p><strong>Service Charge:</strong> ${service.service_charge || 'N/A'}</p>
-                        <p><strong>Remarks:</strong> ${service.remarks || 'N/A'}</p>
-                        <p><strong>Service Bill Paths:</strong>
-                            ${
+
+                        <div class="detail-item">
+                            <strong>Next Service Date</strong>
+                            <span>${service.next_service_date || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Service Charge</strong>
+                            <span>${service.service_charge || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Remarks</strong>
+                            <span>${service.remarks || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Service Bill Paths</strong>
+                            <span>${
                                 service.service_bill_path ?
                                 service.service_bill_path.split(',').map(path => 
                                     `<a href="${path}" target="_blank">${path.split('/').pop()}</a><br>`
                                 ).join('') : 'N/A'
-                            }
-                        </p>
-                        <p><strong>Created By:</strong> ${service.created_by}</p>
-                        <p><strong>Created At:</strong> ${service.created_at}</p>
-                        <p><strong>Modified By:</strong> ${service.modified_by || 'N/A'}</p>
-                        <p><strong>Modified At:</strong> ${service.modified_at || 'N/A'}</p>
+                            }</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Created By</strong>
+                            <span>${service.created_by}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Created At</strong>
+                            <span>${service.created_at}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Modified By</strong>
+                            <span>${service.modified_by || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Modified At</strong>
+                            <span>${service.modified_at || 'N/A'}</span>
+                        </div>
                     </div>
                 `;
                 document.getElementById('popup-content').innerHTML = content;
@@ -213,11 +426,78 @@
             }
         }
 
+        // Hide popup
         function hidePopup() {
             document.getElementById('popup').style.display = 'none';
             document.getElementById('overlay').style.display = 'none';
             document.getElementById('popup-content').innerHTML = '';
         }
+
+        // Print modal function
+        function printModal() {
+            const modalContent = document.getElementById('popup-content');
+            if (!modalContent) return;
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Print Service Details</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            padding: 20px;
+                        }
+                        h2 {
+                            color: #2f276f;
+                            border-bottom: 2px solid #2f276f;
+                            padding-bottom: 10px;
+                        }
+                        .two-column-grid {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 20px;
+                            padding: 10px 0;
+                        }
+                        .detail-item {
+                            margin: 8px 0;
+                            padding: 8px;
+                            background-color: #f8f9fa;
+                        }
+                        .detail-item strong {
+                            color: #2f276f;
+                            display: block;
+                            margin-bottom: 4px;
+                        }
+                        .detail-item span {
+                            color: #333;
+                            word-break: break-word;
+                        }
+                        .no-print {
+                            display: none;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h2>Service Details</h2>
+                    ${modalContent.innerHTML}
+                </body>
+                </html>
+            `);
+
+            printWindow.document.querySelector('.close-btn')?.classList.add('no-print');
+            printWindow.document.querySelector('.print-btn')?.classList.add('no-print');
+
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            filterAndPaginate();
+        });
     </script>
 </body>
 </html>

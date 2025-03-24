@@ -85,28 +85,73 @@
             transform: translate(-50%, -50%);
             background-color: white;
             padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             z-index: 1000;
-            max-width: 600px;
+            max-width: 700px;
             width: 90%;
+        }
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .popup-header h2 {
+            margin: 0;
+            color: #2f276f;
+            font-size: 24px;
         }
         .popup-content {
             display: flex;
             justify-content: space-between;
+            gap: 20px;
         }
         .popup-column {
             width: 48%;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .detail-item {
+            margin: 10px 0;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        .detail-item strong {
+            color: #2f276f;
+            display: block;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .detail-item span, .detail-item a {
+            color: #333;
+            word-break: break-word;
+        }
+        .detail-item a {
+            text-decoration: none;
+            color: #2f276f;
+        }
+        .detail-item a:hover {
+            text-decoration: underline;
+        }
+        .close-btn, .print-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
         }
         .close-btn {
             background-color: #ff4444;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            float: right;
-            border-radius: 4px;
+        }
+        .print-btn {
+            background-color: #4CAF50;
+            margin-left: 10px;
         }
         .flash-message {
             padding: 10px;
@@ -126,6 +171,35 @@
             padding: 20px;
             color: #721c24;
         }
+        .search-container {
+            margin: 20px 0;
+        }
+        .search-container input {
+            padding: 8px;
+            width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .pagination {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .pagination button {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            background-color: #f4f4f4;
+            cursor: pointer;
+        }
+        .pagination button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .pagination button.active {
+            background-color: #2f276f;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -143,90 +217,41 @@
             {% endif %}
         {% endwith %}
 
-        {% if warranty is mapping and warranty|length > 0 %}
-            <!-- Single warranty record -->
-            <table class="service-table">
-                <thead>
-                    <tr>
-                        <th>Warranty Asset ID</th>
-                        <th>Asset ID</th>
-                        <th>Product Name</th>
-                        <th>Extended Warranty Start</th>
-                        <th>Extended Warranty End</th>
-                        <th>Warranty Provider Type</th>
-                        <th>Warranty Value</th>
-                        <th>ADP Protection</th>
-                        <th>Product Condition</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr data-warranty-id="{{ warranty.warranty_asset_id }}">
-                        <td>{{ warranty.warranty_asset_id }}</td>
-                        <td>{{ warranty.asset_id }}</td>
-                        <td>{{ warranty.product_name }}</td>
-                        <td>{{ warranty.extended_warranty_start }}</td>
-                        <td>{{ warranty.extended_warranty_end_date }}</td>
-                        <td>{{ warranty.warranty_provider_type }}</td>
-                        <td>{{ warranty.warranty_value or 'N/A' }}</td>
-                        <td>{{ warranty.adp_protection }}</td>
-                        <td>{{ warranty.product_condition }}</td>
-                        <td>
-                            <button class="action-btn view-btn" onclick="showPopup('{{ warranty.warranty_asset_id }}')">View</button>
-                            <a href="{{ url_for('edit_extended_warranty', warranty_asset_id=warranty.warranty_asset_id) }}" class="action-btn edit-btn">Edit</a>
-                            <form action="{{ url_for('delete_extended_warranty', warranty_asset_id=warranty.warranty_asset_id) }}" method="POST" style="display:inline;">
-                                <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to archive this extended warranty?');">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        {% elif warranty is iterable and warranty|length > 0 %}
-            <!-- List of warranty records -->
-            <table class="service-table">
-                <thead>
-                    <tr>
-                        <th>Warranty Asset ID</th>
-                        <th>Asset ID</th>
-                        <th>Product Name</th>
-                        <th>Extended Warranty Start</th>
-                        <th>Extended Warranty End</th>
-                        <th>Warranty Provider Type</th>
-                        <th>Warranty Value</th>
-                        <th>ADP Protection</th>
-                        <th>Product Condition</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for w in warranty %}
-                        <tr data-warranty-id="{{ w.warranty_asset_id }}">
-                            <td>{{ w.warranty_asset_id }}</td>
-                            <td>{{ w.asset_id }}</td>
-                            <td>{{ w.product_name }}</td>
-                            <td>{{ w.extended_warranty_start }}</td>
-                            <td>{{ w.extended_warranty_end_date }}</td>
-                            <td>{{ w.warranty_provider_type }}</td>
-                            <td>{{ w.warranty_value or 'N/A' }}</td>
-                            <td>{{ w.adp_protection }}</td>
-                            <td>{{ w.product_condition }}</td>
-                            <td>
-                                <button class="action-btn view-btn" onclick="showPopup('{{ w.warranty_asset_id }}')">View</button>
-                                <a href="{{ url_for('edit_extended_warranty', warranty_asset_id=w.warranty_asset_id) }}" class="action-btn edit-btn">Edit</a>
-                                <form action="{{ url_for('delete_extended_warranty', warranty_asset_id=w.warranty_asset_id) }}" method="POST" style="display:inline;">
-                                    <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to archive this extended warranty?');">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <!-- No records found -->
-            <div class="no-records">
-                <p>No extended warranty records found.</p>
-            </div>
-        {% endif %}
+        <!-- Search Bar -->
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search by Warranty Asset ID, Asset ID, or Product Name" onkeyup="filterAndPaginate()">
+        </div>
+
+        <!-- Warranty Table -->
+        <table class="service-table" id="warrantyTable">
+            <thead>
+                <tr>
+                    <th>Warranty Asset ID</th>
+                    <th>Asset ID</th>
+                    <th>Product Name</th>
+                    <th>Extended Warranty Start</th>
+                    <th>Extended Warranty End</th>
+                    <th>Warranty Provider Type</th>
+                    <th>Warranty Value</th>
+                    <th>ADP Protection</th>
+                    <th>Product Condition</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="warrantyBody">
+                <!-- Table body will be populated dynamically -->
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination">
+            <!-- Pagination buttons will be populated dynamically -->
+        </div>
+
+        <!-- No Records Message -->
+        <div class="no-records" id="noRecords" style="display: none;">
+            <p>No extended warranty records found.</p>
+        </div>
     </div>
 
     <!-- Popup Overlay -->
@@ -234,56 +259,206 @@
 
     <!-- Popup Window -->
     <div class="popup" id="popup">
-        <button class="close-btn" onclick="hidePopup()">Close</button>
-        <h2>Extended Warranty Details</h2>
+        <div class="popup-header">
+            <h2>Extended Warranty Details</h2>
+            <div>
+                <button class="print-btn" onclick="printModal()">Print</button>
+                <button class="close-btn" onclick="hidePopup()">Close</button>
+            </div>
+        </div>
         <div class="popup-content" id="popup-content">
             <!-- Popup content will be populated dynamically -->
         </div>
     </div>
 
     <script>
-        const warrantyData = {{ warranty | tojson }};
+        const allWarrantyData = {{ warranty | tojson | safe }};
+        const itemsPerPage = 5; // Adjust as needed
+        let currentPage = 1;
 
-        function showPopup(warrantyId) {
-            let w;
-            if (Array.isArray(warrantyData)) {
-                w = warrantyData.find(i => i.warranty_asset_id === warrantyId);
-            } else {
-                w = warrantyData;
+        // Normalize warranty data to array
+        const warrantyArray = Array.isArray(allWarrantyData) ? allWarrantyData : (allWarrantyData && Object.keys(allWarrantyData).length > 0 ? [allWarrantyData] : []);
+
+        // Filter and paginate warranties
+        function filterAndPaginate() {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+
+            let filteredWarranties = warrantyArray.filter(w => {
+                return (
+                    w.warranty_asset_id.toLowerCase().includes(searchQuery) ||
+                    w.asset_id.toLowerCase().includes(searchQuery) ||
+                    w.product_name.toLowerCase().includes(searchQuery)
+                );
+            });
+
+            const totalItems = filteredWarranties.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+            currentPage = Math.min(currentPage, totalPages);
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedWarranties = filteredWarranties.slice(startIndex, endIndex);
+
+            updateTable(paginatedWarranties);
+            updatePagination(totalPages);
+            toggleNoRecords(totalItems === 0);
+        }
+
+        // Update table with warranties
+        function updateTable(warranties) {
+            const tbody = document.getElementById('warrantyBody');
+            tbody.innerHTML = '';
+
+            warranties.forEach(w => {
+                const row = `
+                    <tr data-warranty-id="${w.warranty_asset_id}">
+                        <td>${w.warranty_asset_id}</td>
+                        <td>${w.asset_id}</td>
+                        <td>${w.product_name}</td>
+                        <td>${w.extended_warranty_start}</td>
+                        <td>${w.extended_warranty_end_date}</td>
+                        <td>${w.warranty_provider_type}</td>
+                        <td>${w.warranty_value || 'N/A'}</td>
+                        <td>${w.adp_protection}</td>
+                        <td>${w.product_condition}</td>
+                        <td>
+                            <button class="action-btn view-btn" onclick="showPopup('${w.warranty_asset_id}')">View</button>
+                            <a href="{{ url_for('edit_extended_warranty', warranty_asset_id='') }}${w.warranty_asset_id}" class="action-btn edit-btn">Edit</a>
+                            <form action="{{ url_for('delete_extended_warranty', warranty_asset_id='') }}${w.warranty_asset_id}" method="POST" style="display:inline;">
+                                <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to archive this extended warranty?');">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // Update pagination controls (always show, even for 1 page)
+        function updatePagination(totalPages) {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+
+            const prevButton = `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>`;
+            pagination.innerHTML += prevButton;
+
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, startPage + 4);
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = `<button onclick="changePage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
+                pagination.innerHTML += pageButton;
             }
 
+            const nextButton = `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>`;
+            pagination.innerHTML += nextButton;
+        }
+
+        // Change page and update display
+        function changePage(page) {
+            if (page < 1 || page > Math.ceil(warrantyArray.length / itemsPerPage) && warrantyArray.length > 0) return;
+            currentPage = page;
+            filterAndPaginate();
+        }
+
+        // Toggle no records message
+        function toggleNoRecords(show) {
+            document.getElementById('noRecords').style.display = show ? 'block' : 'none';
+            document.getElementById('warrantyTable').style.display = show ? 'none' : 'table';
+        }
+
+        // Show popup with warranty details
+        function showPopup(warrantyId) {
+            const w = warrantyArray.find(i => i.warranty_asset_id === warrantyId);
             if (w) {
                 const content = `
                     <div class="popup-column">
-                        <p><strong>Warranty Asset ID:</strong> ${w.warranty_asset_id}</p>
-                        <p><strong>Asset ID:</strong> ${w.asset_id}</p>
-                        <p><strong>Product Name:</strong> ${w.product_name}</p>
-                        <p><strong>Extended Warranty Start:</strong> ${w.extended_warranty_start}</p>
-                        <p><strong>Extended Warranty Period:</strong> ${w.extended_warranty_period}</p>
-                        <p><strong>Extended Warranty End:</strong> ${w.extended_warranty_end_date}</p>
-                        <p><strong>Warranty Provider Type:</strong> ${w.warranty_provider_type}</p>
-                        <p><strong>Warranty Provider Name:</strong> ${w.warranty_provider_name || 'N/A'}</p>
-                        <p><strong>Warranty Provider Phone:</strong> ${w.warranty_provider_ph_no || 'N/A'}</p>
-                        <p><strong>Warranty Provider Location:</strong> ${w.warranty_provider_location || 'N/A'}</p>
+                        <div class="detail-item">
+                            <strong>Warranty Asset ID</strong>
+                            <span>${w.warranty_asset_id}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Asset ID</strong>
+                            <span>${w.asset_id}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Product Name</strong>
+                            <span>${w.product_name}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Extended Warranty Start</strong>
+                            <span>${w.extended_warranty_start}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Extended Warranty Period</strong>
+                            <span>${w.extended_warranty_period}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Extended Warranty End</strong>
+                            <span>${w.extended_warranty_end_date}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Warranty Provider Type</strong>
+                            <span>${w.warranty_provider_type}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Warranty Provider Name</strong>
+                            <span>${w.warranty_provider_name || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Warranty Provider Phone</strong>
+                            <span>${w.warranty_provider_ph_no || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Warranty Provider Location</strong>
+                            <span>${w.warranty_provider_location || 'N/A'}</span>
+                        </div>
                     </div>
                     <div class="popup-column">
-                        <p><strong>Warranty Value:</strong> ${w.warranty_value || 'N/A'}</p>
-                        <p><strong>ADP Protection:</strong> ${w.adp_protection}</p>
-                        <p><strong>Extended Warranty Bills:</strong>
-                            ${
+                        <div class="detail-item">
+                            <strong>Warranty Value</strong>
+                            <span>${w.warranty_value || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>ADP Protection</strong>
+                            <span>${w.adp_protection}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Extended Warranty Bills</strong>
+                            <span>${
                                 w.extended_warranty_bill_path ?
                                 w.extended_warranty_bill_path.split(',').map(path => 
                                     `<a href="${path}" target="_blank">${path.split('/').pop()}</a><br>`
                                 ).join('') : 'N/A'
-                            }
-                        </p>
-                        <p><strong>Product Condition:</strong> ${w.product_condition}</p>
-                        <p><strong>Remarks:</strong> ${w.remarks || 'N/A'}</p>
-                        <p><strong>Created By:</strong> ${w.created_by}</p>
-                        <p><strong>Created At:</strong> ${w.created_at}</p>
-                        <p><strong>Modified By:</strong> ${w.modified_by || 'N/A'}</p>
-                        <p><strong>Modified At:</strong> ${w.modified_at || 'N/A'}</p>
-                        <p><strong>Archived:</strong> ${w.archieved}</p>
+                            }</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Product Condition</strong>
+                            <span>${w.product_condition}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Remarks</strong>
+                            <span>${w.remarks || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Created By</strong>
+                            <span>${w.created_by}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Created At</strong>
+                            <span>${w.created_at}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Modified By</strong>
+                            <span>${w.modified_by || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Modified At</strong>
+                            <span>${w.modified_at || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Archived</strong>
+                            <span>${w.archieved}</span>
+                        </div>
                     </div>
                 `;
                 document.getElementById('popup-content').innerHTML = content;
@@ -292,11 +467,78 @@
             }
         }
 
+        // Hide popup
         function hidePopup() {
             document.getElementById('popup').style.display = 'none';
             document.getElementById('overlay').style.display = 'none';
             document.getElementById('popup-content').innerHTML = '';
         }
+
+        // Print modal function
+        function printModal() {
+            const modalContent = document.getElementById('popup-content');
+            if (!modalContent) return;
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Print Extended Warranty Details</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            padding: 20px;
+                        }
+                        h2 {
+                            color: #2f276f;
+                            border-bottom: 2px solid #2f276f;
+                            padding-bottom: 10px;
+                        }
+                        .two-column-grid {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 20px;
+                            padding: 10px 0;
+                        }
+                        .detail-item {
+                            margin: 8px 0;
+                            padding: 8px;
+                            background-color: #f8f9fa;
+                        }
+                        .detail-item strong {
+                            color: #2f276f;
+                            display: block;
+                            margin-bottom: 4px;
+                        }
+                        .detail-item span {
+                            color: #333;
+                            word-break: break-word;
+                        }
+                        .no-print {
+                            display: none;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h2>Extended Warranty Details</h2>
+                    ${modalContent.innerHTML}
+                </body>
+                </html>
+            `);
+
+            printWindow.document.querySelector('.close-btn')?.classList.add('no-print');
+            printWindow.document.querySelector('.print-btn')?.classList.add('no-print');
+
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            filterAndPaginate();
+        });
     </script>
 </body>
 </html>

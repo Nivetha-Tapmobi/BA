@@ -12,6 +12,16 @@
             padding: 0;
         }
 
+        .header {
+            background-color: #2f276f;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
 
         .container {
             width: 95%;
@@ -141,10 +151,6 @@
         .action-menu .delete-btn {
             color: #dc3545;
         }
-		
-		
-
-		
     </style>
 
     <!-- DataTables CSS -->
@@ -158,23 +164,20 @@
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
     <script src="{{ url_for('static', filename='js/view_assets_details_popup.js') }}"></script>
     <script src="{{ url_for('static', filename='js/view_assets_print.js') }}"></script>
-	<script src="{{ url_for('static', filename='js/view_assets.js') }}"></script>
+
+    
 	
-	
-	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
-    <!-- Include Header JS -->
+	    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
     <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
+
 </head>
 <body>
-
-
-<!-- Include the header HTML -->
-    {% include 'header.html' %}
-    
+    {% include 'header.html' %}  
     <div class="content">
         {% block content %}{% endblock %}
     </div>
-
+	
+	
 
     <div class="container">
         <div class="button-container">
@@ -234,12 +237,11 @@
                         <div class="action-menu" id="action-menu-{{ asset.asset_id }}">
                             <button class="view-btn" onclick='viewDetails({{ asset|tojson|safe }})'>View Details</button>
                             <button class="edit-btn" onclick="editAsset('{{ asset.asset_id }}')">Edit</button>
-							<button class="adduser-btn" onclick="addUser('{{ asset.asset_id }}')">Add User</button>
-							<button class="raise-btn" onclick="raiseTicket('{{ asset.asset_id }}')">Raise Ticket</button>
-							<button class="exwarranty-btn" onclick="manageExtendedWarranty('{{ asset.asset_id }}')">EX Warranty</button>
-							<button class="insurance-btn" onclick="manageInsurance('{{ asset.asset_id }}')">Insurance</button>
-							<button class="delete-btn" data-table="it_assets" onclick="deleteAsset('{{ asset.asset_id }}', this)">Delete</button>
-
+                            <button class="adduser-btn" onclick="addUser('{{ asset.asset_id }}')">Add User</button>
+                            <button class="raise-btn" onclick="raiseTicket('{{ asset.asset_id }}')">Raise Ticket</button>
+                            <button class="exwarranty-btn" onclick="manageExtendedWarranty('{{ asset.asset_id }}')">EX Warranty</button>
+                            <button class="insurance-btn" onclick="manageInsurance('{{ asset.asset_id }}')">Insurance</button>
+                            <button class="delete-btn" data-table="it_assets" onclick="deleteAsset('{{ asset.asset_id }}', this)">Delete</button>
                         </div>
                     </td>
                 </tr>
@@ -321,38 +323,42 @@
             }
         });
 
+        function editAsset(assetId) {
+            // Add your edit logic here, e.g., redirect to edit page
+            window.location.href = `/edit_asset/${assetId}`;
+        }
 
-function editAsset(assetId) {
-	// Add your edit logic here, e.g., redirect to edit page
-	window.location.href = `/edit_asset/${assetId}`;
-}
-
+        function deleteAsset(assetId) {
+            if (confirm('Are you sure you want to delete this asset?')) {
+                // Add your delete logic here, e.g., AJAX call or redirect
+                window.location.href = `/delete_asset/${assetId}`;
+            }
+        }
 		
-function deleteAsset(assetId, button) {
-const tableName = button.getAttribute('data-table'); // Get table name from HTML attribute
-
-if (confirm('Are you sure you want to delete this asset?')) {
-	fetch(`/delete_asset/${assetId}`, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify({ table: tableName }) // Send table name in request body
-	})
-	.then(response => response.json())
-	.then(data => {
-		if (data.message) {
-			alert(data.message);
-			location.reload(); // Refresh the page or update the UI
-		} else {
-			alert('Error: ' + data.error);
+		
+		function addUser(assetId) {
+			// Add your edit logic here, e.g., redirect to edit page
+			//window.location.href = `/create_user_asset/${assetId}`;
+			window.location.href = `/view_user_details/${assetId}`;
 		}
-	})
-	.catch(error => console.error('Error:', error));
-}
-}
+
+
+		function raiseTicket(assetId) {
+			// Add your edit logic here, e.g., redirect to edit page
+			window.location.href = `/create_raise_ticket/${assetId}`;
+		}
+
+
+		// Function to manage insurance
+		function manageInsurance(assetId) {
+			window.location.href = `/create_insurance/${assetId}`;
+		}
+
+		// Function to manage extended warranty
+		function manageExtendedWarranty(assetId) {
+			 window.location.href = `/create_extended_warranty/${assetId}`;
+		}
 
     </script>
-	
 </body>
 </html>

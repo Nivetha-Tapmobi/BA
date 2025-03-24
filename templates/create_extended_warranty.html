@@ -75,6 +75,69 @@
         .provider-details {
             display: none;
         }
+		
+		.modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+            z-index: 1000;
+        }
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+		
+		        /* Styling for the "View All Raised Tickets" button */
+        .view-all-button {
+            background-color: #2f276f;
+            color: white;
+            padding: 10px 20px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center; /* Ensures that text is centered */
+            transition: background-color 0.3s ease, transform 0.1s;
+            display: inline-block; /* Keeps it on the same line as the title */
+        }
+
+        .view-all-button:hover {
+            background-color: #291e6c;
+            transform: translateY(-2px);
+        }
+		
+		
+		
+
+        .warranty-actions {
+            display: flex;
+            justify-content: space-between; /* Align the elements to the left and right */
+            align-items: center;
+            padding: 20px;
+            background-color: #f4f4f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+
+        .warranty-actions h1 {
+            margin: 0;
+            font-size: 28px;
+            color: #2f276f;
+        }
+		
+		
     </style>
 	
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
@@ -91,7 +154,7 @@
 	
 	
 	    <!-- Container for "Raise Ticket" title and "View All Raised Tickets" button below the header -->
-    <div class="ticket-actions">
+    <div class="warranty-actions">
         <h1>Extended Warranty</h1>
         <button class="view-all-button" onclick="location.href='/view_extended_warranty/{{ asset_id }}'">
             View All EXtended  Warranties
@@ -177,10 +240,17 @@
                 <input type="file" id="extended_warranty_bill" name="extended_warranty_bill" multiple accept=".png,.jpg,.jpeg,.pdf">
             </div>
 
-            <div class="form-group">
-                <label for="product_condition">Product Condition:</label>
-                <input type="text" id="product_condition" name="product_condition" required>
-            </div>
+<div class="form-group">
+        <label for="product_condition">Product Condition</label>
+        <select id="product_condition" name="product_condition" class="dropdown-with-add" onchange="handleSelection(this)">
+            <option value="">--select an option--</option>
+            {% for product_condition in product_conditions %}
+                <option value="{{ product_condition }}">{{ product_condition }}</option>
+            {% endfor %}
+            <option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
+        </select>
+    </div>
+					
 
             <div class="form-group">
                 <label for="remarks">Remarks:</label>
@@ -190,6 +260,15 @@
             <button type="submit">Create Extended Warranty</button>
         </form>
     </div>
+	
+	<!-- Modal for adding new option -->
+    <div id="modal" class="modal">
+        <label for="new_option_input">New Option:</label>
+        <input type="text" id="new_option_input" data-target-select="product_condition">
+        <button id="add_option_btn">Add</button>
+        <button onclick="closeModal()">Cancel</button>
+    </div>
+    <div id="modal-backdrop" class="modal-backdrop" onclick="closeModal()"></div>
 
     <script>
         const purchaseDate = new Date('{{ purchase_date }}');
@@ -279,6 +358,76 @@
                 providerPhNoInput.removeAttribute('required');
                 providerLocationInput.removeAttribute('required');
             }
+        });
+    </script>
+	<script>
+        // Ensure script runs after DOM is loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            // Handle dropdown selection
+            window.handleSelection = function (select) {
+                if (select.value === 'add_new') {
+                    const modal = document.getElementById('modal');
+                    const backdrop = document.getElementById('modal-backdrop');
+                    if (modal && backdrop) {
+                        modal.style.display = 'block';
+                        backdrop.style.display = 'block';
+                    } else {
+                        console.error('Modal or backdrop not found');
+                    }
+                }
+            };
+
+            // Add new option
+            const addButton = document.getElementById('add_option_btn');
+            if (addButton) {
+                addButton.addEventListener('click', function () {
+                    const newOptionInput = document.getElementById('new_option_input');
+                    const targetSelectId = newOptionInput ? newOptionInput.dataset.targetSelect : null;
+                    const targetSelect = document.getElementById(targetSelectId);
+
+                    if (!newOptionInput || newOptionInput.value.trim() === '' || !targetSelect) {
+                        alert('Please enter a valid option and ensure the target select exists.');
+                        return;
+                    }
+
+                    const newOption = newOptionInput.value.trim();
+
+                    fetch('/add_new_option', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ type: targetSelectId, newValue: newOption })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message) {
+                            const newOptionElement = document.createElement('option');
+                            newOptionElement.value = newOption;
+                            newOptionElement.text = newOption;
+                            targetSelect.insertBefore(newOptionElement, targetSelect.lastElementChild); // Insert before "+ Add New Option"
+                            targetSelect.value = newOption;
+                            closeModal();
+                            alert(data.message);
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                });
+            } else {
+                console.error('Add option button not found');
+            }
+
+            // Close modal function
+            window.closeModal = function () {
+                const modal = document.getElementById('modal');
+                const backdrop = document.getElementById('modal-backdrop');
+                if (modal && backdrop) {
+                    modal.style.display = 'none';
+                    backdrop.style.display = 'none';
+                    document.getElementById('new_option_input').value = '';
+                    document.getElementById('product_condition').value = ''; // Reset dropdown
+                }
+            };
         });
     </script>
 </body>

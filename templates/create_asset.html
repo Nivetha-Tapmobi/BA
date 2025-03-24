@@ -305,7 +305,7 @@
 					<div class="form-column">
                     <div class="form-group">
                         <label for="under_audit">Under Audit:</label>
-                        <select id="under_audit" name="insurance">
+                        <select id="under_audit" name="under_audit">
                             <option value="">--select an option--</option>
                             <option value="Yes" {% if form_state.under_audit|first == 'Yes' %}selected{% endif %}>Yes</option>
                             <option value="No" {% if form_state.under_audit|first == 'No' %}selected{% endif %}>No</option>
@@ -321,38 +321,40 @@
                         </select>
                     </div>
                             
-                    <div id="recurring-alert-section" style="display: {% if form_state.has_amc|first == 'Yes' %}block{% else %}none{% endif %};">
-                        <label for="recurring_alert_for_amc">Recurring Alert for AMC:</label>
-                        <div id="recurring-alert-container">
-                            {% if form_state['recurring_alert_key[]'] %}
-                                {% for key, value, unit in zip(form_state['recurring_alert_key[]'], form_state['recurring_alert_value[]'], form_state['recurring_alert_unit[]']) %}
-                                    <div class="recurring-alert-row">
-                                        <input type="text" name="recurring_alert_key[]" value="{{ key|default('') }}" placeholder="Event Type">
-                                        <input type="number" name="recurring_alert_value[]" value="{{ value|default('') }}" placeholder="Every X" min="1">
-                                        <select name="recurring_alert_unit[]">
-                                            <option value="Days" {% if unit == 'Days' %}selected{% endif %}>Days</option>
-                                            <option value="Weeks" {% if unit == 'Weeks' %}selected{% endif %}>Weeks</option>
-                                            <option value="Months" {% if unit == 'Months' %}selected{% endif %}>Months</option>
-                                            <option value="Years" {% if unit == 'Years' %}selected{% endif %}>Years</option>
-                                        </select>
-                                        <button type="button" class="add-field">+</button>
-                                    </div>
-                                {% endfor %}
-                            {% else %}
-                                <div class="recurring-alert-row">
-                                    <input type="text" name="recurring_alert_key[]" placeholder="Event Type">
-                                    <input type="number" name="recurring_alert_value[]" placeholder="Every X" min="1">
-                                    <select name="recurring_alert_unit[]">
-                                        <option value="Days">Days</option>
-                                        <option value="Weeks">Weeks</option>
-                                        <option value="Months">Months</option>
-                                        <option value="Years">Years</option>
-                                    </select>
-                                    <button type="button" class="add-field">+</button>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
+<div id="recurring-alert-section" style="display: {% if form_state.has_amc|first == 'Yes' %}block{% else %}none{% endif %};">
+    <label for="recurring_alert_for_amc">Recurring Alert for AMC:</label>
+    <div id="recurring-alert-container">
+        {% if form_state['recurring_alert_key[]'] %}
+            {% for key, value, unit in zip(form_state['recurring_alert_key[]'], form_state['recurring_alert_value[]'], form_state['recurring_alert_unit[]']) %}
+                <div class="recurring-alert-row">
+                    <input type="text" name="recurring_alert_key[]" value="{{ key|default('') }}" placeholder="Event Type">
+                    <input type="number" name="recurring_alert_value[]" value="{{ value|default('') }}" placeholder="Every X" min="1">
+                    <select name="recurring_alert_unit[]">
+                        <option value="Days" {% if unit == 'Days' %}selected{% endif %}>Days</option>
+                        <option value="Weeks" {% if unit == 'Weeks' %}selected{% endif %}>Weeks</option>
+                        <option value="Months" {% if unit == 'Months' %}selected{% endif %}>Months</option>
+                        <option value="Years" {% if unit == 'Years' %}selected{% endif %}>Years</option>
+                    </select>
+                    <button type="button" class="add-field">+</button>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="recurring-alert-row">
+                <input type="text" name="recurring_alert_key[]" placeholder="Event Type">
+                <input type="number" name="recurring_alert_value[]" placeholder="Every X" min="1">
+                <select name="recurring_alert_unit[]">
+                    <option value="Days">Days</option>
+                    <option value="Weeks">Weeks</option>
+                    <option value="Months">Months</option>
+                    <option value="Years">Years</option>
+                </select>
+                <button type="button" class="add-field">+</button>
+            </div>
+        {% endif %}
+    </div>
+</div>
+					
+					
                 </div>
 
                 <div class="form-group">

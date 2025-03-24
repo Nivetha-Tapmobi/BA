@@ -182,7 +182,8 @@ def create_tables():
                     confirmation_status VARCHAR(255),
                     token VARCHAR(255),
                     token_expiration DATETIME,
-                    archieved VARCHAR(255) 
+                    archieved VARCHAR(255),
+                    overall_archieved VARCHAR(255) 
                 )
             """)
 
@@ -225,7 +226,8 @@ def create_tables():
                 modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 remarks TEXT,
                 archieved VARCHAR(255),
-                service_bill_path VARCHAR(255)
+                service_bill_path VARCHAR(255),
+                overall_archieved VARCHAR(255) 
             )
 
             """)
@@ -271,7 +273,8 @@ def create_tables():
                     modified_by VARCHAR(255), 
                     modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                     remarks TEXT,
-                    archieved VARCHAR(255)
+                    archieved VARCHAR(255),
+                    overall_archieved VARCHAR(255) 
                 )
             """)
 
@@ -294,7 +297,8 @@ def create_tables():
                     replacement_asset_id VARCHAR(255),
                     replacement_reason VARCHAR(255),
                     remarks TEXT,
-                    archieved VARCHAR(255)
+                    archieved VARCHAR(255),
+                    overall_archieved VARCHAR(255) 
                 )
             """)
 
@@ -315,7 +319,8 @@ def create_tables():
                     modified_by VARCHAR(255), 
                     modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                     remarks TEXT,
-                    archieved VARCHAR(255)
+                    archieved VARCHAR(255),
+                    overall_archieved VARCHAR(255) 
                 )
             """)
             
@@ -556,6 +561,20 @@ def display_drop_down(page):
             "technicians": technicians  # List of dictionaries with 'technician_id' & 'technician_name'
         }
 
+    elif page == 'Create_Extended_Warranty':
+        cursor.execute("""
+            SELECT product_condition FROM dropdown_attributes
+        """)
+
+
+        # product_conditions = [row[0] for row in cursor.fetchall() if row[0] is not None]
+        product_conditions = [row for row in cursor.fetchall() if row is not None]
+
+        result = {
+            "product_conditions": product_conditions  # List of dictionaries with 'technician_id' & 'technician_name'
+        }
+    
+
     # Close the cursor & connection AFTER fetching the data
     cursor.close()
     conn.close()
@@ -593,6 +612,8 @@ def create_asset():
                 return redirect(url_for('create_asset'))
             
             cursor = conn.cursor()
+
+            print(request.form)
             
             created_by = 't1'
             created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -603,6 +624,7 @@ def create_asset():
             make = request.form['make']
             model = request.form['model']
             part_no = request.form['part_no']
+
             purchase_date = request.form['purchase_date']
             vendor_name = request.form['vendor_name']
             vendor_id = request.form.get('vendor_id')  # Get from hidden input, not hardcoded
@@ -610,6 +632,7 @@ def create_asset():
             asset_type = request.form['asset_type']
             purchase_value = request.form['purchase_value']
             location = request.form['location']
+            under_audit = request.form['under_audit']
 
             # Validate vendor_id
             if not vendor_id:
@@ -686,7 +709,7 @@ def create_asset():
             recurring_alert_units = request.form.getlist('recurring_alert_unit[]')
             recurring_alert_for_amc = str(list(zip(recurring_alert_keys, recurring_alert_values, recurring_alert_units)))
 
-            under_audit = request.form.get('under_audit')
+           
 
             query = """
                 INSERT INTO it_assets (
@@ -949,7 +972,7 @@ def view_assets():
                modified_at, has_user_details, asset_category, archieved,
                has_amc, recurring_alert_for_amc
         FROM it_assets 
-        WHERE archieved != 'yes' OR archieved IS NULL
+        WHERE archieved != 'yes' OR archieved IS NULL 
     """
     cursor.execute(query)
     all_assets = cursor.fetchall()
@@ -965,24 +988,117 @@ def view_assets():
 
     return render_template('view_assets.html', all_assets=assets_list, today=today)
 
+
 @app.route('/delete_asset/<string:id>', methods=['POST'])
 def delete_asset(id):
     data = request.get_json()  # Get JSON data from the request body
     table_name = data.get('table')  # Extract table name from request body
 
-    if table_name == 'it_assets':
-        conn = get_db_connection()
-        cursor = conn.cursor()
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
-        # Update the `archived` column to 'yes' instead of deleting
-        cursor.execute("UPDATE it_assets SET archieved = 'yes' WHERE asset_id = %s", (id,))
-        conn.commit()
+    try:
+        if table_name == 'it_assets':
+            # Update the `archieved` column in `it_assets`
+            cursor.execute("UPDATE it_assets SET archieved = 'yes' WHERE asset_id = %s", (id,))
+            
+            # Update `overall_archieved` column in related tables
+            related_tables = [
+                'assets_users',
+                'raised_tickets',
+                'service_details',
+                'insurance_details',
+                'extended_warranty_info'
+            ]
+            
+            for table in related_tables:
+                cursor.execute(f"UPDATE {table} SET overall_archieved = 'Yes' WHERE asset_id = %s", (id,))
 
+            conn.commit()
+            return jsonify({"message": "Asset deleted successfully and related records archived"}), 200
+        else:
+            return jsonify({"error": "Invalid table name"}), 400
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
         cursor.close()
         conn.close()
-        return jsonify({"message": "Asset Deleted successfully"}), 200
-    else:
-        return jsonify({"error": "Invalid table name"}), 400
+
+
+@app.route('/get_asset_details/<asset_id>', methods=['GET'])
+def get_asset_details(asset_id):
+    print('get')
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        # Fetch asset details
+        cursor.execute("""
+            SELECT asset_id, product_type, product_name, serial_no, make, model, part_no, 
+                   description, purchase_date, vendor_name, vendor_id, company_name, 
+                   asset_type, purchase_value, product_condition, adp_production, insurance, 
+                   warranty_exists, warranty_start, warranty_period, warranty_end, 
+                   extended_warranty_exists, extended_warranty_period, extended_warranty_end, 
+                   has_amc, image_path, purchase_bill_path, created_by, created_at, 
+                   modified_by, modified_at, remarks, product_age, asset_category, 
+                   recurring_alert_for_amc, has_user_details, archieved
+            FROM it_assets WHERE asset_id = %s AND archieved = 'No'
+        """, (asset_id,))
+        asset = cursor.fetchone()
+
+        # Fetch asset users
+        cursor.execute("""
+            SELECT assignment_code, assigned_user, employee_code, effective_date, end_date 
+            FROM assets_users WHERE asset_id = %s AND archieved = 'No'
+        """, (asset_id,))
+        asset_users = cursor.fetchall()
+
+        # Fetch service details
+        cursor.execute("""
+            SELECT service_id, warranty_type, ticket_id, work_done, next_service_date, service_charge 
+            FROM service_details WHERE asset_id = %s AND archieved = 'No'
+        """, (asset_id,))
+        service_details = cursor.fetchall()
+
+        # Fetch raised tickets
+        cursor.execute("""
+            SELECT ticket_id, problem_description, ticket_status 
+            FROM raised_tickets WHERE asset_id = %s AND archieved = 'No'
+        """, (asset_id,))
+        raised_tickets = cursor.fetchall()
+
+        # Fetch extended warranty info
+        cursor.execute("""
+            SELECT warranty_asset_id, extended_warranty_start, extended_warranty_period, warranty_value 
+            FROM extended_warranty_info WHERE asset_id = %s AND archieved = 'No'
+        """, (asset_id,))
+        extended_warranty = cursor.fetchall()
+
+        # Fetch insurance details
+        cursor.execute("""
+            SELECT policy_number, insurance_value, insurance_start, insurance_period, insurance_end 
+            FROM insurance_details WHERE asset_id = %s AND archieved = 'No'
+        """, (asset_id,))
+        insurance_details = cursor.fetchall()
+
+        if not asset:
+            return jsonify({'error': 'Asset not found'}), 404
+
+        return jsonify({
+            'asset': asset,
+            'asset_users': asset_users,
+            'service_details': service_details,
+            'raised_tickets': raised_tickets,
+            'extended_warranty': extended_warranty,
+            'insurance_details': insurance_details
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
 
 # Function to fetch purchase_date for an asset_id
 def get_purchase_date(asset_id):
@@ -1085,9 +1201,11 @@ def create_user_asset(asset_id):
 
         # Insert into assets_users table
         cursor.execute("""
-            INSERT INTO assets_users (created_by, created_at, assignment_code, asset_id, assigned_user, effective_date, remarks, email, archieved, employee_code)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (created_by, created_at, assignment_code, asset_id, assigned_user, effective_date, remarks, email, archieved, employee_code))
+            INSERT INTO assets_users (created_by, created_at, assignment_code, asset_id, assigned_user, 
+                       effective_date, remarks, email, archieved, employee_code, overall_archieved)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (created_by, created_at, assignment_code, asset_id, assigned_user, effective_date, remarks, 
+              email, archieved, employee_code, 'No'))
         
 
         cursor.execute("""
@@ -1404,6 +1522,8 @@ def create_raise_ticket(asset_id):
                            serial_no=asset['serial_no'], 
                            user_name=user_name)
 
+
+# Route to view raised tickets
 @app.route('/view_raised_tickets', methods=['GET'])
 @app.route('/view_raised_tickets/<asset_id>', methods=['GET'])
 def view_raised_tickets(asset_id=None):
@@ -1411,25 +1531,56 @@ def view_raised_tickets(asset_id=None):
     cursor = conn.cursor(dictionary=True)
 
     if asset_id:
-        # Fetch tickets for the specific asset
+        # Fetch tickets for the specific asset, excluding archived
         cursor.execute("""
             SELECT created_by, ticket_id, raised_by, problem_description, 
-                   ticket_status, ignore_reason
+                   ticket_status, ignore_reason, asset_id
             FROM raised_tickets 
-            WHERE asset_id = %s
+            WHERE asset_id = %s AND archieved = 'No'
         """, (asset_id,))
     else:
-        # Fetch all tickets when no asset_id is provided
+        # Fetch all tickets when no asset_id is provided, excluding archived
         cursor.execute("""
             SELECT created_by, ticket_id, raised_by, problem_description, 
                    ticket_status, ignore_reason, asset_id
             FROM raised_tickets
+            WHERE archieved = 'No'
         """)
 
     tickets = cursor.fetchall()
     cursor.close()
     conn.close()
-    return render_template('view_raised_tickets.html', tickets=tickets, asset_id=asset_id)
+    return render_template('view_raised_tickets.html', 
+                         tickets=tickets, 
+                         asset_id=asset_id,
+                         ticket_is_processed=ticket_is_processed)
+
+# @app.route('/view_raised_tickets', methods=['GET'])
+# @app.route('/view_raised_tickets/<asset_id>', methods=['GET'])
+# def view_raised_tickets(asset_id=None):
+#     conn = get_db_connection()
+#     cursor = conn.cursor(dictionary=True)
+
+#     if asset_id:
+#         # Fetch tickets for the specific asset
+#         cursor.execute("""
+#             SELECT created_by, ticket_id, raised_by, problem_description, 
+#                    ticket_status, ignore_reason
+#             FROM raised_tickets 
+#             WHERE asset_id = %s
+#         """, (asset_id,))
+#     else:
+#         # Fetch all tickets when no asset_id is provided
+#         cursor.execute("""
+#             SELECT created_by, ticket_id, raised_by, problem_description, 
+#                    ticket_status, ignore_reason, asset_id
+#             FROM raised_tickets
+#         """)
+
+#     tickets = cursor.fetchall()
+#     cursor.close()
+#     conn.close()
+#     return render_template('view_raised_tickets.html', tickets=tickets, asset_id=asset_id)
 
 # Route to fetch ticket details for the view popup
 @app.route('/ticket_details/<ticket_id>', methods=['GET'])
@@ -1492,6 +1643,38 @@ def ignore_ticket(ticket_id):
     flash("Ticket ignored successfully!", "success")
     return redirect(url_for('view_raised_tickets', asset_id=asset_id))
 
+
+# Function to check if ticket is processed (ignored or in service)
+def ticket_is_processed(ticket_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    # Check if ticket has an ignore_reason in raised_tickets
+    cursor.execute("""
+        SELECT ignore_reason 
+        FROM raised_tickets 
+        WHERE ticket_id = %s
+    """, (ticket_id,))
+    ticket = cursor.fetchone()
+    
+    has_ignore_reason = ticket and ticket['ignore_reason'] is not None
+    
+    # Check if ticket exists in service_details
+    cursor.execute("""
+        SELECT ticket_id 
+        FROM service_details 
+        WHERE ticket_id = %s
+    """, (ticket_id,))
+    service = cursor.fetchone()
+    
+    has_service = service is not None
+    
+    cursor.close()
+    conn.close()
+    
+    # Return True if either condition is met
+    return has_ignore_reason or has_service
+
 @app.route('/delete_ticket/<ticket_id>', methods=['POST'])
 def delete_ticket(ticket_id):
     conn = get_db_connection()
@@ -1534,10 +1717,20 @@ def fetch_unassigned_assets():
     """)
     unassigned_assets = cursor.fetchall()
 
+    # Fetch distinct product types for the filter
+    cursor.execute("""
+        SELECT DISTINCT product_type 
+        FROM it_assets 
+        WHERE has_user_details = 0
+    """)
+    product_types = [row['product_type'] for row in cursor.fetchall()]
+
+    print('product_types', product_types)
+
     cursor.close()
     conn.close()
 
-    return render_template('create_replacement.html', assets=unassigned_assets)
+    return render_template('create_replacement.html', assets=unassigned_assets, product_types=product_types)
 
 
 @app.route('/create_service/<ticket_id>/<asset_id>', methods=['GET', 'POST'])
@@ -1580,7 +1773,11 @@ def create_service(ticket_id, asset_id=None):
         service_charge = request.form['service_charge'] or None
         remarks = request.form.get('remarks', '')
         service_case_id = request.form.get('service_case_id', None)
-        warranty_type = request.form['warranty_type']  # New field
+
+
+        # warranty_type = request.form['warranty_type']  # New field
+        warranty_type = in_warranty_out_warranty(asset_id)
+
 
         # Handle multiple file uploads
         service_bill_paths = []
@@ -1612,10 +1809,10 @@ def create_service(ticket_id, asset_id=None):
         cursor.execute("""
             INSERT INTO service_details (service_id, ticket_id, asset_id, service_case_id, technician_name, technician_id, 
                                  work_done, next_service_date, service_charge, remarks, service_bill_path, 
-                                 created_by, created_at, warranty_type)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                 created_by, created_at, warranty_type, archieved, overall_archieved)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (service_id, ticket_id, asset_id, service_case_id, technician_name, technician_id, work_done, 
-              next_service_date, service_charge, remarks, service_bill_path, created_by, created_at, warranty_type))
+              next_service_date, service_charge, remarks, service_bill_path, created_by, created_at, warranty_type, 'No', 'No'))
         conn.commit()
 
         cursor.close()
@@ -1654,7 +1851,8 @@ def edit_service(service_id):
         service_charge = request.form['service_charge'] or None
         remarks = request.form.get('remarks', '')
         service_case_id = request.form.get('service_case_id', None)
-        warranty_type = request.form['warranty_type']  # New field
+        # warranty_type = request.form['warranty_type']  # New field
+        warranty_type = in_warranty_out_warranty(asset_id)
         modified_by = 'service'
         modified_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
@@ -1719,10 +1917,10 @@ def view_service(service_id=None):  # Added default value for clarity
     cursor = conn.cursor(dictionary=True)
 
     if service_id:
-        cursor.execute("SELECT * FROM service_details WHERE service_id = %s", (service_id,))
+        cursor.execute("SELECT * FROM service_details WHERE service_id = %s AND archieved = 'No'", (service_id,))
         service = cursor.fetchone()
     else:
-        cursor.execute("SELECT * FROM service_details")
+        cursor.execute("SELECT * FROM service_details WHERE archieved = 'No' and overall_archieved = 'No' ")
         service = cursor.fetchall()
         
     cursor.close()
@@ -1738,7 +1936,7 @@ def delete_service(service_id):
     # Update the 'archieved' column instead of deleting
     cursor.execute("""
         UPDATE service_details 
-        SET archieved = 'yes' 
+        SET archieved = 'Yes' 
         WHERE service_id = %s
     """, (service_id,))
     
@@ -1842,11 +2040,11 @@ def create_insurance(asset_id):
         cursor.execute("""
             INSERT INTO insurance_details 
             (insurance_id, asset_id, policy_number, insurance_value, insurance_start, 
-             insurance_period, insurance_end, insurance_bill_path, remarks, created_by, created_at, archieved)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+             insurance_period, insurance_end, insurance_bill_path, remarks, created_by, created_at, archieved, overall_archieved)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (insurance_id, asset_id, policy_number, insurance_value, insurance_start,
               f"{insurance_period_years} years, {insurance_period_months} months, {insurance_period_days} days",
-              insurance_end, insurance_bill_path, remarks, created_by, created_at, 'No'))
+              insurance_end, insurance_bill_path, remarks, created_by, created_at, 'No', 'No'))
         conn.commit()
 
         cursor.close()
@@ -1982,7 +2180,7 @@ def view_insurance(id=None):
                 ins['product_name'] = asset['product_name'] if asset else 'N/A'
     else:
         # Path 1: Fetch all non-archived records
-        cursor.execute("SELECT * FROM insurance_details WHERE archieved = 'No'")
+        cursor.execute("SELECT * FROM insurance_details WHERE archieved = 'No' and overall_archieved = 'No'")
         insurance = cursor.fetchall()
         # If no records are found, set insurance to an empty list
         if insurance is None:
@@ -2080,6 +2278,11 @@ def create_extended_warranty(asset_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
+
+    dropdown_data = display_drop_down('Create_Asset')
+    product_types, companies, asset_categories, asset_types,locations, product_conditions  = dropdown_data.values()
+
+
     if request.method == 'POST':
         extended_warranty_start = request.form['extended_warranty_start']
         extended_warranty_period_years = int(request.form['extended_warranty_period_years'] or 0)
@@ -2129,13 +2332,13 @@ def create_extended_warranty(asset_id):
             (warranty_asset_id, asset_id, extended_warranty_start, extended_warranty_period, 
              extended_warranty_end_date, warranty_provider_type, warranty_provider_name, 
              warranty_provider_ph_no, warranty_provider_location, warranty_value, adp_protection, 
-             extended_warranty_bill_path, product_condition, remarks, created_by, created_at, archieved)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+             extended_warranty_bill_path, product_condition, remarks, created_by, created_at, archieved, overall_archieved)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (warranty_asset_id, asset_id, extended_warranty_start,
               f"{extended_warranty_period_years} years, {extended_warranty_period_months} months, {extended_warranty_period_days} days",
               extended_warranty_end_date, warranty_provider_type, warranty_provider_name,
               warranty_provider_ph_no, warranty_provider_location, warranty_value, adp_protection,
-              extended_warranty_bill_path, product_condition, remarks, created_by, created_at, 'No'))
+              extended_warranty_bill_path, product_condition, remarks, created_by, created_at, 'No', 'No'))
         conn.commit()
 
         cursor.close()
@@ -2145,11 +2348,7 @@ def create_extended_warranty(asset_id):
 
     # GET request: Fetch asset info and latest extended warranty end date
     asset = fetch_it_assets_info(asset_id)
-    if not asset:
-        flash("Asset not found.", "danger")
-        cursor.close()
-        conn.close()
-        return redirect(url_for('some_default_route'))  # Replace with your default route
+
 
     purchase_date = asset['purchase_date']
     warranty_end = asset.get('warranty_end', None)  # Assuming warranty_end is a field in it_assets
@@ -2159,7 +2358,8 @@ def create_extended_warranty(asset_id):
     conn.close()
     return render_template('create_extended_warranty.html', asset_id=asset_id,
                           purchase_date=purchase_date, warranty_end=warranty_end,
-                          latest_extended_warranty_end=latest_extended_warranty_end)
+                          latest_extended_warranty_end=latest_extended_warranty_end,
+                          product_conditions=product_conditions)
 
 # Route to edit an existing extended warranty record
 @app.route('/edit_extended_warranty/<warranty_asset_id>', methods=['GET', 'POST'])
@@ -2283,7 +2483,7 @@ def view_extended_warranty(asset_id=None, warranty_asset_id=None):
                 w['product_name'] = asset['product_name'] if asset else 'N/A'
     else:
         # Path 1: Fetch all non-archived records
-        cursor.execute("SELECT * FROM extended_warranty_info WHERE archieved = 'No'")
+        cursor.execute("SELECT * FROM extended_warranty_info WHERE archieved = 'No'and overall_archieved = 'No'")
         warranty = cursor.fetchall()
         # If no records are found, set warranty to an empty list
         if warranty is None:
@@ -2589,7 +2789,7 @@ def check_asset_status():
     cursor.execute("""
         SELECT DISTINCT assigned_user, employee_code
         FROM assets_users
-        WHERE archieved = 'No' AND asset_id IN (
+        WHERE archieved = 'No' and overall_archieved = 'No' AND asset_id IN (
             SELECT asset_id FROM it_assets WHERE under_audit = 'Yes' AND archieved = 'No'
         )
     """)
@@ -2617,7 +2817,7 @@ def retrieve_asset_data(search_query='', product_type='', location='', page=1, p
     count_query = """
         SELECT COUNT(*) as total
         FROM it_assets
-        WHERE archieved = 'No'
+        WHERE archieved = 'No' and overall_archieved = 'No'
     """
     count_params = []
 
@@ -2625,7 +2825,7 @@ def retrieve_asset_data(search_query='', product_type='', location='', page=1, p
     query = """
         SELECT *
         FROM it_assets
-        WHERE archieved = 'No'
+        WHERE archieved = 'No' and overall_archieved = 'No'
     """
     params = []
 
@@ -2739,11 +2939,11 @@ def all_assets():
     )
 
     # Fetch unique product types for the filter dropdown
-    cursor.execute("SELECT DISTINCT product_type FROM it_assets WHERE archieved = 'No'")
+    cursor.execute("SELECT DISTINCT product_type FROM it_assets WHERE archieved = 'No'and overall_archieved = 'No'")
     product_types = [row['product_type'] for row in cursor.fetchall()]
 
     # Fetch unique locations for the filter dropdown
-    cursor.execute("SELECT DISTINCT location FROM it_assets WHERE archieved = 'No'")
+    cursor.execute("SELECT DISTINCT location FROM it_assets WHERE archieved = 'No'and overall_archieved = 'No'")
     locations = [row['location'] for row in cursor.fetchall()]
 
     cursor.close()
@@ -2759,7 +2959,6 @@ def all_assets():
         page=page,
         total_pages=total_pages
     )
-
 
 
 @app.route('/create_multiple_services', methods=['GET', 'POST'])

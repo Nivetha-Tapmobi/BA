@@ -211,33 +211,7 @@ button.back-button:hover {
 	text-align: center; /* Centers text in inputs */
 }
 
-.recurring-alert-row {
-	display: flex;
-	gap: 10px;
-	margin-bottom: 5px;
-}
 
-.recurring-alert-row input {
-	width: 120px;
-	text-align: center;
-}
-
-.recurring-alert-row select {
-	flex: 1;
-}
-
-.add-field, .remove-field {
-	padding: 5px 10px;
-	background-color: #28a745;
-	color: white;
-	border: none;
-	cursor: pointer;
-	font-size: 16px;
-}
-
-.remove-field {
-	background-color: #dc3545;
-}
 
 	
 /* Modal Styles */
@@ -284,4 +258,36 @@ button#add_option_btn {
 
 button#add_option_btn:hover {
     background-color: #0056b3;
+}
+
+.recurring-alert-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 5px;
+    align-items: center; /* Vertically align all items */
+}
+
+.recurring-alert-row input {
+    width: 120px; /* Fixed width for inputs */
+    text-align: center;
+}
+
+.recurring-alert-row select {
+    width: 100px; /* Fixed width instead of flex: 1 to prevent over-expansion */
+    /* OR use min-width if you want it flexible but controlled */
+    /* min-width: 100px; */
+    /* flex: 1; */ /* Remove or comment this out */
+}
+
+.add-field, .remove-field {
+    padding: 5px 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    min-width: 30px; /* Ensure button has a minimum width */
+    height: 34px; /* Match input/select height (8px padding + 1px border + 16px font) */
+    line-height: 16px; /* Center the + vertically */
+    box-sizing: border-box; /* Consistent sizing */
 }
