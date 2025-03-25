@@ -1,22 +1,15 @@
-<head>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
-    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
-</head>
-<body>
-    <div class="header">
-        <h1>IT Asset Tracker</h1>
-        <div class="menu" onclick="headertoggleMenu()">☰</div>
-        <div class="menu-dropdown" id="menuDropdown">
-            <button class="add-asset-btn" onclick="location.href='{{ url_for('create_asset') }}';">+ Add Asset</button>
-            <button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_raised_tickets') }}';">Raised Tickets</button>
-			<button class="details-button" onclick="location.href='{{ url_for('view_assets') }}';"> IT Assets</button>
-			<button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_service') }}';"> Services</button>
-			<button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_insurance') }}';">Insurance</button>
-			<button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_extended_warranty') }}';">EXW</button>
-			<button class="view-all-tickets-btn" onclick="location.href='{{ url_for('check_asset_status') }}';">Audit</button>
-			<button class="view-all-tickets-btn" onclick="location.href='{{ url_for('all_assets') }}';">M Services</button>
-			<button class="view-all-tickets-btn" onclick="location.href='{{ url_for('upcoming_alerts') }}';">Alerts</button>
-			
-        </div>
+<div class="header">
+    <h1>IT Asset Tracker</h1>
+    <div class="menu" onclick="headertoggleMenu()">☰</div>
+    <div class="menu-dropdown" id="menuDropdown">
+        <button class="add-asset-btn" onclick="location.href='{{ url_for('create_asset') }}';">+ Add Asset</button>
+        <button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_raised_tickets') }}';">Raised Tickets</button>
+        <button class="details-button" onclick="location.href='{{ url_for('view_assets') }}';">IT Assets</button>
+        <button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_service') }}';">Services</button>
+        <button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_insurance') }}';">Insurance</button>
+        <button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_extended_warranty') }}';">EXW</button>
+        <button class="view-all-tickets-btn" onclick="location.href='{{ url_for('check_asset_status') }}';">Audit</button>
+        <button class="view-all-tickets-btn" onclick="location.href='{{ url_for('all_assets') }}';">M Services</button>
+        <button class="view-all-tickets-btn" onclick="location.href='{{ url_for('upcoming_alerts') }}';">Alerts</button>
     </div>
-</body>
+</div>

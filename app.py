@@ -74,6 +74,14 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'docx'}
 
+
+# Email configuration
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+SMTP_USER = 'nivetha@tapmobi.in'  # Update this
+SMTP_PASSWORD = "Tapmobi@07"  # Update this
+to_mail ='nivetha@tapmobi.in'
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -214,7 +222,7 @@ def create_tables():
                 service_id VARCHAR(255) UNIQUE NOT NULL,                 
                 ticket_id VARCHAR(255) NOT NULL,
                 asset_id VARCHAR(255) NOT NULL,
-                reference_name VARCHAR(500) UNIQUE,
+                reference_name VARCHAR(500),
                 warranty_type VARCHAR(255) NOT NULL,
                 service_case_id VARCHAR(255),       
                 technician_name VARCHAR(255) NOT NULL,
@@ -458,9 +466,321 @@ def raise_ticket_send_email(to_email, raised_by, asset_id, ticket_id, problem_de
         server.login(SMTP_USER, SMTP_PASSWORD)
         server.send_message(msg)
 
+
+
+
+def send_verification_email(assignment_code, asset_id, assigned_user, email, to_email):
+    # Generate a unique token
+    token = str(uuid.uuid4())
+    expiration_time = datetime.utcnow() + timedelta(days=2)  # Token expires in 2 days
+
+    # Save token and expiration to the database
+    conn = get_db_connection()
+    if conn:
+        cursor = conn.cursor()
+        query = """
+            UPDATE assets_users 
+            SET token = %s, token_expiration = %s, confirmation_status = NULL 
+            WHERE assignment_code = %s
+        """
+        cursor.execute(query, (token, expiration_time, assignment_code))
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+    # Generate verification URLs
+    accept_url = url_for('confirm_user_asset', assignment_code=assignment_code, token=token, action='accept', _external=True)
+    reject_url = url_for('confirm_user_asset', assignment_code=assignment_code, token=token, action='reject', _external=True)
+
+    # HTML email template with night blue text and styled buttons
+    html_body = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                margin: 0;
+                padding: 20px;
+            }}
+            .container {{
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            }}
+            .header {{
+                background-color: #191970;
+                color: #ffffff;
+                padding: 10px;
+                text-align: center;
+                border-radius: 8px 8px 0 0;
+            }}
+            .content {{
+                padding: 20px;
+                color: #191970; /* Night blue text */
+            }}
+            .button {{
+                padding: 10px 20px;
+                text-decoration: none;
+                border-radius: 4px;
+                display: inline-block;
+                margin: 5px;
+            }}
+            .accept {{
+                background-color: #28a745; /* Green */
+                color: #ffffff;
+            }}
+            .reject {{
+                background-color: #dc3545; /* Red */
+                color: #ffffff;
+            }}
+            .footer {{
+                text-align: center;
+                font-size: 12px;
+                color: #666;
+                margin-top: 20px;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h2>Asset Assignment Verification</h2>
+            </div>
+            <div class="content">
+                <p>Dear {assigned_user},</p>
+                <p>You have been assigned a new asset. Please confirm your acceptance or rejection by clicking one of the buttons below:</p>
+                <p><strong>Asset ID:</strong> {asset_id}</p>
+                <p><strong>Assignment Code:</strong> {assignment_code}</p>
+                <p>
+                    <a href="{accept_url}" class="button accept">Accept Asset</a>
+                    <a href="{reject_url}" class="button reject">Reject Asset</a>
+                </p>
+                <p>This link will expire in 2 days. Please respond promptly.</p>
+            </div>
+            <div class="footer">
+                Regards,<br>Asset Management Team
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+    # Send the email
+    subject = "Asset Assignment Verification"
+    send_email_with_cc(to_email, subject, html_body, cc_email='nivetha@tapmobi.in')
+
+# Reusing your existing send_email_with_cc function
+def send_email_with_cc(to_email, subject, html_body, cc_email=None):
+    SMTP_SERVER = "smtp.gmail.com"
+    SMTP_PORT = 587
+    SMTP_USER = 'nivetha@tapmobi.in'  # Replace with your email
+    SMTP_PASSWORD = 'Tapmobi@07'  # Replace with your App Password
+
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = subject
+    msg['From'] = SMTP_USER
+    msg['To'] = to_email
+    if cc_email:
+        msg['Cc'] = cc_email
+
+    plain_body = "This email requires HTML support to view properly. Please enable HTML in your email client.\n\n"
+    for line in html_body.split('\n'):
+        if '<td>' in line and '</td>' in line:
+            parts = line.split('<td>')
+            if len(parts) > 2:
+                key = parts[1].replace('</td>', '').strip()
+                value = parts[2].replace('</td>', '').strip()
+                plain_body += f"{key}: {value}\n"
+
+    msg.attach(MIMEText(plain_body, 'plain'))
+    msg.attach(MIMEText(html_body, 'html'))
+
+    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+        server.starttls()
+        server.login(SMTP_USER, SMTP_PASSWORD)
+        server.send_message(msg)
+
+# Existing send_confirmation_email function (assumed to be present)
+def send_confirmation_email(action, entity_type, entity_id, details, to_email='nivetha@tapmobi.in', cc_email=None):
+    action_map = {
+        'create': 'Created',
+        'edit': 'Updated',
+        'ignore': 'Ignored'
+    }
+    action_text = action_map.get(action, action.capitalize())
+    entity_display = entity_type.replace('_', ' ').capitalize()
+    
+    html_body = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }}
+            .container {{ max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }}
+            .header {{ background-color: #191970; color: #ffffff; padding: 10px; text-align: center; border-radius: 8px 8px 0 0; }}
+            .content {{ padding: 20px; color: #191970; }}
+            table {{ width: 100%; border-collapse: collapse; margin-top: 10px; }}
+            th, td {{ padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }}
+            th {{ background-color: #f0f0f0; color: #191970; }}
+            .footer {{ text-align: center; font-size: 12px; color: #666; margin-top: 20px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h2>{entity_display} {action_text}</h2>
+            </div>
+            <div class="content">
+                <p>Dear {'User' if entity_type == 'user_asset' else 'Admin'},</p>
+                <p>The following {entity_display.lower()} has been {action_text.lower()}:</p>
+                <table>
+                    <tr><th>Field</th><th>Value</th></tr>
+                    <tr><td>{entity_display} ID</td><td>{entity_id}</td></tr>
+    """
+    for key, value in details.items():
+        html_body += f"<tr><td>{key.replace('_', ' ').capitalize()}</td><td>{value}</td></tr>"
+    html_body += """
+                </table>
+            </div>
+            <div class="footer">
+                Regards,<br>Asset Management Team
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    subject = f"{entity_display} {action_text} Confirmation"
+    send_email_with_cc(to_email, subject, html_body, cc_email)
+
+# New send_verification_email function using existing send_email_with_cc
+def send_verification_email(assignment_code, asset_id, assigned_user, to_email):
+    token = str(uuid.uuid4())
+    expiration_time = datetime.utcnow() + timedelta(days=2)
+
+    # Save token and expiration to the database
+    conn = get_db_connection()
+    if conn:
+        cursor = conn.cursor()
+        query = """
+            UPDATE assets_users 
+            SET token = %s, token_expiration = %s, confirmation_status = NULL 
+            WHERE assignment_code = %s
+        """
+        cursor.execute(query, (token, expiration_time, assignment_code))
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+    # Generate verification URLs
+    accept_url = url_for('confirm_user_asset', assignment_code=assignment_code, token=token, action='accept', _external=True)
+    reject_url = url_for('confirm_user_asset', assignment_code=assignment_code, token=token, action='reject', _external=True)
+
+    # HTML email template with styled buttons
+    html_body = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }}
+            .container {{ max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }}
+            .header {{ background-color: #191970; color: #ffffff; padding: 10px; text-align: center; border-radius: 8px 8px 0 0; }}
+            .content {{ padding: 20px; color: #191970; }}
+            .button {{ padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block; margin: 5px; }}
+            .accept {{ background-color: #28a745; color: #ffffff; }}
+            .reject {{ background-color: #dc3545; color: #ffffff; }}
+            .footer {{ text-align: center; font-size: 12px; color: #666; margin-top: 20px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h2>Asset Assignment Verification</h2>
+            </div>
+            <div class="content">
+                <p>Dear {assigned_user},</p>
+                <p>You have been assigned a new asset. Please confirm your acceptance or rejection:</p>
+                <p><strong>Asset ID:</strong> {asset_id}</p>
+                <p><strong>Assignment Code:</strong> {assignment_code}</p>
+                <p>
+                    <a href="{accept_url}" class="button accept">Accept Asset</a>
+                    <a href="{reject_url}" class="button reject">Reject Asset</a>
+                </p>
+                <p>This link will expire in 2 days.</p>
+            </div>
+            <div class="footer">
+                Regards,<br>Asset Management Team
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+    subject = "Asset Assignment Verification"
+    send_email_with_cc(to_email, subject, html_body, cc_email='nivetha@tapmobi.in')
+
+# New confirm_user_asset route
+@app.route('/confirm_user_asset/<assignment_code>/<token>/<action>', methods=['GET'])
+def confirm_user_asset(assignment_code, token, action):
+    conn = get_db_connection()
+    if not conn:
+        return render_template('response_message.html', message="Database connection failed.")
+
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("""
+        SELECT token, token_expiration, confirmation_status 
+        FROM assets_users 
+        WHERE assignment_code = %s
+    """, (assignment_code,))
+    result = cursor.fetchone()
+
+    if not result:
+        cursor.close()
+        conn.close()
+        return render_template('response_message.html', message="Invalid assignment code.")
+
+    stored_token = result['token']
+    token_expiration = result['token_expiration']
+    confirmation_status = result['confirmation_status']
+
+    if stored_token != token:
+        cursor.close()
+        conn.close()
+        return render_template('response_message.html', message="Invalid or incorrect token.")
+
+    current_time = datetime.utcnow()
+    if current_time > token_expiration:
+        cursor.close()
+        conn.close()
+        return render_template('response_message.html', message="This verification link has expired. Please contact IT support.")
+
+    if confirmation_status is not None:
+        cursor.close()
+        conn.close()
+        return render_template('response_message.html', message="This asset assignment has already been responded to.")
+
+    confirmation_status = '1' if action == 'accept' else '0'
+    cursor.execute("""
+        UPDATE assets_users 
+        SET confirmation_status = %s, token = NULL, token_expiration = NULL 
+        WHERE assignment_code = %s
+    """, (confirmation_status, assignment_code))
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+    return render_template('response_message.html', message="Thank you for your response. The asset assignment has been updated.")
+
+
 @app.route('/')
 def home():
-    return redirect(url_for('view_assets')) 
+    # return redirect(url_for('view_assets')) 
+    return redirect(url_for('it_dashboard')) 
 
 @app.route('/add_new_option', methods=['POST'])
 def add_new_option():
@@ -742,6 +1062,35 @@ def create_asset():
             if 'form_state' in session:
                 session.pop('form_state')
 
+            details = {
+                'asset_id': asset_id,
+                'product_type': product_type,
+                'product_name': product_name,
+                'serial_no': serial_no,
+                'make': make,
+                'model': model,
+                'purchase_date': purchase_date,
+                'vendor_name': vendor_name,
+                'vendor_id': vendor_id,
+                'company_name': company_name,
+                'asset_type': asset_type,
+                'purchase_value': purchase_value if purchase_value else 'Not Set',
+                'location': location,
+                'warranty_exists': warranty_exists,
+                'warranty_start': warranty_start if warranty_start else 'Not Set',
+                'warranty_period': f"{warranty_period_dict['years']} years, {warranty_period_dict['months']} months, {warranty_period_dict['days']} days",
+                'warranty_end': warranty_end if warranty_end else 'Not Set',
+                'extended_warranty_exists': extended_warranty_exists,
+                'extended_warranty_end': extended_warranty_end if extended_warranty_end else 'Not Set',
+                'image_path': asset_images_str,
+                'purchase_bill_path': purchase_bills_str,
+                'created_by': created_by,
+                'created_at': created_at,
+                'remarks': remarks if remarks else 'None'
+            }
+            send_confirmation_email('create', 'asset', asset_id, details)
+            send_confirmation_email('create', 'asset', asset_id, details)
+
             flash("Asset successfully created!", "success")
             return redirect(url_for('create_asset'))
 
@@ -893,6 +1242,35 @@ def edit_asset(asset_id):
 
             cursor.execute(update_query, values)
             conn.commit()
+
+            details = {
+                'asset_id': asset_id,
+                'product_type': product_type,
+                'product_name': product_name,
+                'serial_no': serial_no,
+                'make': make,
+                'model': model,
+                'purchase_date': purchase_date,
+                'vendor_name': vendor_name,
+                'vendor_id': vendor_id,
+                'company_name': company_name,
+                'asset_type': asset_type,
+                'purchase_value': purchase_value if purchase_value else 'Not Set',
+                'location': location,
+                'warranty_exists': warranty_exists,
+                'warranty_start': warranty_start if warranty_start else 'Not Set',
+                'warranty_period': f"{warranty_period_dict['years']} years, {warranty_period_dict['months']} months, {warranty_period_dict['days']} days",
+                'warranty_end': warranty_end if warranty_end else 'Not Set',
+                'extended_warranty_exists': extended_warranty_exists,
+                'extended_warranty_end': extended_warranty_end if extended_warranty_end else 'Not Set',
+                'image_path': asset_images_str,
+                'purchase_bill_path': purchase_bills_str,
+                'modified_by': "current_user",  # Replace with actual user tracking logic
+                'modified_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'remarks': remarks if remarks else 'None'
+            }
+            send_confirmation_email('edit', 'asset', asset_id, details)
+
             flash("Asset successfully updated!", "success")
             cursor.close()
             conn.close()
@@ -954,39 +1332,123 @@ def edit_asset(asset_id):
                            recurring_alert_list=recurring_alert_list,
                            form_state=form_state)
 
+# @app.route('/view_assets', methods=['GET'])
+# def view_assets():
+#     conn = get_db_connection()
+#     cursor = conn.cursor()
+    
+#     # Select all columns instead of just a few
+#     query = """
+#         SELECT id, created_by, created_at, asset_id, product_type, product_name, 
+#                serial_no, make, model, part_no, purchase_date, vendor_name, 
+#                vendor_id, company_name, asset_type, purchase_value, image_path,
+#                purchase_bill_path, warranty_checked, warranty_exists, 
+#                warranty_start, warranty_period, warranty_end, 
+#                extended_warranty_exists, extended_warranty_period, 
+#                extended_warranty_end, adp_production, insurance, description,
+#                remarks, product_age, product_condition, modified_by, 
+#                modified_at, has_user_details, asset_category, archieved,
+#                has_amc, recurring_alert_for_amc
+#         FROM it_assets 
+#         WHERE archieved != 'yes' OR archieved IS NULL 
+#     """
+#     cursor.execute(query)
+#     all_assets = cursor.fetchall()
+
+#     cursor.close()
+#     conn.close()
+
+#     # Convert the tuple results to a list of dictionaries for easier handling
+#     columns = [desc[0] for desc in cursor.description]
+#     assets_list = [dict(zip(columns, asset)) for asset in all_assets]
+
+#     today = date.today()
+
+#     return render_template('view_assets.html', all_assets=assets_list, today=today)
+
+
 @app.route('/view_assets', methods=['GET'])
 def view_assets():
     conn = get_db_connection()
     cursor = conn.cursor()
-    
-    # Select all columns instead of just a few
+
+    filter_type = request.args.get('filter')  # Get filter from query parameters (e.g., 'assigned', 'unassigned', 'unauthorized')
+
+
+        # Base query to fetch all assets and their latest user assignments
     query = """
-        SELECT id, created_by, created_at, asset_id, product_type, product_name, 
-               serial_no, make, model, part_no, purchase_date, vendor_name, 
-               vendor_id, company_name, asset_type, purchase_value, image_path,
-               purchase_bill_path, warranty_checked, warranty_exists, 
-               warranty_start, warranty_period, warranty_end, 
-               extended_warranty_exists, extended_warranty_period, 
-               extended_warranty_end, adp_production, insurance, description,
-               remarks, product_age, product_condition, modified_by, 
-               modified_at, has_user_details, asset_category, archieved,
-               has_amc, recurring_alert_for_amc
-        FROM it_assets 
-        WHERE archieved != 'yes' OR archieved IS NULL 
+        SELECT ia.id, ia.created_by, ia.created_at, ia.asset_id, ia.product_type, ia.product_name, 
+                ia.serial_no, ia.make, ia.model, ia.part_no, ia.purchase_date, ia.vendor_name, 
+                ia.vendor_id, ia.company_name, ia.asset_type, ia.purchase_value, ia.image_path,
+                ia.purchase_bill_path, ia.warranty_checked, ia.warranty_exists, 
+                ia.warranty_start, ia.warranty_period, ia.warranty_end, 
+                ia.extended_warranty_exists, ia.extended_warranty_period, 
+                ia.extended_warranty_end, ia.adp_production, ia.insurance, ia.description,
+                ia.remarks, ia.product_age, ia.product_condition, ia.modified_by, 
+                ia.modified_at, ia.has_user_details, ia.asset_category, ia.archieved,
+                ia.has_amc, ia.recurring_alert_for_amc,
+                au.effective_date, au.end_date, au.confirmation_status
+        FROM t1.it_assets ia
+        LEFT JOIN t1.assets_users au 
+        ON ia.asset_id = au.asset_id
+        AND au.effective_date = (
+            SELECT MAX(effective_date)
+            FROM t1.assets_users
+            WHERE asset_id = ia.asset_id
+        )
+        WHERE ia.archieved != 'yes' OR ia.archieved IS NULL
     """
     cursor.execute(query)
     all_assets = cursor.fetchall()
 
-    cursor.close()
-    conn.close()
-
-    # Convert the tuple results to a list of dictionaries for easier handling
+    # Convert tuple results to a list of dictionaries
     columns = [desc[0] for desc in cursor.description]
     assets_list = [dict(zip(columns, asset)) for asset in all_assets]
 
-    today = date.today()
+    # Apply Filtering Based on `filter_type`
+    filtered_assets = []
+    for asset in assets_list:
+        effective_date = asset['effective_date']
+        end_date = asset['end_date']
+        confirmation_status = int(asset['confirmation_status']) if asset['confirmation_status'] is not None else None
 
-    return render_template('view_assets.html', all_assets=assets_list, today=today)
+        if filter_type == "assigned":
+            # Condition: Asset has an effective date, no end date, and is confirmed (confirmation_status == 1)
+            if effective_date is not None and end_date is None and confirmation_status == 1:
+                filtered_assets.append(asset)
+
+        elif filter_type == "unassigned":
+            # Condition 1: No effective date, no end date, confirmation is 0
+            if effective_date is None and end_date is None and confirmation_status == 0:
+                filtered_assets.append(asset)
+            # Condition 2: No effective date, no end date, confirmation is 1
+            elif effective_date is None and end_date is None and confirmation_status == 1:
+                filtered_assets.append(asset)
+            # Condition 3: Has both effective and end date, confirmation is 1
+            elif effective_date is not None and end_date is not None and confirmation_status == 1:
+                filtered_assets.append(asset)
+            # Condition 4: Has effective date, no end date, confirmation is 0
+            elif effective_date is not None and end_date is None and confirmation_status == 0:
+                filtered_assets.append(asset)
+            # Condition 5: No effective date, no end date, confirmation is None
+            elif effective_date is None and end_date is None and confirmation_status is None:
+                filtered_assets.append(asset)
+
+        elif filter_type == "unauthorized":
+            # Condition: Has effective date, no end date, confirmation is None
+            if effective_date is not None and end_date is None and confirmation_status is None:
+                filtered_assets.append(asset)
+
+        elif filter_type is None or filter_type == "all":
+            # Show all assets if no filter or explicitly "all"
+            filtered_assets.append(asset)
+
+
+        cursor.close()
+        conn.close()
+
+    today = date.today()
+    return render_template('view_assets.html', all_assets=filtered_assets, today=today)
 
 
 @app.route('/get_asset_details/<asset_id>', methods=['GET'])
@@ -1040,7 +1502,7 @@ def get_asset_details(asset_id):
 
         cursor.close()
         conn.close()
-        print("Database connection closed")
+        # print("Database connection closed")
 
         # Return the related data as JSON
         response = {
@@ -1049,7 +1511,7 @@ def get_asset_details(asset_id):
             'extended_warranty_info': extended_warranty_info,
             'insurance_details': insurance_details
         }
-        print(f"Returning response: {response}")
+        # print(f"Returning response: {response}")
         return jsonify(response)
 
     except Exception as e:
@@ -1091,8 +1553,6 @@ def delete_asset(id):
     finally:
         cursor.close()
         conn.close()
-
-
 
 # Function to fetch purchase_date for an asset_id
 def get_purchase_date(asset_id):
@@ -1151,7 +1611,7 @@ def get_latest_end_date(asset_id):
     return (latest['end_date'] if latest else None, is_disabled)
 
 
-# Route for creating a new user asset assignment
+
 @app.route('/create_user_asset/<asset_id>', methods=['GET', 'POST'])
 def create_user_asset(asset_id):
     conn = get_db_connection()
@@ -1191,16 +1651,24 @@ def create_user_asset(asset_id):
             WHERE employee_id = %s
         """, (employee_code,))
         user = cursor.fetchone()
-        email = user['email']
+        email = user['email'] if user else None
 
-        # Insert into assets_users table
+        if not email:
+            flash("No email found for the assigned user.", "danger")
+            cursor.close()
+            conn.close()
+            return redirect(url_for('create_user_asset', asset_id=asset_id))
+
+        # Insert into assets_users table with token fields
         cursor.execute("""
-            INSERT INTO assets_users (created_by, created_at, assignment_code, asset_id, assigned_user, 
-                       effective_date, remarks, email, archieved, employee_code, overall_archieved)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (created_by, created_at, assignment_code, asset_id, assigned_user, effective_date, remarks, 
-              email, archieved, employee_code, 'No'))
-        
+            INSERT INTO assets_users (
+                created_by, created_at, assignment_code, asset_id, assigned_user, 
+                effective_date, remarks, email, archieved, employee_code, overall_archieved,
+                confirmation_status, token, token_expiration
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (created_by, created_at, assignment_code, asset_id, assigned_user, 
+              effective_date, remarks, email, archieved, employee_code, 'No', 
+              None, None, None))  # Initial values for verification fields
 
         cursor.execute("""
             UPDATE it_assets 
@@ -1210,12 +1678,26 @@ def create_user_asset(asset_id):
 
         conn.commit()
 
-        # # Send email with table name 'add_user'
-        # if user and email:
-        #     send_email(email, assigned_user, asset_id, "add_user", "Created")
+        # Send confirmation email
+        details = {
+            'asset_id': asset_id,
+            'assignment_code': assignment_code,
+            'assigned_user': assigned_user,
+            'employee_code': employee_code,
+            'effective_date': effective_date_str,
+            'remarks': remarks if remarks else 'None',
+            'created_by': created_by,
+            'created_at': created_at
+        }
+        send_confirmation_email('create', 'user_asset', assignment_code, details, to_email=email, cc_email='nivetha@tapmobi.in')
+
+        # Send verification email
+        send_verification_email(assignment_code, asset_id, assigned_user, email)
 
         cursor.close()
         conn.close()
+
+        flash("User asset assigned successfully! A verification email has been sent.", "success")
         return redirect(url_for('view_user_details', asset_id=asset_id))
 
     # GET request: fetch employees
@@ -1231,10 +1713,9 @@ def create_user_asset(asset_id):
                            asset_id=asset_id, 
                            purchase_date=purchase_date, 
                            latest_end_date=latest_end_date,
-                        #    row_count=row_count,
                            is_disabled=is_disabled)
 
-# Route for editing an existing user asset assignment
+
 @app.route('/edit_user_asset/<assignment_code>', methods=['GET', 'POST'])
 def edit_user_asset(assignment_code):
     conn = get_db_connection()
@@ -1249,12 +1730,16 @@ def edit_user_asset(assignment_code):
     assignment = cursor.fetchone()
     if not assignment:
         flash("Assignment not found.", "danger")
-        return redirect(url_for('view_user_details', asset_id=asset_id))
+        cursor.close()
+        conn.close()
+        return redirect(url_for('view_user_details', asset_id=asset_id))  # Note: asset_id is undefined here, should redirect elsewhere if not found
 
     asset_id = assignment['asset_id']
     purchase_date = get_purchase_date(asset_id)
     if not purchase_date:
         flash("Asset not found or purchase date not available.", "danger")
+        cursor.close()
+        conn.close()
         return redirect(url_for('view_user_details', asset_id=asset_id))
 
     if request.method == 'POST':
@@ -1279,9 +1764,10 @@ def edit_user_asset(assignment_code):
         # Update assets_users table
         cursor.execute("""
             UPDATE assets_users 
-            SET assigned_user = %s, effective_date = %s, end_date = %s, remarks = %s, employee_code=%s
+            SET assigned_user = %s, effective_date = %s, end_date = %s, remarks = %s, employee_code = %s,
+                modified_by = %s, modified_at = %s
             WHERE assignment_code = %s
-        """, (assigned_user, effective_date, end_date, remarks, employee_code, assignment_code))
+        """, (assigned_user, effective_date, end_date, remarks, employee_code, 't1', datetime.now().strftime('%Y-%m-%d %H:%M:%S'), assignment_code))
 
         # Update has_user_details in it_assets table
         if end_date:
@@ -1297,22 +1783,39 @@ def edit_user_asset(assignment_code):
                 WHERE asset_id = %s
             """, (asset_id,))
 
-
-        conn.commit()
-
         # Fetch user's email
         cursor.execute("""
             SELECT email FROM big_app_login_users.users 
             WHERE employee_id = %s
         """, (employee_code,))
         user = cursor.fetchone()
+        email = user['email'] if user else None
 
-        # # Send email with table name 'edit_user'
-        # if user and user['email']:
-        #     send_email(user['email'], assigned_user, assignment_code, "edit_user", "Updated")
+        if not email:
+            flash("No email found for the assigned user.", "danger")
+            cursor.close()
+            conn.close()
+            return redirect(url_for('edit_user_asset', assignment_code=assignment_code))
+
+        # Send email confirmation to the assigned user with CC to nivetha@tapmobi.in
+        details = {
+            'asset_id': asset_id,
+            'assignment_code': assignment_code,
+            'assigned_user': assigned_user,
+            'employee_code': employee_code,
+            'effective_date': effective_date_str,
+            'end_date': end_date_str if end_date_str else 'Not Set',
+            'remarks': remarks if remarks else 'None',
+            'modified_by': 't1',
+            'modified_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        send_confirmation_email('edit', 'user_asset', assignment_code, details, to_email=email, cc_email='nivetha@tapmobi.in')
+
+        conn.commit()
 
         cursor.close()
         conn.close()
+        flash("User asset updated successfully!", "success")
         return redirect(url_for('view_user_details', asset_id=asset_id))
 
     # GET request: fetch employees and last user data
@@ -1331,7 +1834,11 @@ def edit_user_asset(assignment_code):
 
     cursor.close()
     conn.close()
-    return render_template('edit_user_asset.html', employees=employees, assignment_code=assignment_code, last_user=last_user, purchase_date=purchase_date)
+    return render_template('edit_user_asset.html', 
+                           employees=employees, 
+                           assignment_code=assignment_code, 
+                           last_user=last_user, 
+                           purchase_date=purchase_date)
 
 # Route for viewing user details
 @app.route('/view_user_details/<asset_id>', methods=['GET'])
@@ -1389,6 +1896,7 @@ def delete_user_asset(assignment_code):
     conn.close()
     return redirect(url_for('view_user_details', asset_id=asset_id))
 
+
 @app.route('/create_vendor', methods=['GET', 'POST'])
 def create_vendor():
     print('Form State in create_vendor:', session.get('form_state', {}))
@@ -1431,25 +1939,9 @@ def create_vendor():
 
     return render_template('create_vendor.html')
 
-# @app.route('/save_form_state', methods=['POST'])
-# def save_form_state():
-#     form_data = request.form.to_dict(flat=False)
-#     print('\n\n Form Data:', form_data)
-#     session['form_state'] = form_data
-    
-#     # Store the referrer to determine return destination
-#     referrer = request.referrer
-#     if referrer:
-#         if 'edit_asset' in referrer:
-#             session['return_to'] = 'edit_asset'
-#             session['asset_id'] = referrer.split('/')[-1]  # Extract asset_id from URL
-#         elif 'create_asset' in referrer:
-#             session['return_to'] = 'create_asset'
-#     print('\n\n Session after setting:', session)
-#     return redirect(url_for('create_vendor'))
 
 # Function to fetch asset details from it_assets table
-def fetch_it_assets_info(asset_id):
+def fetch_it_assets(asset_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
@@ -1466,13 +1958,12 @@ def fetch_it_assets_info(asset_id):
 @app.route('/create_raise_ticket/<asset_id>', methods=['GET', 'POST'])
 def create_raise_ticket(asset_id):
     # Fetch asset details
-    asset = fetch_it_assets_info(asset_id)
+    asset = fetch_it_assets(asset_id)
 
     if not asset:
         flash("Asset not found.", "danger")
         return redirect(url_for('view_assets'))  # Redirect to view_assets if asset not found
 
-    # Assuming user_name is fetched from session or similar mechanism
     user_name = None  # Replace with actual user session data if available
 
     if request.method == 'POST':
@@ -1498,11 +1989,18 @@ def create_raise_ticket(asset_id):
               problem_description, ticket_status, remarks, archieved))
         conn.commit()
 
-        # Fetch admin email for notification
-        # admin_email = "nivetha@tapmobi.in"
-
-        # Send email notification to admin
-        # raise_ticket_send_email(admin_email, raised_by, asset_id, ticket_id, problem_description)
+    # Send email confirmation
+        details = {
+            'ticket_id': ticket_id,
+            'asset_id': asset_id,
+            'raised_by': raised_by,
+            'problem_description': problem_description,
+            'ticket_status': ticket_status,
+            'created_by': created_by,
+            'created_at': created_at,
+            'remarks': remarks if remarks else 'None'
+        }
+        send_confirmation_email('create', 'ticket', ticket_id, details, to_email='nivetha@tapmobi.in', cc_email='nivetha@tapmobi.in')
 
         flash("Ticket raised successfully!", "success")
         cursor.close()
@@ -1549,32 +2047,6 @@ def view_raised_tickets(asset_id=None):
                          asset_id=asset_id,
                          ticket_is_processed=ticket_is_processed)
 
-# @app.route('/view_raised_tickets', methods=['GET'])
-# @app.route('/view_raised_tickets/<asset_id>', methods=['GET'])
-# def view_raised_tickets(asset_id=None):
-#     conn = get_db_connection()
-#     cursor = conn.cursor(dictionary=True)
-
-#     if asset_id:
-#         # Fetch tickets for the specific asset
-#         cursor.execute("""
-#             SELECT created_by, ticket_id, raised_by, problem_description, 
-#                    ticket_status, ignore_reason
-#             FROM raised_tickets 
-#             WHERE asset_id = %s
-#         """, (asset_id,))
-#     else:
-#         # Fetch all tickets when no asset_id is provided
-#         cursor.execute("""
-#             SELECT created_by, ticket_id, raised_by, problem_description, 
-#                    ticket_status, ignore_reason, asset_id
-#             FROM raised_tickets
-#         """)
-
-#     tickets = cursor.fetchall()
-#     cursor.close()
-#     conn.close()
-#     return render_template('view_raised_tickets.html', tickets=tickets, asset_id=asset_id)
 
 # Route to fetch ticket details for the view popup
 @app.route('/ticket_details/<ticket_id>', methods=['GET'])
@@ -1600,7 +2072,6 @@ def ticket_details(ticket_id):
     else:
         return jsonify({'error': 'Ticket not found'}), 404
 
-# Route to handle ignoring a ticket
 @app.route('/ignore_ticket/<ticket_id>', methods=['POST'])
 def ignore_ticket(ticket_id):
     conn = get_db_connection()
@@ -1618,13 +2089,29 @@ def ignore_ticket(ticket_id):
     """, (ignore_reason, modified_by, modified_at, ticket_id))
     conn.commit()
 
+    # Fetch additional ticket details for email
+    cursor.execute("""
+        SELECT asset_id, raised_by, problem_description 
+        FROM raised_tickets 
+        WHERE ticket_id = %s
+    """, (ticket_id,))
+    ticket = cursor.fetchone()
+
+    # Send email confirmation
+    details = {
+        'ticket_id': ticket_id,
+        'asset_id': ticket[0] if ticket else 'Unknown',  # asset_id
+        'raised_by': ticket[1] if ticket else 'Unknown',  # raised_by
+        'problem_description': ticket[2] if ticket else 'Unknown',  # problem_description
+        'ignore_reason': ignore_reason if ignore_reason else 'No reason provided',
+        'ticket_status': 'Closed',
+        'modified_by': modified_by,
+        'modified_at': modified_at
+    }
+    send_confirmation_email('ignore', 'ticket', ticket_id, details, to_email='nivetha@tapmobi.in', cc_email='nivetha@tapmobi.in')
+
     # Fetch asset_id for redirect
-    cursor.execute("SELECT asset_id FROM raised_tickets WHERE ticket_id = %s", (ticket_id,))
-    result = cursor.fetchone()
-    if result:
-        asset_id = result[0]  # If result is a tuple, use index 0
-    else:
-        asset_id = None
+    asset_id = ticket[0] if ticket else None
 
     cursor.close()
     conn.close()
@@ -1636,7 +2123,6 @@ def ignore_ticket(ticket_id):
 
     flash("Ticket ignored successfully!", "success")
     return redirect(url_for('view_raised_tickets', asset_id=asset_id))
-
 
 # Function to check if ticket is processed (ignored or in service)
 def ticket_is_processed(ticket_id):
@@ -1807,7 +2293,29 @@ def create_service(ticket_id, asset_id=None):
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (service_id, ticket_id, asset_id, service_case_id, technician_name, technician_id, work_done, 
               next_service_date, service_charge, remarks, service_bill_path, created_by, created_at, warranty_type, 'No', 'No'))
+        
+        if ticket_id:  # Ensure ticket_id is not None
+            cursor.execute("""
+                UPDATE raised_tickets 
+                SET ticket_status = 'Closed' 
+                WHERE ticket_id = %s
+            """, (ticket_id,))
+
         conn.commit()
+
+        # Send email confirmation
+        details = {
+            'asset_id': asset_id,
+            'ticket_id': ticket_id,
+            'technician_name': technician_name,
+            'work_done': work_done,
+            'next_service_date': next_service_date if next_service_date else 'Not Set',
+            'service_charge': service_charge if service_charge else 'Not Set',
+            'created_at': created_at,
+            'created_by': 'nive',
+            'remarks': remarks if remarks else 'None'
+        }
+        send_confirmation_email('create', 'service', service_id, details, to_email='nivetha@tapmobi.in', cc_email=None)
 
         cursor.close()
         conn.close()
@@ -1886,6 +2394,22 @@ def edit_service(service_id):
             WHERE service_id = %s
         """, (technician_name, technician_id, work_done, next_service_date, service_charge, remarks, 
               service_case_id, service_bill_path, modified_by, modified_at, warranty_type, service_id))
+        
+        # Send email confirmation
+        details = {
+            'asset_id': asset_id,
+            'service_id':service_id,
+            'technician_name': technician_name,
+            'work_done': work_done,
+            'next_service_date': next_service_date if next_service_date else 'Not Set',
+            'service_charge': service_charge if service_charge else 'Not Set',
+            'modified_by': modified_by,
+            'modified_at': modified_at,
+            'remarks': remarks if remarks else 'None'
+        }
+        send_confirmation_email('edit', 'service', service_id, details, to_email='nivetha@tapmobi.in', cc_email=None)
+
+
         conn.commit()
 
         cursor.close()
@@ -1943,7 +2467,7 @@ def delete_service(service_id):
 
 # Function to get purchase date of an asset
 def get_purchase_date(asset_id):
-    asset = fetch_it_assets_info(asset_id)
+    asset = fetch_it_assets(asset_id)
     return asset['purchase_date'] if asset else None
 
 # Function to get the latest insurance end date for an asset
@@ -2041,13 +2565,29 @@ def create_insurance(asset_id):
               insurance_end, insurance_bill_path, remarks, created_by, created_at, 'No', 'No'))
         conn.commit()
 
+    # Send email confirmation
+        details = {
+            'insurance_id': insurance_id,
+            'asset_id': asset_id,
+            'policy_number': policy_number,
+            'insurance_value': insurance_value if insurance_value else 'Not Set',
+            'insurance_start': insurance_start,
+            'insurance_period': f"{insurance_period_years} years, {insurance_period_months} months, {insurance_period_days} days",
+            'insurance_end': insurance_end.strftime('%Y-%m-%d'),
+            'insurance_bill_path': insurance_bill_path if insurance_bill_path else 'None',
+            'remarks': remarks if remarks else 'None',
+            'created_by': created_by,
+            'created_at': created_at
+        }
+        send_confirmation_email('create', 'insurance', insurance_id, details, to_email='nivetha@tapmobi.in', cc_email=None)
+
         cursor.close()
         conn.close()
         flash("Insurance created successfully!", "success")
         return redirect(url_for('view_insurance', insurance_id=insurance_id))
 
     # GET request: Fetch asset info, purchase date, and latest insurance end date
-    asset = fetch_it_assets_info(asset_id)
+    asset = fetch_it_assets(asset_id)
     if not asset:
         flash("Asset not found.", "danger")
         cursor.close()
@@ -2125,6 +2665,23 @@ def edit_insurance(insurance_id):
         """, ( policy_number, insurance_value, insurance_start,
               f"{insurance_period_years} years, {insurance_period_months} months, {insurance_period_days} days",
               insurance_end, insurance_bill_path, remarks, modified_by, modified_at, insurance_id))
+
+# Send email confirmation
+        details = {
+            'insurance_id': insurance_id,
+            'asset_id': asset_id,
+            'policy_number': policy_number,
+            'insurance_value': insurance_value if insurance_value else 'Not Set',
+            'insurance_start': insurance_start,
+            'insurance_period': f"{insurance_period_years} years, {insurance_period_months} months, {insurance_period_days} days",
+            'insurance_end': insurance_end.strftime('%Y-%m-%d'),
+            'insurance_bill_path': insurance_bill_path if insurance_bill_path else 'None',
+            'remarks': remarks if remarks else 'None',
+            'modified_at': modified_at,
+            'modified_by': modified_by
+        }
+        send_confirmation_email('create', 'insurance', insurance_id, details, to_email='nivetha@tapmobi.in', cc_email=None)
+
         conn.commit()
 
         cursor.close()
@@ -2133,7 +2690,7 @@ def edit_insurance(insurance_id):
         return redirect(url_for('view_insurance', insurance_id=insurance_id))
 
     # GET request: Fetch asset info, purchase date, and latest insurance end date
-    asset = fetch_it_assets_info(asset_id)
+    asset = fetch_it_assets(asset_id)
     purchase_date = asset['purchase_date'] if asset else None
     latest_insurance_end = get_latest_insurance_end_date(asset_id)
 
@@ -2156,7 +2713,7 @@ def view_insurance(id=None):
         insurance = cursor.fetchone()
         if insurance:
             # Fetch product_name from it_assets using asset_id
-            asset = fetch_it_assets_info(insurance['asset_id'])
+            asset = fetch_it_assets(insurance['asset_id'])
             insurance['product_name'] = asset['product_name'] if asset else 'N/A'
         else:
             insurance = {}  # If no record is found, set to an empty dict
@@ -2170,7 +2727,7 @@ def view_insurance(id=None):
         else:
             # Fetch product_name for each insurance record
             for ins in insurance:
-                asset = fetch_it_assets_info(ins['asset_id'])
+                asset = fetch_it_assets(ins['asset_id'])
                 ins['product_name'] = asset['product_name'] if asset else 'N/A'
     else:
         # Path 1: Fetch all non-archived records
@@ -2182,38 +2739,13 @@ def view_insurance(id=None):
         else:
             # Fetch product_name for each insurance record
             for ins in insurance:
-                asset = fetch_it_assets_info(ins['asset_id'])
+                asset = fetch_it_assets(ins['asset_id'])
                 ins['product_name'] = asset['product_name'] if asset else 'N/A'
 
     cursor.close()
     conn.close()
     return render_template('view_insurance.html', insurance=insurance)
 
-
-# @app.route('/view_insurance', methods=['GET'])
-# @app.route('/view_insurance/<insurance_id>', methods=['GET'])
-# def view_insurance(insurance_id=None):
-#     conn = get_db_connection()
-#     cursor = conn.cursor(dictionary=True)
-
-#     if insurance_id:
-#         cursor.execute("SELECT * FROM insurance_details WHERE insurance_id = %s AND archieved = 'No'", (insurance_id,))
-#         insurance = cursor.fetchone()
-#         if insurance:
-#             # Fetch product_name from it_assets using asset_id
-#             asset = fetch_it_assets_info(insurance['asset_id'])
-#             insurance['product_name'] = asset['product_name'] if asset else 'N/A'
-#     else:
-#         cursor.execute("SELECT * FROM insurance_details WHERE archieved = 'No'")
-#         insurance = cursor.fetchall()
-#         # Fetch product_name for each insurance record
-#         for ins in insurance:
-#             asset = fetch_it_assets_info(ins['asset_id'])
-#             ins['product_name'] = asset['product_name'] if asset else 'N/A'
-
-#     cursor.close()
-#     conn.close()
-#     return render_template('view_insurance.html', insurance=insurance)
 
 # Route to delete (archive) an insurance record
 @app.route('/delete_insurance/<insurance_id>', methods=['POST'])
@@ -2333,6 +2865,28 @@ def create_extended_warranty(asset_id):
               extended_warranty_end_date, warranty_provider_type, warranty_provider_name,
               warranty_provider_ph_no, warranty_provider_location, warranty_value, adp_protection,
               extended_warranty_bill_path, product_condition, remarks, created_by, created_at, 'No', 'No'))
+        
+    # Send email confirmation
+        details = {
+            'warranty_asset_id': warranty_asset_id,
+            'asset_id': asset_id,
+            'extended_warranty_start': extended_warranty_start,
+            'extended_warranty_period': f"{extended_warranty_period_years} years, {extended_warranty_period_months} months, {extended_warranty_period_days} days",
+            'extended_warranty_end_date': extended_warranty_end_date.strftime('%Y-%m-%d'),
+            'warranty_provider_type': warranty_provider_type,
+            'warranty_provider_name': warranty_provider_name if warranty_provider_name else 'Not Set',
+            'warranty_provider_ph_no': warranty_provider_ph_no if warranty_provider_ph_no else 'Not Set',
+            'warranty_provider_location': warranty_provider_location if warranty_provider_location else 'Not Set',
+            'warranty_value': warranty_value if warranty_value else 'Not Set',
+            'adp_protection': adp_protection,
+            'product_condition': product_condition,
+            'extended_warranty_bill_path': extended_warranty_bill_path if extended_warranty_bill_path else 'None',
+            'remarks': remarks if remarks else 'None',
+            'created_by': created_by,
+            'created_at': created_at
+        }
+        send_confirmation_email('create', 'extended_warranty', warranty_asset_id, details, to_email='nivetha@tapmobi.in', cc_email=None)
+
         conn.commit()
 
         cursor.close()
@@ -2341,7 +2895,7 @@ def create_extended_warranty(asset_id):
         return redirect(url_for('view_extended_warranty', warranty_asset_id=warranty_asset_id))
 
     # GET request: Fetch asset info and latest extended warranty end date
-    asset = fetch_it_assets_info(asset_id)
+    asset = fetch_it_assets(asset_id)
 
 
     purchase_date = asset['purchase_date']
@@ -2426,6 +2980,30 @@ def edit_extended_warranty(warranty_asset_id):
               extended_warranty_end_date, warranty_provider_type, warranty_provider_name,
               warranty_provider_ph_no, warranty_provider_location, warranty_value, adp_protection,
               extended_warranty_bill_path, product_condition, remarks, modified_by, modified_at, warranty_asset_id))
+        
+        # Send email confirmation
+
+        details = {
+            'warranty_asset_id': warranty_asset_id,
+            'asset_id': asset_id,
+            'extended_warranty_start': extended_warranty_start,
+            'extended_warranty_period': f"{extended_warranty_period_years} years, {extended_warranty_period_months} months, {extended_warranty_period_days} days",
+            'extended_warranty_end_date': extended_warranty_end_date.strftime('%Y-%m-%d'),
+            'warranty_provider_type': warranty_provider_type,
+            'warranty_provider_name': warranty_provider_name if warranty_provider_name else 'Not Set',
+            'warranty_provider_ph_no': warranty_provider_ph_no if warranty_provider_ph_no else 'Not Set',
+            'warranty_provider_location': warranty_provider_location if warranty_provider_location else 'Not Set',
+            'warranty_value': warranty_value if warranty_value else 'Not Set',
+            'adp_protection': adp_protection,
+            'product_condition': product_condition,
+            'extended_warranty_bill_path': extended_warranty_bill_path if extended_warranty_bill_path else 'None',
+            'remarks': remarks if remarks else 'None',
+            'modified_by': modified_by,
+            'modified_at': modified_at
+        }
+        send_confirmation_email('edit', 'extended_warranty', warranty_asset_id, details, to_email='nivetha@tapmobi.in', cc_email=None)
+
+
         conn.commit()
 
         cursor.close()
@@ -2434,7 +3012,7 @@ def edit_extended_warranty(warranty_asset_id):
         return redirect(url_for('view_extended_warranty', warranty_asset_id=warranty_asset_id))
 
     # GET request: Fetch asset info and latest extended warranty end date
-    asset = fetch_it_assets_info(asset_id)
+    asset = fetch_it_assets(asset_id)
     purchase_date = asset['purchase_date'] if asset else None
     warranty_end = asset.get('warranty_end', None) if asset else None
     latest_extended_warranty_end = get_latest_extended_warranty_end_date(asset_id)
@@ -2459,7 +3037,7 @@ def view_extended_warranty(asset_id=None, warranty_asset_id=None):
         warranty = cursor.fetchone()
         if warranty:
             # Fetch product_name from it_assets using asset_id
-            asset = fetch_it_assets_info(warranty['asset_id'])
+            asset = fetch_it_assets(warranty['asset_id'])
             warranty['product_name'] = asset['product_name'] if asset else 'N/A'
         else:
             warranty = {}  # If no record is found, set to an empty dict
@@ -2473,7 +3051,7 @@ def view_extended_warranty(asset_id=None, warranty_asset_id=None):
         else:
             # Fetch product_name for each warranty record
             for w in warranty:
-                asset = fetch_it_assets_info(w['asset_id'])
+                asset = fetch_it_assets(w['asset_id'])
                 w['product_name'] = asset['product_name'] if asset else 'N/A'
     else:
         # Path 1: Fetch all non-archived records
@@ -2485,7 +3063,7 @@ def view_extended_warranty(asset_id=None, warranty_asset_id=None):
         else:
             # Fetch product_name for each warranty record
             for w in warranty:
-                asset = fetch_it_assets_info(w['asset_id'])
+                asset = fetch_it_assets(w['asset_id'])
                 w['product_name'] = asset['product_name'] if asset else 'N/A'
 
     cursor.close()
@@ -2802,7 +3380,6 @@ def check_asset_status():
         search_query=search_query
     )
 
-
 def retrieve_asset_data(search_query='', product_type='', location='', page=1, per_page=10):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -2811,7 +3388,7 @@ def retrieve_asset_data(search_query='', product_type='', location='', page=1, p
     count_query = """
         SELECT COUNT(*) as total
         FROM it_assets
-        WHERE archieved = 'No' and overall_archieved = 'No'
+        WHERE archieved = 'No'
     """
     count_params = []
 
@@ -2819,7 +3396,7 @@ def retrieve_asset_data(search_query='', product_type='', location='', page=1, p
     query = """
         SELECT *
         FROM it_assets
-        WHERE archieved = 'No' and overall_archieved = 'No'
+        WHERE archieved = 'No' 
     """
     params = []
 
@@ -2933,11 +3510,11 @@ def all_assets():
     )
 
     # Fetch unique product types for the filter dropdown
-    cursor.execute("SELECT DISTINCT product_type FROM it_assets WHERE archieved = 'No'and overall_archieved = 'No'")
+    cursor.execute("SELECT DISTINCT product_type FROM it_assets WHERE archieved = 'No'")
     product_types = [row['product_type'] for row in cursor.fetchall()]
 
     # Fetch unique locations for the filter dropdown
-    cursor.execute("SELECT DISTINCT location FROM it_assets WHERE archieved = 'No'and overall_archieved = 'No'")
+    cursor.execute("SELECT DISTINCT location FROM it_assets WHERE archieved = 'No'")
     locations = [row['location'] for row in cursor.fetchall()]
 
     cursor.close()
@@ -3012,25 +3589,48 @@ def create_multiple_services():
 
         # Create a service for each selected asset
         created_service_ids = []
-        for asset_id, service_id in zip(selected_asset_ids, service_ids):
-            created_by = 'service'
-            created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            warranty_type = in_warranty_out_warranty(asset_id)  # Dynamically determine warranty status
+        try:
+            for asset_id, service_id in zip(selected_asset_ids, service_ids):
+                created_by = 'service'
+                created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                warranty_type = in_warranty_out_warranty(asset_id)
 
-            cursor.execute("""
-                INSERT INTO service_details (service_id, ticket_id, asset_id, service_case_id, technician_name, technician_id, 
-                                     work_done, next_service_date, service_charge, remarks, service_bill_path, 
-                                     created_by, created_at, warranty_type, reference_name)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (service_id, ticket_id, asset_id, service_case_id, technician_name, technician_id, work_done, 
-                  next_service_date, service_charge, remarks, service_bill_path, created_by, created_at, warranty_type, reference_name))
-            created_service_ids.append(service_id)
-        conn.commit()
+                cursor.execute("""
+                    INSERT INTO service_details (service_id, ticket_id, asset_id, service_case_id, technician_name, technician_id, 
+                                         work_done, next_service_date, service_charge, remarks, service_bill_path, 
+                                         created_by, created_at, warranty_type, reference_name)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """, (service_id, ticket_id, asset_id, service_case_id, technician_name, technician_id, work_done, 
+                      next_service_date, service_charge, remarks, service_bill_path, created_by, created_at, warranty_type, reference_name))
+                created_service_ids.append(service_id)
+            conn.commit()
 
-        cursor.close()
-        conn.close()
-        flash(f"Multiple services created successfully with ticket ID {ticket_id}!", "success")
-        return redirect(url_for('create_multiple_services', ticket_id=ticket_id, service_ids=','.join(created_service_ids)))
+            # Send email confirmation
+            details = {
+                'ticket_id': ticket_id,
+                'service_ids': ', '.join(created_service_ids),
+                'asset_ids': ', '.join(selected_asset_ids),
+                'technician_name': technician_name,
+                'work_done': work_done,
+                'next_service_date': next_service_date if next_service_date else 'Not Set',
+                'service_charge': service_charge if service_charge else 'Not Set',
+                'created_at': created_at,
+                'remarks': remarks if remarks else 'None'
+            }
+            send_confirmation_email('create', 'multiple_services', ticket_id, details, to_email='nivetha@tapmobi.in', cc_email=None)
+
+            flash(f"Multiple services created successfully with ticket ID {ticket_id}!", "success")
+            cursor.close()
+            conn.close()
+            return redirect(url_for('create_multiple_services', ticket_id=ticket_id, service_ids=','.join(created_service_ids)))
+
+        except mysql.connector.errors.IntegrityError as e:
+            conn.rollback()  # Roll back the transaction on error
+            if "Duplicate entry" in str(e):
+                flash(f"Error: The reference name '{reference_name}' is already in use. Please use a unique reference name.", "danger")
+            else:
+                flash(f"Database error: {str(e)}", "danger")
+            # Stay on the page by falling through to the GET handling
 
     # GET request: Fetch technicians for dropdown
     technicians_data = display_drop_down('Create_Technician')
@@ -3177,6 +3777,21 @@ def edit_related_multiple_services_form(ticket_id):
                   service_case_id, service_bill_path, service['service_id']))
 
         conn.commit()
+
+        # Send email confirmation
+        details = {
+            'ticket_id': ticket_id,
+            'service_ids': ', '.join(selected_services),
+            'asset_ids': ', '.join([service['asset_id'] for service in services]),
+            'technician_name': technician_name,
+            'work_done': new_work_done if new_work_done else 'No new work done added',
+            'next_service_date': next_service_date if next_service_date else 'Not Set',
+            'service_charge': service_charge if service_charge else 'Not Set',
+            'modified_at': current_timestamp,
+            'remarks': remarks if remarks else 'None'
+        }
+        send_confirmation_email('edit', 'multiple_services', ticket_id, details, to_email='nivetha@tapmobi.in', cc_email=None)
+
         cursor.close()
         conn.close()
         flash(f"Selected services for Ticket ID {ticket_id} updated successfully!", "success")
@@ -3185,7 +3800,7 @@ def edit_related_multiple_services_form(ticket_id):
     # GET request: Fetch selected services for display
     selected_services = request.args.get('selected_services', '').split(',')
     if not selected_services or selected_services == ['']:
-        flash('Please select services to edit.', 'danger')
+        flash('Please select services to edt1.', 'danger')
         cursor.close()
         conn.close()
         return redirect(url_for('edit_related_multiple_services', ticket_id=ticket_id))
@@ -3246,14 +3861,6 @@ def edit_related_multiple_services_form(ticket_id):
     )
 
 
-
-# Email configuration
-SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 587
-SMTP_USER = 'nivetha@tapmobi.in'  # Update this
-SMTP_PASSWORD = "Tapmobi@07"  # Update this
-to_mail ='nivetha@tapmobi.in'
-
 def send_email(to_email, subject, body):
     msg = MIMEText(body)
     msg['Subject'] = subject
@@ -3264,6 +3871,163 @@ def send_email(to_email, subject, body):
         server.starttls()
         server.login(SMTP_USER, SMTP_PASSWORD)
         server.send_message(msg)
+
+# def check_and_send_alerts(get_db_connection):  # Pass db connection function as parameter
+#     print('entering function')
+#     conn = get_db_connection()
+#     cursor = conn.cursor(dictionary=True)
+#     today = datetime.now().date()
+    
+#     # 1. Warranty Alerts (1 month before)
+#     warranty_threshold = today + timedelta(days=30)
+#     cursor.execute("""
+#         SELECT asset_id, product_name, warranty_end 
+#         FROM it_assets 
+#         WHERE warranty_end IS NOT NULL 
+#         AND warranty_end <= %s 
+#         AND warranty_end >= %s
+#     """, (warranty_threshold, today))
+#     warranty_alerts = cursor.fetchall()
+#     print('warranty_alerts',warranty_alerts)
+
+#     for alert in warranty_alerts:
+#         subject = f"Warranty Alert: {alert['product_name']}"
+#         body = f"""
+#         Dear User,
+
+#         Your asset warranty is nearing its end:
+#         Asset ID: {alert['asset_id']}
+#         Product: {alert['product_name']}
+#         Warranty End Date: {alert['warranty_end']}
+#         Days Remaining: {(alert['warranty_end'] - today).days}
+
+#         Regards,
+#         Asset Management Team
+#         """
+#         send_email(to_mail, subject, body)  # Update recipient email
+
+#     # 2. Extended Warranty Alerts (1 month before)
+#     cursor.execute("""
+#         SELECT asset_id, product_name, extended_warranty_end 
+#         FROM it_assets 
+#         WHERE extended_warranty_end IS NOT NULL 
+#         AND extended_warranty_end <= %s 
+#         AND extended_warranty_end >= %s
+#     """, (warranty_threshold, today))
+#     ext_warranty_alerts = cursor.fetchall()
+
+#     for alert in ext_warranty_alerts:
+#         subject = f"Extended Warranty Alert: {alert['product_name']}"
+#         body = f"""
+#         Dear User,
+
+#         Your asset extended warranty is nearing its end:
+#         Asset ID: {alert['asset_id']}
+#         Product: {alert['product_name']}
+#         Extended Warranty End Date: {alert['extended_warranty_end']}
+#         Days Remaining: {(alert['extended_warranty_end'] - today).days}
+
+#         Regards,
+#         Asset Management Team
+#         """
+#         send_email(to_mail, subject, body)
+
+#     # 3. Insurance Alerts (1 year before)
+#     insurance_threshold = today + timedelta(days=365)
+#     cursor.execute("""
+#         SELECT asset_id, insurance_end 
+#         FROM insurance_details 
+#         WHERE insurance_end IS NOT NULL 
+#         AND insurance_end <= %s 
+#         AND insurance_end >= %s
+#     """, (insurance_threshold, today))
+#     insurance_alerts = cursor.fetchall()
+
+#     for alert in insurance_alerts:
+#         subject = f"Insurance Alert for Asset {alert['asset_id']}"
+#         body = f"""
+#         Dear User,
+
+#         Your asset insurance is nearing its renewal date:
+#         Asset ID: {alert['asset_id']}
+#         Insurance End Date: {alert['insurance_end']}
+#         Days Remaining: {(alert['insurance_end'] - today).days}
+
+#         Regards,
+#         Asset Management Team
+#         """
+#         send_email(to_mail, subject, body)
+
+#     # 4. Service Alerts (15 days before)
+#     service_threshold = today + timedelta(days=15)
+#     cursor.execute("""
+#         SELECT asset_id, next_service_date 
+#         FROM service_details 
+#         WHERE next_service_date IS NOT NULL 
+#         AND next_service_date <= %s 
+#         AND next_service_date >= %s
+#     """, (service_threshold, today))
+#     service_alerts = cursor.fetchall()
+
+#     for alert in service_alerts:
+#         subject = f"Service Alert for Asset {alert['asset_id']}"
+#         body = f"""
+#         Dear User,
+
+#         Your asset is due for service:
+#         Asset ID: {alert['asset_id']}
+#         Next Service Date: {alert['next_service_date']}
+#         Days Remaining: {(alert['next_service_date'] - today).days}
+
+#         Regards,
+#         Asset Management Team
+#         """
+#         send_email(to_mail, subject, body)
+
+#     # 5. AMC Recurring Alerts
+#     cursor.execute("""
+#         SELECT asset_id, purchase_date, recurring_alert_for_amc 
+#         FROM it_assets 
+#         WHERE recurring_alert_for_amc IS NOT NULL
+#     """)
+#     amc_assets = cursor.fetchall()
+
+#     for asset in amc_assets:
+#         alerts = eval(asset['recurring_alert_for_amc'])  # Convert string to list
+#         # purchase_date = datetime.strptime(asset['purchase_date'], '%Y-%m-%d').date()
+#         if isinstance(asset['purchase_date'], str):
+#             purchase_date = datetime.strptime(asset['purchase_date'], '%Y-%m-%d').date()
+#         else:
+#             purchase_date = asset['purchase_date']
+        
+#         for event_name, value, unit in alerts:
+#             value = int(value)
+#             if unt1.lower() == 'days':
+#                 interval = timedelta(days=value)
+#             elif unt1.lower() == 'months':
+#                 interval = timedelta(days=value * 30)  # Approximation
+#             elif unt1.lower() == 'years':
+#                 interval = timedelta(days=value * 365)
+
+#             days_since_purchase = (today - purchase_date).days
+#             if days_since_purchase % interval.days == 0 and days_since_purchase > 0:
+#                 subject = f"AMC Alert: {event_name} for {asset['asset_id']}"
+#                 body = f"""
+#                 Dear User,
+
+#                 Recurring AMC alert:
+#                 Asset ID: {asset['asset_id']}
+#                 Event: {event_name}
+#                 Recurrence: Every {value} {unit}
+#                 Purchase Date: {purchase_date}
+
+#                 Regards,
+#                 Asset Management Team
+#                 """
+#                 send_email(to_mail, subject, body)
+
+#     cursor.close()
+#     conn.close()
 
 def check_and_send_alerts(get_db_connection):  # Pass db connection function as parameter
     print('entering function')
@@ -3281,23 +4045,49 @@ def check_and_send_alerts(get_db_connection):  # Pass db connection function as 
         AND warranty_end >= %s
     """, (warranty_threshold, today))
     warranty_alerts = cursor.fetchall()
-    print('warranty_alerts',warranty_alerts)
+    print('warranty_alerts', warranty_alerts)
 
     for alert in warranty_alerts:
         subject = f"Warranty Alert: {alert['product_name']}"
-        body = f"""
-        Dear User,
-
-        Your asset warranty is nearing its end:
-        Asset ID: {alert['asset_id']}
-        Product: {alert['product_name']}
-        Warranty End Date: {alert['warranty_end']}
-        Days Remaining: {(alert['warranty_end'] - today).days}
-
-        Regards,
-        Asset Management Team
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }}
+                .container {{ max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }}
+                .header {{ background-color: #191970; color: #ffffff; padding: 10px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .content {{ padding: 20px; color: #191970; }}
+                table {{ width: 100%; border-collapse: collapse; margin-top: 10px; }}
+                th, td {{ padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }}
+                th {{ background-color: #f0f0f0; color: #191970; }}
+                .footer {{ text-align: center; font-size: 12px; color: #666; margin-top: 20px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h2>Warranty Alert</h2>
+                </div>
+                <div class="content">
+                    <p>Dear User,</p>
+                    <p>Your asset warranty is nearing its end:</p>
+                    <table>
+                        <tr><th>Field</th><th>Value</th></tr>
+                        <tr><td>Asset ID</td><td>{alert['asset_id']}</td></tr>
+                        <tr><td>Product</td><td>{alert['product_name']}</td></tr>
+                        <tr><td>Warranty End Date</td><td>{alert['warranty_end']}</td></tr>
+                        <tr><td>Days Remaining</td><td>{(alert['warranty_end'] - today).days}</td></tr>
+                    </table>
+                </div>
+                <div class="footer">
+                    Regards,<br>Asset Management Team
+                </div>
+            </div>
+        </body>
+        </html>
         """
-        send_email(to_mail, subject, body)  # Update recipient email
+        send_email_with_cc('nivetha@tapmobi.in', subject, html_body, cc_email=None)
 
     # 2. Extended Warranty Alerts (1 month before)
     cursor.execute("""
@@ -3311,75 +4101,157 @@ def check_and_send_alerts(get_db_connection):  # Pass db connection function as 
 
     for alert in ext_warranty_alerts:
         subject = f"Extended Warranty Alert: {alert['product_name']}"
-        body = f"""
-        Dear User,
-
-        Your asset extended warranty is nearing its end:
-        Asset ID: {alert['asset_id']}
-        Product: {alert['product_name']}
-        Extended Warranty End Date: {alert['extended_warranty_end']}
-        Days Remaining: {(alert['extended_warranty_end'] - today).days}
-
-        Regards,
-        Asset Management Team
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }}
+                .container {{ max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }}
+                .header {{ background-color: #191970; color: #ffffff; padding: 10px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .content {{ padding: 20px; color: #191970; }}
+                table {{ width: 100%; border-collapse: collapse; margin-top: 10px; }}
+                th, td {{ padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }}
+                th {{ background-color: #f0f0f0; color: #191970; }}
+                .footer {{ text-align: center; font-size: 12px; color: #666; margin-top: 20px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h2>Extended Warranty Alert</h2>
+                </div>
+                <div class="content">
+                    <p>Dear User,</p>
+                    <p>Your asset extended warranty is nearing its end:</p>
+                    <table>
+                        <tr><th>Field</th><th>Value</th></tr>
+                        <tr><td>Asset ID</td><td>{alert['asset_id']}</td></tr>
+                        <tr><td>Product</td><td>{alert['product_name']}</td></tr>
+                        <tr><td>Extended Warranty End Date</td><td>{alert['extended_warranty_end']}</td></tr>
+                        <tr><td>Days Remaining</td><td>{(alert['extended_warranty_end'] - today).days}</td></tr>
+                    </table>
+                </div>
+                <div class="footer">
+                    Regards,<br>Asset Management Team
+                </div>
+            </div>
+        </body>
+        </html>
         """
-        send_email(to_mail, subject, body)
+        send_email_with_cc('nivetha@tapmobi.in', subject, html_body, cc_email=None)
 
     # 3. Insurance Alerts (1 year before)
     insurance_threshold = today + timedelta(days=365)
     cursor.execute("""
-        SELECT asset_id, insurance_end 
-        FROM insurance_details 
-        WHERE insurance_end IS NOT NULL 
-        AND insurance_end <= %s 
-        AND insurance_end >= %s
+        SELECT id.asset_id, id.insurance_end, t1.product_name
+        FROM insurance_details id
+        JOIN it_assets it ON id.asset_id = t1.asset_id
+        WHERE id.insurance_end IS NOT NULL 
+        AND id.insurance_end <= %s 
+        AND id.insurance_end >= %s
     """, (insurance_threshold, today))
     insurance_alerts = cursor.fetchall()
 
     for alert in insurance_alerts:
         subject = f"Insurance Alert for Asset {alert['asset_id']}"
-        body = f"""
-        Dear User,
-
-        Your asset insurance is nearing its renewal date:
-        Asset ID: {alert['asset_id']}
-        Insurance End Date: {alert['insurance_end']}
-        Days Remaining: {(alert['insurance_end'] - today).days}
-
-        Regards,
-        Asset Management Team
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }}
+                .container {{ max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }}
+                .header {{ background-color: #191970; color: #ffffff; padding: 10px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .content {{ padding: 20px; color: #191970; }}
+                table {{ width: 100%; border-collapse: collapse; margin-top: 10px; }}
+                th, td {{ padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }}
+                th {{ background-color: #f0f0f0; color: #191970; }}
+                .footer {{ text-align: center; font-size: 12px; color: #666; margin-top: 20px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h2>Insurance Alert</h2>
+                </div>
+                <div class="content">
+                    <p>Dear User,</p>
+                    <p>Your asset insurance is nearing its renewal date:</p>
+                    <table>
+                        <tr><th>Field</th><th>Value</th></tr>
+                        <tr><td>Asset ID</td><td>{alert['asset_id']}</td></tr>
+                        <tr><td>Product</td><td>{alert['product_name']}</td></tr>
+                        <tr><td>Insurance End Date</td><td>{alert['insurance_end']}</td></tr>
+                        <tr><td>Days Remaining</td><td>{(alert['insurance_end'] - today).days}</td></tr>
+                    </table>
+                </div>
+                <div class="footer">
+                    Regards,<br>Asset Management Team
+                </div>
+            </div>
+        </body>
+        </html>
         """
-        send_email(to_mail, subject, body)
+        send_email_with_cc('nivetha@tapmobi.in', subject, html_body, cc_email=None)
 
     # 4. Service Alerts (15 days before)
     service_threshold = today + timedelta(days=15)
     cursor.execute("""
-        SELECT asset_id, next_service_date 
-        FROM service_details 
-        WHERE next_service_date IS NOT NULL 
-        AND next_service_date <= %s 
-        AND next_service_date >= %s
+        SELECT sd.asset_id, sd.next_service_date, t1.product_name
+        FROM service_details sd
+        JOIN it_assets it ON sd.asset_id = t1.asset_id
+        WHERE sd.next_service_date IS NOT NULL 
+        AND sd.next_service_date <= %s 
+        AND sd.next_service_date >= %s
     """, (service_threshold, today))
     service_alerts = cursor.fetchall()
 
     for alert in service_alerts:
         subject = f"Service Alert for Asset {alert['asset_id']}"
-        body = f"""
-        Dear User,
-
-        Your asset is due for service:
-        Asset ID: {alert['asset_id']}
-        Next Service Date: {alert['next_service_date']}
-        Days Remaining: {(alert['next_service_date'] - today).days}
-
-        Regards,
-        Asset Management Team
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }}
+                .container {{ max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }}
+                .header {{ background-color: #191970; color: #ffffff; padding: 10px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .content {{ padding: 20px; color: #191970; }}
+                table {{ width: 100%; border-collapse: collapse; margin-top: 10px; }}
+                th, td {{ padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }}
+                th {{ background-color: #f0f0f0; color: #191970; }}
+                .footer {{ text-align: center; font-size: 12px; color: #666; margin-top: 20px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h2>Service Alert</h2>
+                </div>
+                <div class="content">
+                    <p>Dear User,</p>
+                    <p>Your asset is due for service:</p>
+                    <table>
+                        <tr><th>Field</th><th>Value</th></tr>
+                        <tr><td>Asset ID</td><td>{alert['asset_id']}</td></tr>
+                        <tr><td>Product</td><td>{alert['product_name']}</td></tr>
+                        <tr><td>Next Service Date</td><td>{alert['next_service_date']}</td></tr>
+                        <tr><td>Days Remaining</td><td>{(alert['next_service_date'] - today).days}</td></tr>
+                    </table>
+                </div>
+                <div class="footer">
+                    Regards,<br>Asset Management Team
+                </div>
+            </div>
+        </body>
+        </html>
         """
-        send_email(to_mail, subject, body)
+        send_email_with_cc('nivetha@tapmobi.in', subject, html_body, cc_email=None)
 
     # 5. AMC Recurring Alerts
     cursor.execute("""
-        SELECT asset_id, purchase_date, recurring_alert_for_amc 
+        SELECT asset_id, purchase_date, recurring_alert_for_amc, product_name 
         FROM it_assets 
         WHERE recurring_alert_for_amc IS NOT NULL
     """)
@@ -3387,7 +4259,6 @@ def check_and_send_alerts(get_db_connection):  # Pass db connection function as 
 
     for asset in amc_assets:
         alerts = eval(asset['recurring_alert_for_amc'])  # Convert string to list
-        # purchase_date = datetime.strptime(asset['purchase_date'], '%Y-%m-%d').date()
         if isinstance(asset['purchase_date'], str):
             purchase_date = datetime.strptime(asset['purchase_date'], '%Y-%m-%d').date()
         else:
@@ -3395,34 +4266,59 @@ def check_and_send_alerts(get_db_connection):  # Pass db connection function as 
         
         for event_name, value, unit in alerts:
             value = int(value)
-            if unit.lower() == 'days':
+            if unt1.lower() == 'days':
                 interval = timedelta(days=value)
-            elif unit.lower() == 'months':
+            elif unt1.lower() == 'months':
                 interval = timedelta(days=value * 30)  # Approximation
-            elif unit.lower() == 'years':
+            elif unt1.lower() == 'years':
                 interval = timedelta(days=value * 365)
 
             days_since_purchase = (today - purchase_date).days
             if days_since_purchase % interval.days == 0 and days_since_purchase > 0:
                 subject = f"AMC Alert: {event_name} for {asset['asset_id']}"
-                body = f"""
-                Dear User,
-
-                Recurring AMC alert:
-                Asset ID: {asset['asset_id']}
-                Event: {event_name}
-                Recurrence: Every {value} {unit}
-                Purchase Date: {purchase_date}
-
-                Regards,
-                Asset Management Team
+                html_body = f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body {{ font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }}
+                        .container {{ max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }}
+                        .header {{ background-color: #191970; color: #ffffff; padding: 10px; text-align: center; border-radius: 8px 8px 0 0; }}
+                        .content {{ padding: 20px; color: #191970; }}
+                        table {{ width: 100%; border-collapse: collapse; margin-top: 10px; }}
+                        th, td {{ padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }}
+                        th {{ background-color: #f0f0f0; color: #191970; }}
+                        .footer {{ text-align: center; font-size: 12px; color: #666; margin-top: 20px; }}
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h2>AMC Alert</h2>
+                        </div>
+                        <div class="content">
+                            <p>Dear User,</p>
+                            <p>Recurring AMC alert:</p>
+                            <table>
+                                <tr><th>Field</th><th>Value</th></tr>
+                                <tr><td>Asset ID</td><td>{asset['asset_id']}</td></tr>
+                                <tr><td>Product</td><td>{asset['product_name']}</td></tr>
+                                <tr><td>Event</td><td>{event_name}</td></tr>
+                                <tr><td>Recurrence</td><td>Every {value} {unit}</td></tr>
+                                <tr><td>Purchase Date</td><td>{purchase_date}</td></tr>
+                            </table>
+                        </div>
+                        <div class="footer">
+                            Regards,<br>Asset Management Team
+                        </div>
+                    </div>
+                </body>
+                </html>
                 """
-                send_email(to_mail, subject, body)
+                send_email_with_cc('nivetha@tapmobi.in', subject, html_body, cc_email=None)
 
     cursor.close()
     conn.close()
-
-
 
 scheduler = BackgroundScheduler()
 start_now = datetime.now()
@@ -3492,6 +4388,215 @@ def upcoming_alerts():
                          alert_type=alert_type,
                          date_range=date_range,
                          today=today)
+
+
+@app.route('/it_dashboard', methods=['POST', 'GET'])
+def it_dashboard():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+
+    # Main query for assets
+    query = """
+        SELECT ia.asset_id, ia.product_type, au.effective_date, au.end_date AS latest_end_date, au.confirmation_status
+        FROM t1.it_assets ia
+        LEFT JOIN t1.assets_users au 
+        ON ia.asset_id = au.asset_id
+        AND au.effective_date = (
+            SELECT MAX(effective_date)
+            FROM t1.assets_users
+            WHERE asset_id = ia.asset_id
+        );
+    """
+    cursor.execute(query)
+    rows = cursor.fetchall()
+
+    # Initialize Counters
+    total_assets = 0
+    assigned_assets = 0
+    un_assigned_assets = 0
+    unauthorized_assets = 0
+
+    # Process Rows
+    for row in rows:
+        total_assets += 1
+        effective_date = row[2]  # effective_date
+        end_date = row[3]       # end_date
+        confirmation_status = int(row[4]) if row[4] is not None else None
+
+        if effective_date is None and end_date is None and confirmation_status == 0:
+            un_assigned_assets += 1
+        elif effective_date is None and end_date is None and confirmation_status == 1:
+            un_assigned_assets += 1
+        elif effective_date and end_date and confirmation_status == 1:
+            un_assigned_assets += 1
+        elif effective_date and end_date is None and confirmation_status is None:
+            unauthorized_assets += 1
+        elif effective_date and end_date is None and confirmation_status == 0:
+            un_assigned_assets += 1
+        elif effective_date and end_date is None and confirmation_status == 1:
+            assigned_assets += 1
+        elif effective_date is None and end_date is None and confirmation_status is None:
+            un_assigned_assets += 1
+
+    # Fetch raised tickets
+    cursor.execute("""
+        SELECT rt.asset_id, rt.ticket_status, ia.asset_id
+        FROM t1.raised_tickets rt
+        JOIN t1.it_assets ia ON ia.asset_id = rt.asset_id;
+    """)
+    tickets_rows = cursor.fetchall()
+
+    total_raised_tickets = 0
+    completed_tickets = 0
+    uncompleted_tickets = 0
+    completed_assigned = 0
+    completed_unassigned = 0
+    completed_unauthorized = 0
+
+    for row in tickets_rows:
+        total_raised_tickets += 1
+        if row[1] == "completed":
+            completed_tickets += 1
+            # Determine asset status for completed tickets
+            asset_id = row[0]
+            cursor.execute("""
+                SELECT au.effective_date, au.end_date, au.confirmation_status
+                FROM t1.assets_users au
+                WHERE au.asset_id = %s
+                AND au.effective_date = (
+                    SELECT MAX(effective_date)
+                    FROM t1.assets_users
+                    WHERE asset_id = %s
+                );
+            """, (asset_id, asset_id))
+            asset_row = cursor.fetchone()
+            if asset_row:
+                effective_date = asset_row[0]
+                end_date = asset_row[1]
+                confirmation_status = int(asset_row[2]) if asset_row[2] is not None else None
+
+                if effective_date and end_date is None and confirmation_status == 1:
+                    completed_assigned += 1
+                elif effective_date and end_date is None and confirmation_status is None:
+                    completed_unauthorized += 1
+                else:
+                    completed_unassigned += 1
+
+    uncompleted_tickets = total_raised_tickets - completed_tickets
+
+    # Dashboard Data
+    dashboard_data = {
+        "total_assets": total_assets,
+        "assigned_assets": assigned_assets,
+        "unassigned_assets": un_assigned_assets,
+        "unauthorized_assets": unauthorized_assets,
+        "total_raised_tickets": total_raised_tickets,
+        "completed_tickets": completed_tickets,
+        "uncompleted_tickets": uncompleted_tickets,
+        "completed_assigned": completed_assigned,
+        "completed_unassigned": completed_unassigned,
+        "completed_unauthorized": completed_unauthorized
+    }
+
+    # Chart Data Query
+    cursor.execute("""
+        WITH latest_assets AS (
+            SELECT 
+                ia.asset_id,
+                ia.product_type,
+                au.effective_date,
+                au.end_date,
+                au.confirmation_status,
+                ROW_NUMBER() OVER (PARTITION BY ia.asset_id ORDER BY au.effective_date DESC) AS row_num
+            FROM t1.it_assets ia
+            LEFT JOIN t1.assets_users au 
+            ON ia.asset_id = au.asset_id
+        )
+        SELECT 
+            la.product_type,
+            COUNT(*) AS total_product_type,
+            SUM(CASE 
+                WHEN la.effective_date IS NULL AND la.end_date IS NULL AND la.confirmation_status = 0 THEN 1
+                WHEN la.effective_date IS NULL AND la.end_date IS NULL AND la.confirmation_status = 1 THEN 1
+                WHEN la.effective_date IS NOT NULL AND la.end_date IS NOT NULL AND la.confirmation_status = 1 THEN 1
+                WHEN la.effective_date IS NOT NULL AND la.end_date IS NULL AND la.confirmation_status = 0 THEN 1
+                WHEN la.effective_date IS NULL AND la.end_date IS NULL AND la.confirmation_status IS NULL THEN 1
+                ELSE 0
+            END) AS unassigned,
+            SUM(CASE 
+                WHEN la.effective_date IS NOT NULL AND la.end_date IS NULL AND la.confirmation_status = 1 THEN 1
+                ELSE 0
+            END) AS assigned,
+            SUM(CASE 
+                WHEN la.effective_date IS NOT NULL AND la.end_date IS NULL AND la.confirmation_status IS NULL THEN 1
+                ELSE 0
+            END) AS unauthorized
+        FROM latest_assets la
+        WHERE la.row_num = 1
+        GROUP BY la.product_type;
+    """)
+    chart_data = cursor.fetchall()
+
+    chart_data_dict = [
+        {"product_type": row[0], "total_product_type": row[1], "unassigned": row[2], "assigned": row[3], "unauthorized": row[4]}
+        for row in chart_data
+    ]
+
+    cursor.close()
+    conn.close()
+
+    return render_template('dashboard.html', 
+                            dashboard_data=dashboard_data, 
+                            chart_data=chart_data_dict)
+
+
+@app.route('/get_unassigned_products')
+def get_unassigned_products():
+    product_type = request.args.get('product_type', 'All')
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        query = """
+            SELECT ia.asset_id, ia.product_type, ia.product_name, ia.serial_no, ia.make, ia.model, ia.remarks
+            FROM t1.it_assets ia
+            LEFT JOIN t1.assets_users au 
+            ON ia.asset_id = au.asset_id
+            AND au.effective_date = (
+                SELECT MAX(effective_date)
+                FROM t1.assets_users
+                WHERE asset_id = ia.asset_id
+            )
+            WHERE (au.effective_date IS NULL AND au.end_date IS NULL AND (au.confirmation_status = 0 OR au.confirmation_status = 1 OR au.confirmation_status IS NULL))
+               OR (au.effective_date IS NOT NULL AND au.end_date IS NOT NULL AND au.confirmation_status = 1)
+               OR (au.effective_date IS NOT NULL AND au.end_date IS NULL AND au.confirmation_status = 0)
+        """
+        if product_type != 'All':
+            query += " AND ia.product_type = %s"
+            cursor.execute(query, (product_type,))
+        else:
+            cursor.execute(query)
+
+        rows = cursor.fetchall()
+        unassigned_products = [
+            {
+                "asset_id": row[0],
+                "product_type": row[1],
+                "product_name": row[2],
+                "serial_no": row[3],
+                "make": row[4],
+                "model": row[5],
+                "remarks": row[6]
+            } for row in rows
+        ]
+        return jsonify(unassigned_products)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
 
 
 if __name__ == '__main__':

@@ -21,6 +21,42 @@
             align-items: center;
             border-radius: 8px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            position: relative; /* Ensure header is a positioning context */
+            z-index: 1000; /* Higher than modal */
+        }
+
+        .menu {
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        .menu-dropdown {
+            display: none;
+            position: absolute;
+            right: 20px;
+            top: 60px; /* Adjust to position below header */
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            z-index: 1001; /* Higher than header and modal */
+            min-width: 150px;
+        }
+
+        .menu-dropdown button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: left;
+            color: black;
+        }
+
+        .menu-dropdown button:hover {
+            background: #f0f0f0;
         }
 
         .container {
@@ -140,151 +176,222 @@
             background-color: #f0f1f2;
         }
 
-        .action-menu .view-btn {
-            color: #007bff;
-        }
+        .action-menu .view-btn { color: #007bff; }
+        .action-menu .edit-btn { color: #28a745; }
+        .action-menu .delete-btn { color: #dc3545; }
 
-        .action-menu .edit-btn {
-            color: #28a745;
-        }
 
-        .action-menu .delete-btn {
-            color: #dc3545;
-        }
 
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
+.modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
 
-		.modal-content {
-			background-color: white;
-			margin: 2% auto;          /* Reduced margin to give more space */
-			padding: 25px;
-			border: none;
-			width: 90%;              /* Increased width to 90% of viewport */
-			max-width: 1200px;       /* Increased max-width for larger screens */
-			border-radius: 8px;
-			box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-			position: relative;
-			max-height: 90vh;        /* Increased height to 90% of viewport */
-			overflow-y: auto;
-		}
+    .modal-content {
+        background-color: white;
+        margin: 5% auto;
+        padding: 25px;
+        border: none;
+        width: 90%;
+        max-width: 1200px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        max-height: 85vh;
+        overflow-y: auto;
+    }
 
-        .close {
-            color: #ff4444;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            transition: color 0.3s;
-        }
+    .close {
+        color: #ff4444;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        transition: color 0.3s;
+    }
 
-        .close:hover {
-            color: #cc0000;
-        }
+    .close:hover {
+        color: #cc0000;
+    }
 
-        .modal-header {
-            margin-bottom: 20px;
-            border-bottom: 2px solid #2f276f;
-            padding-bottom: 10px;
-        }
+    .modal-header {
+        margin-bottom: 20px;
+        border-bottom: 2px solid #2f276f;
+        padding-bottom: 10px;
+    }
 
-        .modal-header h2 {
+    .modal-header h2 {
+        margin: 0;
+        color: #2f276f;
+        font-size: 24px;
+    }
+
+    .two-column-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        padding: 10px 0;
+    }
+
+    .detail-item {
+        margin: 8px 0;
+        padding: 8px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+    }
+
+    .detail-item:hover {
+        background-color: #f0f1f2;
+    }
+
+    .detail-item strong {
+        color: #2f276f;
+        display: block;
+        margin-bottom: 4px;
+        text-transform: capitalize;
+    }
+
+    .detail-item span {
+        color: #333;
+        word-break: break-word;
+    }
+
+    .print-btn {
+        background-color: #2f276f;
+        color: white;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 20px;
+        float: right;
+        transition: background-color 0.3s;
+    }
+
+    .print-btn:hover {
+        background-color: #1f1a4f;
+    }
+
+    .modal-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+    }
+
+    .modal-table th, .modal-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+
+    .modal-table th {
+        background-color: #2f276f;
+        color: white;
+    }
+
+    /* Print-specific styles */
+    @media print {
+        body {
             margin: 0;
-            color: #2f276f;
-            font-size: 24px;
+            padding: 0;
         }
 
-        .two-column-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            padding: 10px 0;
+        /* Hide everything except the print container */
+        body > *:not(#print-container) {
+            display: none;
         }
 
-        .detail-item {
-            margin: 8px 0;
-            padding: 8px;
-            background-color: #f8f9fa;
-            border-radius: 4px;
-            transition: background-color 0.2s;
-        }
-
-        .detail-item:hover {
-            background-color: #f0f1f2;
-        }
-
-        .detail-item strong {
-            color: #2f276f;
+        #print-container {
             display: block;
-            margin-bottom: 4px;
-            text-transform: capitalize;
-        }
-
-        .detail-item span {
-            color: #333;
-            word-break: break-word;
-        }
-
-        .print-btn {
-            background-color: #2f276f;
-            color: white;
-            padding: 8px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 20px;
-            float: right;
-            transition: background-color 0.3s;
-        }
-
-        .print-btn:hover {
-            background-color: #1f1a4f;
-        }
-
-        .modal-table {
+            position: static;
             width: 100%;
-            border-collapse: collapse;
-            margin: 10px 0;
+            height: auto;
+            margin: 0;
+            padding: 10px;
+            background-color: white;
+            overflow: visible;
         }
 
-        .modal-table th, .modal-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
+        #print-container .modal-content {
+            width: 100%;
+            max-width: none;
+            max-height: none;
+            height: auto;
+            padding: 10px;
+            margin: 0;
+            border-radius: 0;
+            box-shadow: none;
+            overflow: visible;
+            position: static;
         }
 
-        .modal-table th {
-            background-color: #2f276f;
-            color: white;
+        #print-container .close, #print-container .print-btn {
+            display: none;
         }
+
+        #print-container .two-column-grid {
+            display: block;
+        }
+
+        #print-container .modal-table {
+            width: 100%;
+            white-space: normal;
+            page-break-inside: auto;
+        }
+
+        #print-container .modal-table th, #print-container .modal-table td {
+            white-space: normal;
+            word-wrap: break-word;
+            overflow: visible;
+            font-size: 10pt;
+        }
+
+        #print-container .modal-table thead {
+            display: table-header-group;
+        }
+
+        #print-container .modal-table tbody {
+            display: table-row-group;
+            page-break-inside: auto;
+        }
+
+        #print-container .modal-table tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+
+        #print-container #modal-body,
+        #print-container #related-data {
+            height: auto;
+            overflow: visible;
+        }
+    }
     </style>
 
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/view_assets_popup.css') }}">
-
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
-    <script src="{{ url_for('static', filename='js/view_assets_details_print.js') }}"></script>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+	 <link rel="stylesheet" href="{{ url_for('static', filename='css/view_assets_popup.css') }}">
+	 
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
     <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
 </head>
 <body>
-    {% include 'header.html' %}  
-    <div class="content">
+    {% include 'header.html' %}
+	    <div class="content">
         {% block content %}{% endblock %}
     </div>
 
@@ -369,6 +476,18 @@
             <div id="modal-body"></div>
         </div>
     </div>
+	
+	<div id="assetModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">×</span>
+        <div class="modal-header">
+            <h2>Asset Details</h2>
+        </div>
+        <div id="modal-body"></div>
+    </div>
+</div>
+
+<div id="print-container" style="display: none;"></div>
 
 <script>
     $(document).ready(function () {
@@ -480,7 +599,7 @@
 }
 
 
-    async function viewDetails(assetJson) {
+  async function viewDetails(assetJson) {
         console.log("viewDetails called with assetJson:", assetJson);
         let modalBody = document.getElementById("modal-body");
         if (!modalBody) {
@@ -569,8 +688,6 @@
 
         try {
             const response = await fetch(url);
-            console.log("Fetch response status:", response.status, response.statusText);
-            
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
@@ -578,72 +695,48 @@
             const relatedData = await response.json();
             console.log("Related data received:", relatedData);
 
-            let serviceRows = '';
-            if (relatedData.service_details && relatedData.service_details.length > 0) {
-                relatedData.service_details.forEach(service => {
-                    serviceRows += `
-                        <tr>
-                            <td>${service.service_id || 'N/A'}</td>
-                            <td>${service.warranty_type || 'N/A'}</td>
-                            <td>${service.ticket_id || 'N/A'}</td>
-                            <td>${service.work_done || 'N/A'}</td>
-                            <td>${formatDate( service.next_service_date)}</td>
-                            <td>${service.service_charge || 'N/A'}</td>
-                        </tr>
-                    `;
-                });
-            } else {
-                serviceRows = '<tr><td colspan="6">No service details available</td></tr>';
-            }
+            let serviceRows = relatedData.service_details?.length > 0 ?
+                relatedData.service_details.map(service => `
+                    <tr>
+                        <td>${service.service_id || 'N/A'}</td>
+                        <td>${service.warranty_type || 'N/A'}</td>
+                        <td>${service.ticket_id || 'N/A'}</td>
+                        <td>${service.work_done || 'N/A'}</td>
+                        <td>${formatDate(service.next_service_date)}</td>
+                        <td>${service.service_charge || 'N/A'}</td>
+                    </tr>
+                `).join('') : '<tr><td colspan="6">No service details available</td></tr>';
 
-            let ticketRows = '';
-            if (relatedData.raised_tickets && relatedData.raised_tickets.length > 0) {
-                relatedData.raised_tickets.forEach(ticket => {
-                    ticketRows += `
-                        <tr>
-                            <td>${ticket.ticket_id || 'N/A'}</td>
-                            <td>${ticket.problem_description || 'N/A'}</td>
-                            <td>${ticket.ticket_status || 'N/A'}</td>
-                        </tr>
-                    `;
-                });
-            } else {
-                ticketRows = '<tr><td colspan="3">No raised tickets available</td></tr>';
-            }
+            let ticketRows = relatedData.raised_tickets?.length > 0 ?
+                relatedData.raised_tickets.map(ticket => `
+                    <tr>
+                        <td>${ticket.ticket_id || 'N/A'}</td>
+                        <td>${ticket.problem_description || 'N/A'}</td>
+                        <td>${ticket.ticket_status || 'N/A'}</td>
+                    </tr>
+                `).join('') : '<tr><td colspan="3">No raised tickets available</td></tr>';
 
-            let warrantyRows = '';
-            if (relatedData.extended_warranty_info && relatedData.extended_warranty_info.length > 0) {
-                relatedData.extended_warranty_info.forEach(warranty => {
-                    warrantyRows += `
-                        <tr>
-                            <td>${warranty.warranty_asset_id || 'N/A'}</td>
-                            <td>${formatDate( warranty.warranty_purchase_date)}</td>
-                            <td>${warranty.extended_warranty || 'N/A'}</td>
-							<td>${formatDate(warranty.warranty_end_date)}</td>
-                            <td>${warranty.value || 'N/A'}</td>
-                        </tr>
-                    `;
-                });
-            } else {
-                warrantyRows = '<tr><td colspan="4">No extended warranty info available</td></tr>';
-            }
+            let warrantyRows = relatedData.extended_warranty_info?.length > 0 ?
+                relatedData.extended_warranty_info.map(warranty => `
+                    <tr>
+                        <td>${warranty.warranty_asset_id || 'N/A'}</td>
+                        <td>${formatDate(warranty.warranty_purchase_date)}</td>
+                        <td>${warranty.extended_warranty || 'N/A'}</td>
+                        <td>${formatDate(warranty.warranty_end_date)}</td>
+                        <td>${warranty.value || 'N/A'}</td>
+                    </tr>
+                `).join('') : '<tr><td colspan="5">No extended warranty info available</td></tr>';
 
-            let insuranceRows = '';
-            if (relatedData.insurance_details && relatedData.insurance_details.length > 0) {
-                relatedData.insurance_details.forEach(insurance => {
-                    insuranceRows += `
-                        <tr>
-                            <td>${insurance.policy_number || 'N/A'}</td>
-                            <td>${insurance.insurance_value || 'N/A'}</td>
-                            <td>${formatDate(insurance.insurance_start)}</td>
-                            <td>${insurance.insurance_period || 'N/A'}</td>
-                            <td>${formatDate( insurance.insurance_end)}</td>
-                        </tr>
-                    `;
-                });
-            } else {
-                insuranceRows = '<tr><td colspan="5">No insurance details available</td></tr>';
-            }
+            let insuranceRows = relatedData.insurance_details?.length > 0 ?
+                relatedData.insurance_details.map(insurance => `
+                    <tr>
+                        <td>${insurance.policy_number || 'N/A'}</td>
+                        <td>${insurance.insurance_value || 'N/A'}</td>
+                        <td>${formatDate(insurance.insurance_start)}</td>
+                        <td>${insurance.insurance_period || 'N/A'}</td>
+                        <td>${formatDate(insurance.insurance_end)}</td>
+                    </tr>
+                `).join('') : '<tr><td colspan="5">No insurance details available</td></tr>';
 
             document.getElementById('related-data').innerHTML = `
                 <h3>Service Details</h3>
@@ -678,7 +771,7 @@
                             <th>Warranty Asset ID</th>
                             <th>Warranty Purchase Date</th>
                             <th>Extended Warranty</th>
-							<th>Warranty End Date</th>
+                            <th>Warranty End Date</th>
                             <th>Value</th>
                         </tr>
                     </thead>
@@ -709,7 +802,25 @@
     }
 
     function printModal() {
+        const modal = document.getElementById("assetModal");
+        const modalContent = modal.querySelector(".modal-content");
+        const printContainer = document.getElementById("print-container");
+
+        // Clone the modal content into the print container
+        const clonedContent = modalContent.cloneNode(true);
+        printContainer.innerHTML = '';
+        printContainer.appendChild(clonedContent);
+
+        // Ensure the print container is visible for printing
+        printContainer.style.display = "block";
+        modal.style.display = "none"; // Hide the original modal
+
+        // Trigger print
         window.print();
+
+        // Clean up: hide the print container and restore the modal
+        printContainer.style.display = "none";
+        modal.style.display = "block";
     }
 
     window.onclick = function(event) {
