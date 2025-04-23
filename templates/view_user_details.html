@@ -137,17 +137,103 @@
     cursor: not-allowed;
 }
 
+.header {
+    background-color: #2f276f;
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    position: relative; /* Ensure header is a positioning context */
+    z-index: 998; /* Lower than dropdown but higher than other content */
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.menu {
+    cursor: pointer;
+    font-size: 24px;
+    position: relative; /* Ensure menu icon is a reference point */
+}
+
+.menu-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%; /* Position it directly below the menu icon */
+    right: 20px; /* Align with the right edge of the header */
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    z-index: 1000; /* Ensure it appears above the header */
+    min-width: 150px; /* Optional: Ensure it has a minimum width */
+}
+
+.menu-dropdown button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: left;
+    color: black;
+}
+
+.menu-dropdown button:hover {
+    background: #f0f0f0;
+}
+
 		
     </style>
+	
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
 </head>
 <body>
-<!-- Include the header HTML -->
-    {% include 'header.html' %}
-    
-    <div class="content">
-        {% block content %}{% endblock %}
-    </div>
+<div class="header">
+    <h1>IT Asset Tracker</h1>
+    <div class="menu">☰</div>
+    <div class="menu-dropdown" id="menuDropdown">
 
+		
+		{% if header_permissions.view_raised_tickets %}
+        <button onclick="location.href='{{ url_for('view_raised_tickets') }}';">Raised Tickets</button>
+				{% endif %}
+		{% if header_permissions.view_assets %}
+        <button onclick="location.href='{{ url_for('view_assets') }}';">IT Assets</button>
+				{% endif %}
+				{% if header_permissions.view_service %}
+        <button onclick="location.href='{{ url_for('view_service') }}';">Services</button>
+				{% endif %}
+				{% if header_permissions.view_insurance %}
+        <button onclick="location.href='{{ url_for('view_insurance') }}';">Insurance</button>
+				{% endif %}
+				{% if header_permissions.view_extended_warranty %}
+        <button onclick="location.href='{{ url_for('view_extended_warranty') }}';">EXW</button>
+				{% endif %}
+				{% if header_permissions.check_asset_status %}
+        <button onclick="location.href='{{ url_for('check_asset_status') }}';">Audit</button>
+	
+				{% endif %}
+				{% if header_permissions.all_assets %}
+        <button onclick="location.href='{{ url_for('all_assets') }}';">M Services</button>
+				{% endif %}
+				{% if header_permissions.upcoming_alerts %}
+        <button onclick="location.href='{{ url_for('upcoming_alerts') }}';">Alerts</button>
+				{% endif %}
+				
+		{% if header_permissions.logout %}
+        <button onclick="location.href='{{ url_for('logout') }}';">Logout</button>
+				{% endif %}
+    </div>
+</div>
 
     <div class="container">
         <div class="ticket-actions">
@@ -158,8 +244,7 @@
 				onclick="if(this.classList.contains('disabled')) return false; else window.location.href='{{ url_for('create_user_asset', asset_id=asset_id) }}';">
 				Create New User
 			</button>
-
-			
+	
         </div>
         <table>
             <thead>
@@ -169,6 +254,7 @@
                     <th>Email</th>
                     <th>Effective Date</th>
                     <th>End Date</th>
+					<th>Acceptance Status</th>
                     <th>Remarks</th>
                     <th>Actions</th>
                 </tr>
@@ -181,17 +267,26 @@
                     <td>{{ assignment['email'] }}</td>
                     <td>{{ assignment['effective_date'] }}</td>
                     <td>{{ assignment['end_date'] or '' }}</td>
+					<td>{{ assignment['acceptance_status'] or 'unauthorized' }}</td>
                     <td>{{ assignment['remarks'] or '' }}</td>
                     <td class="actions">
+					 {% if permissions.view %}
                         <a href="{{ url_for('view_user_details', asset_id=asset_id, assignment_code=assignment['assignment_code']) }}" class="actions-btn view-btn">View Details</a>
+						 {% endif %}
+						
+					{% if permissions.edit %}
                         <a href="{{ url_for('edit_user_asset', assignment_code=assignment['assignment_code']) }}" 
                            class="actions-btn edit-btn {% if assignment['assignment_code'] != latest_assignment_code %}disabled{% endif %}"
                            {% if assignment['assignment_code'] != latest_assignment_code %}onclick="return false;"{% endif %}>
                             Edit
                         </a>
+						 {% endif %}
+						
+					{% if permissions.delete %}
                         <form action="{{ url_for('delete_user_asset', assignment_code=assignment['assignment_code']) }}" method="post" style="display:inline;">
                             <button type="submit" class="actions-btn delete-btn" onclick="return confirm('Are you sure you want to delete this assignment?');">Delete</button>
                         </form>
+					 {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -226,4 +321,26 @@
     </div>
     {% endif %}
 </body>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const menuButton = document.querySelector(".menu");
+    const dropdown = document.getElementById("menuDropdown");
+
+    if (menuButton && dropdown) {
+        menuButton.addEventListener("click", function () {
+            dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+        });
+
+        // Close dropdown if clicked outside
+        document.addEventListener("click", function (event) {
+            if (!dropdown.contains(event.target) && !menuButton.contains(event.target)) {
+                dropdown.style.display = "none";
+            }
+        });
+    } else {
+        console.error("Menu button or dropdown not found!");
+    }
+});
+</script>
 </html>

@@ -54,8 +54,17 @@
             }
         }
     </script>
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
 </head>
 <body>
+
+    {% include 'header.html' %}
+    
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+
     <div class="header">
         <h1>Services for Ticket {{ ticket_id }}</h1>
         <div>

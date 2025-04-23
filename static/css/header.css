@@ -1,24 +1,19 @@
-/* static/style.css */
-
 .header {
-	background-color: #2f276f;
-	color: white;
-	padding: 20px;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	border-radius: 8px;
-	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    background-color: #2f276f;
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-
-/* Menu Button */
 .menu {
     cursor: pointer;
     font-size: 24px;
 }
 
-/* Dropdown Menu */
 .menu-dropdown {
     display: none;
     position: absolute;

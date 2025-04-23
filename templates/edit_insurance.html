@@ -72,6 +72,29 @@
             background-color: #f8d7da;
             color: #721c24;
         }
+		
+
+    .remove-btn {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-left: 10px;
+    }
+    .remove-btn:hover {
+        background-color: #c82333;
+    }
+    ul {
+        list-style-type: none;
+        padding-left: 0;
+    }
+    li {
+        margin-bottom: 5px;
+    }
+
+		
     </style>
 	
 		
@@ -142,16 +165,22 @@
                 <input type="date" id="insurance_end" name="insurance_end" value="{{ insurance.insurance_end }}" readonly>
             </div>
 
-            <div class="form-group">
-                <label for="insurance_bill">Upload Additional Insurance Bills:</label>
-                <input type="file" id="insurance_bill" name="insurance_bill" multiple accept=".png,.jpg,.jpeg,.pdf">
-                {% if insurance.insurance_bill_path %}
-                    <p><strong>Existing Bills:</strong></p>
-                    {% for path in insurance.insurance_bill_path.split(',') %}
-                        <a href="{{ url_for('static', filename='uploads/' + path) }}" target="_blank">{{ path.split('/')[-1] }}</a><br>
-                    {% endfor %}
-                {% endif %}
-            </div>
+<div class="form-group">
+    <label for="insurance_bill">Upload Additional Insurance Bills:</label>
+    <input type="file" id="insurance_bill" name="insurance_bill" multiple accept=".png,.jpg,.jpeg,.pdf">
+    {% if insurance.insurance_bill_path %}
+        <p><strong>Existing Bills:</strong></p>
+        <ul id="bill-list">
+            {% for path in insurance.insurance_bill_path.split(',') %}
+                <li data-full-path="{{ path }}">
+                    <a href="{{ url_for('static', filename='uploads/' + path) }}" target="_blank">{{ path.split('/')[-1] }}</a>
+                    <button type="button" class="remove-btn" onclick="removeFile(this)">Remove</button>
+                </li>
+            {% endfor %}
+        </ul>
+        <input type="hidden" name="removed_bills" id="removed-bills" value="">
+    {% endif %}
+</div>
 
             <div class="form-group">
                 <label for="remarks">Remarks:</label>
@@ -220,5 +249,26 @@
         monthsInput.addEventListener('input', calculateEndDate);
         daysInput.addEventListener('input', calculateEndDate);
     </script>
+	<script>
+function removeFile(button) {
+            const li = button.parentElement;
+            const fullPath = li.getAttribute('data-full-path');
+            const fileName = fullPath.split('/').pop(); // Extract the file name for the confirmation message
+
+            // Ask for confirmation
+            if (confirm(`Are you sure you want to remove "${fileName}"?`)) {
+                // If user clicks "OK", proceed with removal
+                li.remove();
+
+                const hiddenInput = document.getElementById('removed-bills');
+                let removedFiles = hiddenInput.value ? hiddenInput.value.split(',') : [];
+                if (!removedFiles.includes(fullPath)) {
+                    removedFiles.push(fullPath);
+                    hiddenInput.value = removedFiles.join(',');
+                }
+            }
+            // If user clicks "Cancel", do nothing (function ends here)
+        }
+</script>
 </body>
 </html>

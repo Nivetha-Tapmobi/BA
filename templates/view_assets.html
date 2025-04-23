@@ -5,13 +5,165 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IT Asset Tracker</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        .form-container {
+            width: 95%; /* Match the header's width */
+            max-width: none; /* Remove the max-width constraint */
+            margin: 10px auto; /* Reduced top margin */
+            padding: 10px 20px; /* Reduced top/bottom padding */
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
             background-color: #f8f9fa;
-            margin: 0;
-            padding: 0;
         }
-
+        .asset-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0; /* Reduced top margin */
+            background-color: white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        .asset-table th, .asset-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+            font-size: 18px;
+            vertical-align: middle;
+        }
+        .asset-table th {
+            background-color: #2f276f;
+            color: white;
+            font-size: 15px;
+        }
+        .barcode-container img {
+            display: block;
+            margin: auto;
+            width: 80px;
+            height: 80px;
+        }
+        .download-link {
+            display: block;
+            color: #2f276f;
+            font-size: 13px;
+            text-decoration: underline;
+            margin-top: 5px;
+            text-align: center;
+        }
+        .download-link:hover {
+            color: #3f357f;
+        }
+        .status-container {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            font-size: 13px;
+            line-height: 1.3;
+        }
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .action-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .action-btn {
+            padding: 8px 12px; /* Consistent padding */
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+            font-size: 14px;
+            line-height: 1;
+            box-sizing: border-box;
+            min-width: 60px;
+            text-align: center;
+            background-color: #2f276f; /* Match the view-btn color */
+        }
+        .action-btn:hover {
+            background-color: #3f357f; /* Slightly lighter shade on hover */
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 140px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 4px;
+            right: 0;
+        }
+        .dropdown-content a, .dropdown-content button {
+            color: #333;
+            padding: 8px 14px;
+            text-decoration: none;
+            display: block;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .dropdown-content a:hover, .dropdown-content button:hover {
+            background-color: #f1f1f1;
+        }
+        .action-dropdown:hover .dropdown-content {
+            display: block;
+        }
+        .view-btn { color: #2f276f; }
+        .edit-btn { color: #4CAF50; }
+        .adduser-btn { color: #17a2b8; }
+        .raise-btn { color: #ffc107; }
+        .exwarranty-btn { color: #6f42c1; }
+        .insurance-btn { color: #fd7e14; }
+        .delete-btn { color: #ff4444; }
+        th:nth-child(1), td:nth-child(1) { width: 5%; } /* # */
+        th:nth-child(2), td:nth-child(2) { width: 15%; } /* Product Type */
+        th:nth-child(3), td:nth-child(3) { width: 15%; } /* Product Name */
+        th:nth-child(4), td:nth-child(4) { width: 15%; } /* Serial No */
+        th:nth-child(5), td:nth-child(5) { width: 10%; } /* Make */
+        th:nth-child(6), td:nth-child(6) { width: 10%; } /* Status */
+        th:nth-child(7), td:nth-child(7) { width: 10%; } /* QR Code */
+        th:nth-child(8), td:nth-child(8) { width: 10%; } /* Actions */
+        .search-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .search-container input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 250px; /* Match previous templates */
+        }
+        .pagination {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .pagination button {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: none;
+            color: #2f276f;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .pagination button:hover {
+            background-color: #f4f4f4;
+        }
+        .pagination .active {
+            background-color: #2f276f;
+            color: white;
+            border-color: #2f276f;
+        }
+        .pagination .disabled {
+            color: #6c757d;
+            pointer-events: none;
+        }
         .header {
             background-color: #2f276f;
             color: white;
@@ -21,28 +173,30 @@
             align-items: center;
             border-radius: 8px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            position: relative; /* Ensure header is a positioning context */
-            z-index: 1000; /* Higher than modal */
+            position: relative;
+            z-index: 998;
         }
-
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
         .menu {
             cursor: pointer;
             font-size: 24px;
+            position: relative;
         }
-
         .menu-dropdown {
             display: none;
             position: absolute;
+            top: 100%;
             right: 20px;
-            top: 60px; /* Adjust to position below header */
             background: white;
             border-radius: 5px;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
             padding: 10px;
-            z-index: 1001; /* Higher than header and modal */
+            z-index: 1000;
             min-width: 150px;
         }
-
         .menu-dropdown button {
             display: block;
             width: 100%;
@@ -54,354 +208,44 @@
             text-align: left;
             color: black;
         }
-
         .menu-dropdown button:hover {
             background: #f0f0f0;
         }
-
-        .container {
-            width: 95%;
-            margin: 20px auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            overflow-x: auto;
-        }
-
-        .button-container {
+        .header-container {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 15px;
-        }
-
-        .add-asset-btn, .excel-btn {
-            background-color: #28a745;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            cursor: pointer;
+            align-items: center;
+            width: 95%; /* Match the header's width */
+            margin: 10px auto; /* Reduced top/bottom margin */
+            padding: 10px 20px; /* Reduced top/bottom padding */
+            background-color: #f8f9fa;
             border-radius: 5px;
-            font-size: 16px;
         }
-
-        .excel-btn {
-            background-color: #007bff;
-        }
-
-        .add-asset-btn:hover {
-            background-color: #218838;
-        }
-
-        .excel-btn:hover {
-            background-color: #0056b3;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            white-space: nowrap;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #2f276f;
-            color: white;
-        }
-
-        .barcode-container {
+        .no-records {
             text-align: center;
+            padding: 20px;
+            color: #721c24;
         }
-
-        .barcode {
-            display: block;
-            margin: auto;
-        }
-
-        .download-link {
-            display: block;
-            color: #007bff;
-            font-size: 14px;
-            cursor: pointer;
-            text-decoration: underline;
-            margin-top: 5px;
-        }
-
-        .download-link:hover {
-            color: #0056b3;
-        }
-
-        .status-indicator {
-            display: inline-block;
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-        }
-
-        .actions-cell {
-            position: relative;
-            cursor: pointer;
-        }
-
-        .action-menu {
-            display: none;
-            position: absolute;
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            min-width: 120px;
-            right: 10px;
-        }
-
-        .action-menu button {
-            display: block;
-            width: 100%;
-            padding: 8px 12px;
-            border: none;
-            background: none;
-            text-align: left;
-            cursor: pointer;
-            color: #333;
-        }
-
-        .action-menu button:hover {
-            background-color: #f0f1f2;
-        }
-
-        .action-menu .view-btn { color: #007bff; }
-        .action-menu .edit-btn { color: #28a745; }
-        .action-menu .delete-btn { color: #dc3545; }
-
-
-
-.modal {
-        display: none;
-        position: fixed;
-        z-index: 2000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.5);
-    }
-
-    .modal-content {
-        background-color: white;
-        margin: 5% auto;
-        padding: 25px;
-        border: none;
-        width: 90%;
-        max-width: 1200px;
-        border-radius: 8px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        position: relative;
-        max-height: 85vh;
-        overflow-y: auto;
-    }
-
-    .close {
-        color: #ff4444;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-        cursor: pointer;
-        position: absolute;
-        top: 10px;
-        right: 15px;
-        transition: color 0.3s;
-    }
-
-    .close:hover {
-        color: #cc0000;
-    }
-
-    .modal-header {
-        margin-bottom: 20px;
-        border-bottom: 2px solid #2f276f;
-        padding-bottom: 10px;
-    }
-
-    .modal-header h2 {
-        margin: 0;
-        color: #2f276f;
-        font-size: 24px;
-    }
-
-    .two-column-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        padding: 10px 0;
-    }
-
-    .detail-item {
-        margin: 8px 0;
-        padding: 8px;
-        background-color: #f8f9fa;
-        border-radius: 4px;
-        transition: background-color 0.2s;
-    }
-
-    .detail-item:hover {
-        background-color: #f0f1f2;
-    }
-
-    .detail-item strong {
-        color: #2f276f;
-        display: block;
-        margin-bottom: 4px;
-        text-transform: capitalize;
-    }
-
-    .detail-item span {
-        color: #333;
-        word-break: break-word;
-    }
-
-    .print-btn {
-        background-color: #2f276f;
-        color: white;
-        padding: 8px 15px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        margin-top: 20px;
-        float: right;
-        transition: background-color 0.3s;
-    }
-
-    .print-btn:hover {
-        background-color: #1f1a4f;
-    }
-
-    .modal-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 10px 0;
-    }
-
-    .modal-table th, .modal-table td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: left;
-    }
-
-    .modal-table th {
-        background-color: #2f276f;
-        color: white;
-    }
-
-    /* Print-specific styles */
-    @media print {
-        body {
-            margin: 0;
-            padding: 0;
-        }
-
-        /* Hide everything except the print container */
-        body > *:not(#print-container) {
-            display: none;
-        }
-
-        #print-container {
-            display: block;
-            position: static;
-            width: 100%;
-            height: auto;
-            margin: 0;
-            padding: 10px;
-            background-color: white;
-            overflow: visible;
-        }
-
-        #print-container .modal-content {
-            width: 100%;
-            max-width: none;
-            max-height: none;
-            height: auto;
-            padding: 10px;
-            margin: 0;
-            border-radius: 0;
-            box-shadow: none;
-            overflow: visible;
-            position: static;
-        }
-
-        #print-container .close, #print-container .print-btn {
-            display: none;
-        }
-
-        #print-container .two-column-grid {
-            display: block;
-        }
-
-        #print-container .modal-table {
-            width: 100%;
-            white-space: normal;
-            page-break-inside: auto;
-        }
-
-        #print-container .modal-table th, #print-container .modal-table td {
-            white-space: normal;
-            word-wrap: break-word;
-            overflow: visible;
-            font-size: 10pt;
-        }
-
-        #print-container .modal-table thead {
-            display: table-header-group;
-        }
-
-        #print-container .modal-table tbody {
-            display: table-row-group;
-            page-break-inside: auto;
-        }
-
-        #print-container .modal-table tr {
-            page-break-inside: avoid;
-            page-break-after: auto;
-        }
-
-        #print-container #modal-body,
-        #print-container #related-data {
-            height: auto;
-            overflow: visible;
-        }
-    }
     </style>
-
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
-	 <link rel="stylesheet" href="{{ url_for('static', filename='css/view_assets_popup.css') }}">
-	 
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
     <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
 </head>
 <body>
     {% include 'header.html' %}
-	    <div class="content">
+    
+    <div class="content">
         {% block content %}{% endblock %}
     </div>
 
-    <div class="container">
-        <div class="button-container">
-            <button class="add-asset-btn" onclick="location.href='{{ url_for('create_asset') }}';">+ Add Asset</button>
-            <button class="excel-btn" id="exportExcel">Download Excel</button>
+    <div class="header-container">
+        <h1>View Assets</h1>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search by Asset ID, Product Type, etc." onkeyup="searchAndPaginate()">
         </div>
+    </div>
 
-        <table id="assetTable" class="display">
+    <div class="form-container">
+        <table class="asset-table" id="assetsTable">
             <thead>
                 <tr>
                     <th>#</th>
@@ -410,425 +254,201 @@
                     <th>Serial No</th>
                     <th>Make</th>
                     <th>Status</th>
-                    <th>Barcode</th>
+                    <th>QR Code</th>
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="assetsTableBody">
                 {% for asset in all_assets %}
-                <tr>
-                    <td>{{ loop.index }}</td>
+                <tr data-asset-id="{{ asset.asset_id }}">
+                    <td class="index"></td>
                     <td>{{ asset.product_type }}</td>
                     <td>{{ asset.product_name }}</td>
                     <td>{{ asset.serial_no }}</td>
                     <td>{{ asset.make }}</td>
-                    <td style="display: flex; flex-direction: column; gap: 5px;">
-                        {% if asset['warranty_exists'] == 'Yes' and asset['warranty_end'] and asset['warranty_end'] >= today %}
-                            ✅ Warranty
-                        {% else %}
-                            ❌ No Warranty
-                        {% endif %}<br>
-                        {% if asset['extended_warranty_end'] and asset['extended_warranty_end'] >= today %}
-                            ✅ Extended Warranty
-                        {% else %}
-                            ❌ No Extended Warranty
-                        {% endif %}<br><br>
-                        {% if asset['insurance'] == 'Yes' %}
-                            ✅ Insurance
-                        {% else %}
-                            ❌ No Insurance
-                        {% endif %}<br>
-                        {% if asset['has_amc'] == 'Yes' %}
-                            ✅ AMC
-                        {% else %}
-                            ❌ No AMC
-                        {% endif %}<br>
+                    <td>
+                        <div class="status-container">
+                            <span class="status-item">
+                                {% if asset.warranty_exists == 'Yes' and asset.warranty_end and asset.warranty_end >= today %}
+                                    ✅ Warranty
+                                {% else %}
+                                    ❌ Warranty
+                                {% endif %}
+                            </span>
+                            <span class="status-item">
+                                {% if asset.extended_warranty_end and asset.extended_warranty_end >= today %}
+                                    ✅ Ext. Warranty
+                                {% else %}
+                                    ❌ Ext. Warranty
+                                {% endif %}
+                            </span>
+                            <span class="status-item">
+                                {% if asset.insurance == 'Yes' %}
+                                    ✅ Insurance
+                                {% else %}
+                                    ❌ Insurance
+                                {% endif %}
+                            </span>
+                            <span class="status-item">
+                                {% if asset.has_amc == '1' %}
+                                    ✅ AMC
+                                {% else %}
+                                    ❌ AMC
+                                {% endif %}
+                            </span>
+                        </div>
                     </td>
                     <td class="barcode-container">
-                        <svg class="barcode" id="barcode-{{ asset.asset_id }}"></svg>
-                        <span class="download-link" onclick="downloadBarcode('barcode-{{ asset.asset_id }}')">Download</span>
+                        {% if asset.qr_code_base64 %}
+                            <img src="data:image/png;base64,{{ asset.qr_code_base64 }}" alt="QR Code">
+                            {% if permissions.role == 'admin' or permissions.role == 'manager' %}
+                                <a href="data:image/png;base64,{{ asset.qr_code_base64 }}" download="qrcode-{{ asset.asset_id }}.png" class="download-link">Download</a>
+                            {% endif %}
+                        {% else %}
+                            <div>QR Code Not Available</div>
+                        {% endif %}
                     </td>
-                    <td class="actions-cell" onclick="toggleActionMenu('action-menu-{{ asset.asset_id }}')">
-                        Actions
-                        <div class="action-menu" id="action-menu-{{ asset.asset_id }}">
-                            <button class="view-btn" onclick='viewDetails({{ asset|tojson|safe }})'>View Details</button>
-                            <button class="edit-btn" onclick="editAsset('{{ asset.asset_id }}')">Edit</button>
-                            <button class="adduser-btn" onclick="addUser('{{ asset.asset_id }}')">Add User</button>
-                            <button class="raise-btn" onclick="raiseTicket('{{ asset.asset_id }}')">Raise Ticket</button>
-                            <button class="exwarranty-btn" onclick="manageExtendedWarranty('{{ asset.asset_id }}')">EX Warranty</button>
-                            <button class="insurance-btn" onclick="manageInsurance('{{ asset.asset_id }}')">Insurance</button>
-                            <button class="delete-btn" data-table="it_assets" onclick="deleteAsset('{{ asset.asset_id }}', this)">Delete</button>
+                    <td>
+                        <div class="action-dropdown">
+                            <button class="action-btn">Actions</button>
+                            <div class="dropdown-content">
+                                {% if permissions.permissions.view_details %}
+                                    <a href="{{ url_for('view_asset_details', asset_id=asset.asset_id) }}" class="view-btn">View Details</a>
+                                {% endif %}
+                                {% if permissions.permissions.edit %}
+                                    <a href="/edit_asset/{{ asset.asset_id }}" class="edit-btn">Edit</a>
+                                {% endif %}
+                                {% if permissions.permissions.add_user %}
+                                    <a href="/view_user_details/{{ asset.asset_id }}" class="adduser-btn">Add User</a>
+                                {% endif %}
+                                {% if permissions.permissions.raise_ticket %}
+                                    <a href="/create_raise_ticket/{{ asset.asset_id }}" class="raise-btn">Raise Ticket</a>
+                                {% endif %}
+                                {% if permissions.permissions.ex_warranty %}
+                                    <a href="/create_extended_warranty/{{ asset.asset_id }}" class="exwarranty-btn">EX Warranty</a>
+                                {% endif %}
+                                {% if permissions.permissions.insurance %}
+                                    <a href="/create_insurance/{{ asset.asset_id }}" class="insurance-btn">Insurance</a>
+                                {% endif %}
+                                {% if permissions.permissions.delete %}
+                                    <form method="POST" action="/delete_asset/{{ asset.asset_id }}" onsubmit="return confirm('Are you sure you want to delete this asset?');">
+                                        <button type="submit" class="delete-btn">Delete</button>
+                                    </form>
+                                {% endif %}
+                            </div>
                         </div>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-    </div>
 
-    <!-- Modal -->
-    <div id="assetModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">×</span>
-            <div class="modal-header">
-                <h2>Asset Details</h2>
-            </div>
-            <div id="modal-body"></div>
+        <!-- Pagination -->
+        <div class="pagination" id="pagination">
+            <!-- Pagination buttons will be generated by JavaScript -->
+        </div>
+
+        <!-- No Records Message -->
+        <div class="no-records" id="noRecords" style="display: none;">
+            <p>No assets found.</p>
         </div>
     </div>
-	
-	<div id="assetModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal()">×</span>
-        <div class="modal-header">
-            <h2>Asset Details</h2>
-        </div>
-        <div id="modal-body"></div>
-    </div>
-</div>
 
-<div id="print-container" style="display: none;"></div>
+    <script>
+        const perPage = 5; // Reduced to 5 to match previous templates
+        let currentPage = 1;
+        let allRows = Array.from(document.querySelectorAll('#assetsTableBody tr'));
+        let filteredRows = [...allRows];
 
-<script>
-    $(document).ready(function () {
-        $("#assetTable").DataTable();
+        function searchAndPaginate() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
 
-        {% for asset in all_assets %}
-            JsBarcode("#barcode-{{ asset.asset_id }}", "{{ asset.asset_id }}", { 
-                format: "CODE128", 
-                width: 1.8, 
-                height: 40 
+            filteredRows = allRows.filter(row => {
+                const assetId = row.getAttribute('data-asset-id').toLowerCase();
+                const productType = row.cells[1].textContent.toLowerCase();
+                const productName = row.cells[2].textContent.toLowerCase();
+                const serialNo = row.cells[3].textContent.toLowerCase();
+                const make = row.cells[4].textContent.toLowerCase();
+
+                return (
+                    assetId.includes(searchTerm) ||
+                    productType.includes(searchTerm) ||
+                    productName.includes(searchTerm) ||
+                    serialNo.includes(searchTerm) ||
+                    make.includes(searchTerm)
+                );
             });
-        {% endfor %}
-    });
 
-    function downloadBarcode(barcodeId) {
-        const svg = document.getElementById(barcodeId);
-        if (!svg) return;
-
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        const svgData = new XMLSerializer().serializeToString(svg);
-        const img = new Image();
-
-        img.onload = function () {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-            const a = document.createElement("a");
-            a.href = canvas.toDataURL("image/png");
-            a.download = barcodeId + ".png";
-            a.click();
-        };
-        img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
-    }
-
-    function toggleActionMenu(menuId) {
-        const menu = document.getElementById(menuId);
-        if (menu.style.display === 'block') {
-            menu.style.display = 'none';
-        } else {
-            document.querySelectorAll('.action-menu').forEach(m => m.style.display = 'none');
-            menu.style.display = 'block';
-        }
-    }
-
-    document.addEventListener('click', function(event) {
-        const menus = document.querySelectorAll('.action-menu');
-        const cells = document.querySelectorAll('.actions-cell');
-        let clickedInside = false;
-
-        cells.forEach(cell => {
-            if (cell.contains(event.target)) {
-                clickedInside = true;
-            }
-        });
-
-        if (!clickedInside) {
-            menus.forEach(menu => menu.style.display = 'none');
-        }
-    });
-
-    function editAsset(assetId) {
-        window.location.href = `/edit_asset/${assetId}`;
-    }
-
-    function deleteAsset(assetId) {
-        if (confirm('Are you sure you want to delete this asset?')) {
-            window.location.href = `/delete_asset/${assetId}`;
-        }
-    }
-
-    function addUser(assetId) {
-        window.location.href = `/view_user_details/${assetId}`;
-    }
-
-    function raiseTicket(assetId) {
-        window.location.href = `/create_raise_ticket/${assetId}`;
-    }
-
-    function manageInsurance(assetId) {
-        window.location.href = `/create_insurance/${assetId}`;
-    }
-
-    function manageExtendedWarranty(assetId) {
-        window.location.href = `/create_extended_warranty/${assetId}`;
-    }
-
-    // Define formatValue and formatKey functions
-    function formatValue(key, value) {
-        if (value === null || value === undefined) {
-            return 'N/A';
-        }
-        if (key.includes('_date') || key.includes('_at') || key.includes('_end')) {
-            return new Date(value).toLocaleDateString() || value;
-        }
-        return value;
-    }
-
-    function formatKey(key) {
-        return key.replace(/_/g, ' ').split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
-    }
-	
-	function formatDate(dateString) {
-    if (!dateString) return ''; // Handle null or undefined values
-    const date = new Date(dateString);
-    return date.toISOString().split('T')[0]; // Extract YYYY-MM-DD
-}
-
-
-  async function viewDetails(assetJson) {
-        console.log("viewDetails called with assetJson:", assetJson);
-        let modalBody = document.getElementById("modal-body");
-        if (!modalBody) {
-            console.error("Modal body not found");
-            return;
+            currentPage = 1;
+            displayPage();
         }
 
-        const fieldOrder = [
-            'id', 'created_by', 'created_at', 'asset_id', 'asset_category', 'product_type', 
-            'product_name', 'serial_no', 'make', 'model', 'part_no', 'description', 
-            'purchase_date', 'product_age', 'vendor_name', 'vendor_id', 'company_name', 
-            'asset_type', 'purchase_value', 'product_condition', 'adp_production', 
-            'insurance', 'warranty_checked', 'warranty_exists', 'warranty_start', 
-            'warranty_period', 'warranty_end', 'extended_warranty_exists', 
-            'extended_warranty_period', 'extended_warranty_end', 'has_amc', 
-            'recurring_alert_for_amc', 'image_path', 'purchase_bill_path', 
-            'modified_by', 'modified_at', 'remarks'
-        ];
+        function displayPage() {
+            const totalItems = filteredRows.length;
+            const totalPages = Math.ceil(totalItems / perPage) || 1;
+            const start = (currentPage - 1) * perPage;
+            const end = start + perPage;
 
-        let leftColumn = '';
-        let rightColumn = '';
-        const midPoint = Math.ceil(fieldOrder.length / 2);
-        const leftFields = fieldOrder.slice(0, midPoint);
-        const rightFields = fieldOrder.slice(midPoint);
+            allRows.forEach(row => row.style.display = 'none');
 
-        leftFields.forEach(key => {
-            if (key in assetJson) {
-                let value = formatValue(key, assetJson[key]);
-                if (key === 'created_by' && 'created_at' in assetJson) {
-                    leftColumn += `
-                        <div class="detail-item">
-                            <strong>Created By at Created At:</strong>
-                            <span>${value} at ${formatValue('created_at', assetJson['created_at'])}</span>
-                        </div>
-                    `;
-                } else if (key === 'created_at') {
-                    // Skip as it's handled with created_by
-                } else {
-                    leftColumn += `
-                        <div class="detail-item">
-                            <strong>${formatKey(key)}:</strong>
-                            <span>${value}</span>
-                        </div>
-                    `;
+            const rowsToShow = filteredRows.slice(start, end);
+            rowsToShow.forEach((row, index) => {
+                row.style.display = '';
+                row.cells[0].textContent = start + index + 1;
+            });
+
+            updatePagination(totalPages);
+            toggleNoRecords(totalItems === 0);
+        }
+
+        function updatePagination(totalPages) {
+            const paginationDiv = document.getElementById('pagination');
+            paginationDiv.innerHTML = '';
+
+            const prevButton = document.createElement('button');
+            prevButton.textContent = 'Previous';
+            if (currentPage === 1) prevButton.classList.add('disabled');
+            prevButton.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    displayPage();
                 }
-            }
-        });
+            });
+            paginationDiv.appendChild(prevButton);
 
-        rightFields.forEach(key => {
-            if (key in assetJson) {
-                let value = formatValue(key, assetJson[key]);
-                if (key === 'modified_by' && 'modified_at' in assetJson) {
-                    rightColumn += `
-                        <div class="detail-item">
-                            <strong>Modified By at Modified At:</strong>
-                            <span>${value} at ${formatValue('modified_at', assetJson['modified_at'])}</span>
-                        </div>
-                    `;
-                } else if (key === 'modified_at') {
-                    // Skip as it's handled with modified_by
-                } else {
-                    rightColumn += `
-                        <div class="detail-item">
-                            <strong>${formatKey(key)}:</strong>
-                            <span>${value}</span>
-                        </div>
-                    `;
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, startPage + 4);
+            for (let p = startPage; p <= endPage; p++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = p;
+                if (p === currentPage) pageButton.classList.add('active');
+                pageButton.addEventListener('click', () => {
+                    currentPage = p;
+                    displayPage();
+                });
+                paginationDiv.appendChild(pageButton);
+            }
+
+            const nextButton = document.createElement('button');
+            nextButton.textContent = 'Next';
+            if (currentPage === totalPages) nextButton.classList.add('disabled');
+            nextButton.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    displayPage();
                 }
-            }
+            });
+            paginationDiv.appendChild(nextButton);
+        }
+
+        function toggleNoRecords(show) {
+            document.getElementById('noRecords').style.display = show ? 'block' : 'none';
+            document.getElementById('assetsTable').style.display = show ? 'none' : 'table';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            searchAndPaginate();
         });
-
-        modalBody.innerHTML = `
-            <div class="two-column-grid">
-                <div>${leftColumn}</div>
-                <div>${rightColumn}</div>
-            </div>
-            <div id="related-data">
-                <p>Loading related data...</p>
-            </div>
-            <button class="print-btn" onclick="printModal()">Print</button>
-        `;
-        document.getElementById("assetModal").style.display = "block";
-
-        const url = `/get_asset_details/${assetJson.asset_id}`;
-        console.log("Fetching related data from:", url);
-
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-
-            const relatedData = await response.json();
-            console.log("Related data received:", relatedData);
-
-            let serviceRows = relatedData.service_details?.length > 0 ?
-                relatedData.service_details.map(service => `
-                    <tr>
-                        <td>${service.service_id || 'N/A'}</td>
-                        <td>${service.warranty_type || 'N/A'}</td>
-                        <td>${service.ticket_id || 'N/A'}</td>
-                        <td>${service.work_done || 'N/A'}</td>
-                        <td>${formatDate(service.next_service_date)}</td>
-                        <td>${service.service_charge || 'N/A'}</td>
-                    </tr>
-                `).join('') : '<tr><td colspan="6">No service details available</td></tr>';
-
-            let ticketRows = relatedData.raised_tickets?.length > 0 ?
-                relatedData.raised_tickets.map(ticket => `
-                    <tr>
-                        <td>${ticket.ticket_id || 'N/A'}</td>
-                        <td>${ticket.problem_description || 'N/A'}</td>
-                        <td>${ticket.ticket_status || 'N/A'}</td>
-                    </tr>
-                `).join('') : '<tr><td colspan="3">No raised tickets available</td></tr>';
-
-            let warrantyRows = relatedData.extended_warranty_info?.length > 0 ?
-                relatedData.extended_warranty_info.map(warranty => `
-                    <tr>
-                        <td>${warranty.warranty_asset_id || 'N/A'}</td>
-                        <td>${formatDate(warranty.warranty_purchase_date)}</td>
-                        <td>${warranty.extended_warranty || 'N/A'}</td>
-                        <td>${formatDate(warranty.warranty_end_date)}</td>
-                        <td>${warranty.value || 'N/A'}</td>
-                    </tr>
-                `).join('') : '<tr><td colspan="5">No extended warranty info available</td></tr>';
-
-            let insuranceRows = relatedData.insurance_details?.length > 0 ?
-                relatedData.insurance_details.map(insurance => `
-                    <tr>
-                        <td>${insurance.policy_number || 'N/A'}</td>
-                        <td>${insurance.insurance_value || 'N/A'}</td>
-                        <td>${formatDate(insurance.insurance_start)}</td>
-                        <td>${insurance.insurance_period || 'N/A'}</td>
-                        <td>${formatDate(insurance.insurance_end)}</td>
-                    </tr>
-                `).join('') : '<tr><td colspan="5">No insurance details available</td></tr>';
-
-            document.getElementById('related-data').innerHTML = `
-                <h3>Service Details</h3>
-                <table class="modal-table asset-table">
-                    <thead>
-                        <tr>
-                            <th>Service ID</th>
-                            <th>Service Type</th>
-                            <th>Ticket ID</th>
-                            <th>Work Done</th>
-                            <th>Next Service Date</th>
-                            <th>Charge</th>
-                        </tr>
-                    </thead>
-                    <tbody>${serviceRows}</tbody>
-                </table>
-                <h3>Raised Tickets</h3>
-                <table class="modal-table asset-table">
-                    <thead>
-                        <tr>
-                            <th>Ticket ID</th>
-                            <th>Problem Description</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>${ticketRows}</tbody>
-                </table>
-                <h3>Extended Warranty Info</h3>
-                <table class="modal-table asset-table">
-                    <thead>
-                        <tr>
-                            <th>Warranty Asset ID</th>
-                            <th>Warranty Purchase Date</th>
-                            <th>Extended Warranty</th>
-                            <th>Warranty End Date</th>
-                            <th>Value</th>
-                        </tr>
-                    </thead>
-                    <tbody>${warrantyRows}</tbody>
-                </table>
-                <h3>Insurance Details</h3>
-                <table class="modal-table asset-table">
-                    <thead>
-                        <tr>
-                            <th>Policy Number</th>
-                            <th>Insurance Value</th>
-                            <th>Start Date</th>
-                            <th>Period</th>
-                            <th>End Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>${insuranceRows}</tbody>
-                </table>
-            `;
-        } catch (error) {
-            console.error('Error fetching related data:', error);
-            document.getElementById('related-data').innerHTML = '<p>Error loading related data.</p>';
-        }
-    }
-
-    function closeModal() {
-        document.getElementById("assetModal").style.display = "none";
-    }
-
-    function printModal() {
-        const modal = document.getElementById("assetModal");
-        const modalContent = modal.querySelector(".modal-content");
-        const printContainer = document.getElementById("print-container");
-
-        // Clone the modal content into the print container
-        const clonedContent = modalContent.cloneNode(true);
-        printContainer.innerHTML = '';
-        printContainer.appendChild(clonedContent);
-
-        // Ensure the print container is visible for printing
-        printContainer.style.display = "block";
-        modal.style.display = "none"; // Hide the original modal
-
-        // Trigger print
-        window.print();
-
-        // Clean up: hide the print container and restore the modal
-        printContainer.style.display = "none";
-        modal.style.display = "block";
-    }
-
-    window.onclick = function(event) {
-        let modal = document.getElementById("assetModal");
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    }
-</script>
+    </script>
 </body>
 </html>

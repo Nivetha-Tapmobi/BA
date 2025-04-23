@@ -1,0 +1,485 @@
+start_now = 2025-03-27 12:20:32.850314
+Database 'asset_management' is ready.
+ * Serving Flask app 'app_ba'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://192.168.2.48:8000
+Press CTRL+C to quit
+192.168.2.70 - - [27/Mar/2025 12:20:38] "GET /logout HTTP/1.1" 302 -
+192.168.2.70 - - [27/Mar/2025 12:20:43] "GET /login?username=Nivetha%20M&role=admin&can_create_ast=1&can_read_ast=1&can_update_ast=1&can_delete_ast=1&app=asset_tracker HTTP/1.1" 302 -
+192.168.2.70 - - [27/Mar/2025 12:20:43] "GET / HTTP/1.1" 302 -
+192.168.2.70 - - [27/Mar/2025 12:20:43] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.2.70 - - [27/Mar/2025 12:20:43] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 12:20:43] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 12:20:51] "GET /view_raised_tickets HTTP/1.1" 200 -
+192.168.2.70 - - [27/Mar/2025 12:20:51] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 12:20:51] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 19:10:22] "GET /login?username=Nivetha%20M&role=admin&can_create_ast=1&can_read_ast=1&can_update_ast=1&can_delete_ast=1&app=asset_tracker HTTP/1.1" 302 -
+192.168.2.70 - - [27/Mar/2025 19:10:22] "GET / HTTP/1.1" 302 -
+192.168.2.70 - - [27/Mar/2025 19:10:22] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.2.70 - - [27/Mar/2025 19:10:23] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 19:10:23] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 19:10:26] "GET /view_assets HTTP/1.1" 200 -
+192.168.2.70 - - [27/Mar/2025 19:10:26] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 19:10:26] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 19:10:31] "GET /view_asset_details/IT20250325-01 HTTP/1.1" 200 -
+192.168.2.70 - - [27/Mar/2025 19:10:31] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 19:10:31] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 19:10:42] "GET /view_asset_details/IT20250325-01 HTTP/1.1" 200 -
+192.168.2.70 - - [27/Mar/2025 19:10:42] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 19:10:42] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 19:11:16] "GET /edit_asset/IT20250325-01 HTTP/1.1" 200 -
+192.168.2.70 - - [27/Mar/2025 19:11:16] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 19:11:16] "GET /static/css/create_asset_style.css HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 19:11:16] "GET /static/js/create_asset.js HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 19:11:16] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 19:12:04] "GET /view_assets HTTP/1.1" 200 -
+192.168.2.70 - - [27/Mar/2025 19:12:04] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 19:12:04] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 19:12:16] "GET /edit_asset/IT20250325-01 HTTP/1.1" 200 -
+192.168.2.70 - - [27/Mar/2025 19:12:16] "GET /static/css/create_asset_style.css HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 19:12:16] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 19:12:16] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 19:12:16] "GET /static/js/create_asset.js HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 19:12:29] "GET /view_asset_details/IT20250325-01 HTTP/1.1" 200 -
+192.168.2.70 - - [27/Mar/2025 19:12:29] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.70 - - [27/Mar/2025 19:12:29] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:01:36] "GET /login?username=trial&role=employee&can_create_ast=0&can_read_ast=1&can_update_ast=0&can_delete_ast=0&app=asset_tracker HTTP/1.1" 302 -
+192.168.3.100 - - [28/Mar/2025 10:01:36] "GET / HTTP/1.1" 302 -
+192.168.3.100 - - [28/Mar/2025 10:01:36] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.3.100 - - [28/Mar/2025 10:01:36] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:01:36] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:01:36] "GET /favicon.ico HTTP/1.1" 404 -
+192.168.3.100 - - [28/Mar/2025 10:01:40] "GET /view_raised_tickets HTTP/1.1" 200 -
+192.168.3.100 - - [28/Mar/2025 10:01:40] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:01:40] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:04:49] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.3.100 - - [28/Mar/2025 10:04:49] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:04:49] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:04:54] "GET /view_raised_tickets HTTP/1.1" 200 -
+192.168.3.100 - - [28/Mar/2025 10:04:54] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:04:54] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:05:19] "GET /logout HTTP/1.1" 302 -
+192.168.3.100 - - [28/Mar/2025 10:05:25] "GET /login?username=Nivetha%20M&role=admin&can_create_ast=1&can_read_ast=1&can_update_ast=1&can_delete_ast=1&app=asset_tracker HTTP/1.1" 302 -
+192.168.3.100 - - [28/Mar/2025 10:05:25] "GET / HTTP/1.1" 302 -
+192.168.3.100 - - [28/Mar/2025 10:05:25] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.3.100 - - [28/Mar/2025 10:05:25] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:05:25] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:05:33] "GET /view_raised_tickets HTTP/1.1" 200 -
+192.168.3.100 - - [28/Mar/2025 10:05:33] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:05:33] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:05:47] "GET /view_assets HTTP/1.1" 200 -
+192.168.3.100 - - [28/Mar/2025 10:05:47] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:05:47] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:05:55] "GET /view_service HTTP/1.1" 200 -
+192.168.3.100 - - [28/Mar/2025 10:05:55] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:05:55] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:05:55] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:05:59] "GET /view_insurance HTTP/1.1" 200 -
+192.168.3.100 - - [28/Mar/2025 10:05:59] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:05:59] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:05:59] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:09:05] "GET /login?username=Nivetha%20M&role=admin&can_create_ast=1&can_read_ast=1&can_update_ast=1&can_delete_ast=1&app=asset_tracker HTTP/1.1" 302 -
+192.168.3.100 - - [28/Mar/2025 10:09:06] "GET / HTTP/1.1" 302 -
+192.168.3.100 - - [28/Mar/2025 10:09:07] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.3.100 - - [28/Mar/2025 10:09:08] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:09:08] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:12] "GET /login?username=trail1&role=manager&can_create_ast=1&can_read_ast=1&can_update_ast=1&can_delete_ast=0&app=asset_tracker HTTP/1.1" 302 -
+192.168.3.100 - - [28/Mar/2025 10:10:12] "GET / HTTP/1.1" 302 -
+192.168.3.100 - - [28/Mar/2025 10:10:12] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.3.100 - - [28/Mar/2025 10:10:12] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:12] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:15] "GET /view_raised_tickets HTTP/1.1" 200 -
+192.168.3.100 - - [28/Mar/2025 10:10:15] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:15] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:18] "GET /view_assets HTTP/1.1" 200 -
+192.168.3.100 - - [28/Mar/2025 10:10:18] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:18] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:22] "GET /view_service HTTP/1.1" 200 -
+192.168.3.100 - - [28/Mar/2025 10:10:22] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:22] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:22] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:28] "GET /view_insurance HTTP/1.1" 200 -
+192.168.3.100 - - [28/Mar/2025 10:10:28] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:28] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:28] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:30] "GET /view_extended_warranty HTTP/1.1" 200 -
+192.168.3.100 - - [28/Mar/2025 10:10:30] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:30] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:30] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:35] "GET /check_asset_status HTTP/1.1" 200 -
+192.168.3.100 - - [28/Mar/2025 10:10:35] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:35] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:35] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:40] "GET /all_assets HTTP/1.1" 200 -
+192.168.3.100 - - [28/Mar/2025 10:10:40] "GET /static/css/create_multiple_service_style.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:40] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:40] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:44] "GET /upcoming_alerts HTTP/1.1" 200 -
+192.168.3.100 - - [28/Mar/2025 10:10:44] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:44] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:44] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:10:49] "GET /logout HTTP/1.1" 302 -
+192.168.3.100 - - [28/Mar/2025 10:11:05] "GET /login?username=Nivetha%20M&role=admin&can_create_ast=1&can_read_ast=1&can_update_ast=1&can_delete_ast=1&app=asset_tracker HTTP/1.1" 302 -
+192.168.3.100 - - [28/Mar/2025 10:11:05] "GET / HTTP/1.1" 302 -
+192.168.3.100 - - [28/Mar/2025 10:11:05] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.3.100 - - [28/Mar/2025 10:11:05] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.100 - - [28/Mar/2025 10:11:05] "GET /static/js/header.js HTTP/1.1" 304 -
+start_now = 2025-03-28 11:39:09.429068
+Database 'asset_management' is ready.
+ * Serving Flask app 'app_ba'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://192.168.2.48:8000
+Press CTRL+C to quit
+start_now = 2025-04-16 13:03:51.626294
+Database 'asset_management' is ready.
+ * Serving Flask app 'app_ba'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://192.168.2.48:8000
+Press CTRL+C to quit
+192.168.3.207 - - [16/Apr/2025 13:03:57] "GET /login?username=Nivetha%20M&role=admin&can_create_ast=1&can_read_ast=1&can_update_ast=1&can_delete_ast=1&app=asset_tracker HTTP/1.1" 302 -
+192.168.3.207 - - [16/Apr/2025 13:03:57] "GET / HTTP/1.1" 302 -
+192.168.3.207 - - [16/Apr/2025 13:03:57] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.3.207 - - [16/Apr/2025 13:03:57] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.207 - - [16/Apr/2025 13:03:57] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.207 - - [16/Apr/2025 13:03:57] "GET /favicon.ico HTTP/1.1" 404 -
+192.168.3.207 - - [16/Apr/2025 13:04:01] "GET /create_asset HTTP/1.1" 200 -
+192.168.3.207 - - [16/Apr/2025 13:04:01] "GET /static/css/create_asset_style.css HTTP/1.1" 304 -
+192.168.3.207 - - [16/Apr/2025 13:04:01] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.207 - - [16/Apr/2025 13:04:01] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.207 - - [16/Apr/2025 13:04:01] "GET /static/js/create_asset.js HTTP/1.1" 304 -
+192.168.3.207 - - [16/Apr/2025 13:09:45] "POST /create_asset HTTP/1.1" 302 -
+192.168.3.207 - - [16/Apr/2025 13:09:45] "GET /create_asset HTTP/1.1" 200 -
+192.168.3.207 - - [16/Apr/2025 13:09:45] "GET /static/css/create_asset_style.css HTTP/1.1" 304 -
+192.168.3.207 - - [16/Apr/2025 13:09:45] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.207 - - [16/Apr/2025 13:09:45] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.207 - - [16/Apr/2025 13:09:45] "GET /static/js/create_asset.js HTTP/1.1" 304 -
+192.168.3.207 - - [16/Apr/2025 13:09:49] "GET /view_assets HTTP/1.1" 200 -
+192.168.3.207 - - [16/Apr/2025 13:09:49] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.207 - - [16/Apr/2025 13:09:49] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.207 - - [17/Apr/2025 10:45:02] "GET /login?username=Nivetha%20M&role=admin&can_create_ast=1&can_read_ast=1&can_update_ast=1&can_delete_ast=1&app=asset_tracker HTTP/1.1" 302 -
+192.168.3.207 - - [17/Apr/2025 10:45:02] "GET / HTTP/1.1" 302 -
+192.168.3.207 - - [17/Apr/2025 10:45:03] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.3.207 - - [17/Apr/2025 10:45:03] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.207 - - [17/Apr/2025 10:45:03] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.207 - - [17/Apr/2025 10:45:03] "GET /favicon.ico HTTP/1.1" 404 -
+Job "<lambda> (trigger: interval[1 day, 0:00:00], next run at: 2025-04-18 13:03:51 IST)" raised an exception
+Traceback (most recent call last):
+  File "/home/muzik247/.local/lib/python3.10/site-packages/mysql/connector/connection_cext.py", line 633, in cmd_query
+    self._cmysql.query(
+_mysql_connector.MySQLInterfaceError: Unknown column 'asset_management.product_name' in 'field list'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/muzik247/.local/lib/python3.10/site-packages/apscheduler/executors/base.py", line 125, in run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "/home/muzik247/mnt/Nivetha/IOMS/app_ba.py", line 5068, in <lambda>
+    scheduler.add_job(lambda: check_and_send_alerts(get_db_connection), 'interval', days=1)
+  File "/home/muzik247/mnt/Nivetha/IOMS/app_ba.py", line 4888, in check_and_send_alerts
+    cursor.execute("""
+  File "/home/muzik247/.local/lib/python3.10/site-packages/mysql/connector/cursor_cext.py", line 330, in execute
+    result = self._cnx.cmd_query(
+  File "/home/muzik247/.local/lib/python3.10/site-packages/mysql/connector/opentelemetry/context_propagation.py", line 77, in wrapper
+    return method(cnx, *args, **kwargs)
+  File "/home/muzik247/.local/lib/python3.10/site-packages/mysql/connector/connection_cext.py", line 641, in cmd_query
+    raise get_mysql_exception(
+mysql.connector.errors.ProgrammingError: 1054 (42S22): Unknown column 'asset_management.product_name' in 'field list'
+Job "<lambda> (trigger: interval[1 day, 0:00:00], next run at: 2025-04-19 13:03:51 IST)" raised an exception
+Traceback (most recent call last):
+  File "/home/muzik247/.local/lib/python3.10/site-packages/mysql/connector/connection_cext.py", line 633, in cmd_query
+    self._cmysql.query(
+_mysql_connector.MySQLInterfaceError: Unknown column 'asset_management.product_name' in 'field list'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/muzik247/.local/lib/python3.10/site-packages/apscheduler/executors/base.py", line 125, in run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "/home/muzik247/mnt/Nivetha/IOMS/app_ba.py", line 5068, in <lambda>
+    scheduler.add_job(lambda: check_and_send_alerts(get_db_connection), 'interval', days=1)
+  File "/home/muzik247/mnt/Nivetha/IOMS/app_ba.py", line 4888, in check_and_send_alerts
+    cursor.execute("""
+  File "/home/muzik247/.local/lib/python3.10/site-packages/mysql/connector/cursor_cext.py", line 330, in execute
+    result = self._cnx.cmd_query(
+  File "/home/muzik247/.local/lib/python3.10/site-packages/mysql/connector/opentelemetry/context_propagation.py", line 77, in wrapper
+    return method(cnx, *args, **kwargs)
+  File "/home/muzik247/.local/lib/python3.10/site-packages/mysql/connector/connection_cext.py", line 641, in cmd_query
+    raise get_mysql_exception(
+mysql.connector.errors.ProgrammingError: 1054 (42S22): Unknown column 'asset_management.product_name' in 'field list'
+192.168.3.166 - - [18/Apr/2025 17:01:42] "GET /login?username=Nivetha%20M&role=admin&can_create_ast=1&can_read_ast=1&can_update_ast=1&can_delete_ast=1&app=asset_tracker HTTP/1.1" 302 -
+192.168.3.166 - - [18/Apr/2025 17:01:42] "GET / HTTP/1.1" 302 -
+192.168.3.166 - - [18/Apr/2025 17:01:43] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:01:43] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:01:43] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:01:43] "GET /favicon.ico HTTP/1.1" 404 -
+192.168.3.166 - - [18/Apr/2025 17:20:02] "GET /create_asset HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:20:02] "GET /static/css/create_asset_style.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:20:02] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:20:02] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:20:02] "GET /static/js/create_asset.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:28:34] "POST /save_form_state HTTP/1.1" 302 -
+192.168.3.166 - - [18/Apr/2025 17:28:35] "GET /create_vendor HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:28:35] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:28:35] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:28:35] "GET /static/js/create_vendor.js HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:28:35] "GET /static/css/create_vendor.css HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:30:35] "POST /create_vendor HTTP/1.1" 302 -
+192.168.3.166 - - [18/Apr/2025 17:30:36] "GET /create_asset HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:30:36] "GET /create_asset HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:30:36] "GET /static/css/create_asset_style.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:30:36] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:30:36] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:30:36] "GET /static/js/create_asset.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:43:18] "POST /create_asset HTTP/1.1" 302 -
+192.168.3.166 - - [18/Apr/2025 17:43:18] "GET /create_asset HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:43:18] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:43:18] "GET /static/css/create_asset_style.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:43:18] "GET /static/js/create_asset.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:43:18] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:43:24] "GET /view_assets HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:43:24] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:43:24] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:43:36] "GET /view_asset_details/IT20250418-04 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:43:37] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:43:37] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:43:47] "GET /edit_asset/IT20250418-04 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:43:47] "GET /static/css/create_asset_style.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:43:47] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:43:47] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:43:47] "GET /static/js/create_asset.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:44:10] "GET /view_user_details/IT20250418-04 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:44:10] "GET /static/css/create_user_styles.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:44:10] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:44:10] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:44:17] "GET /create_user_asset/IT20250418-04 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:44:17] "GET /static/css/create_user_styles.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:44:17] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:44:17] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:44:47] "POST /create_user_asset/IT20250418-04 HTTP/1.1" 302 -
+192.168.3.166 - - [18/Apr/2025 17:44:48] "GET /view_user_details/IT20250418-04 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:44:48] "GET /static/css/create_user_styles.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:44:48] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:44:48] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:46:05] "GET /view_assets HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:46:06] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:46:06] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:46:09] "GET /create_raise_ticket/IT20250418-04 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:46:09] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:46:09] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:47:07] "POST /create_raise_ticket/IT20250418-04 HTTP/1.1" 302 -
+192.168.3.166 - - [18/Apr/2025 17:47:07] "GET /view_assets HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:47:07] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:47:07] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:47:35] "GET /view_raised_tickets HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:47:35] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:47:35] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:47:52] "GET /create_replacement HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:47:52] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:47:52] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:48:34] "GET /create_replacement HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:48:34] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:48:34] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:48:40] "GET /create_user_asset/IT20250416-03 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:48:40] "GET /static/css/create_user_styles.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:48:40] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:48:40] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:49:03] "GET /create_replacement HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:49:03] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:49:03] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:49:15] "GET /create_user_asset/IT20250416-03 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:49:15] "GET /static/css/create_user_styles.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:49:15] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:49:15] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:49:43] "POST /create_user_asset/IT20250416-03 HTTP/1.1" 302 -
+192.168.3.166 - - [18/Apr/2025 17:49:43] "GET /view_user_details/IT20250416-03 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:49:44] "GET /static/css/create_user_styles.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:49:44] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:49:44] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:49:50] "GET /view_raised_tickets HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:49:50] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:49:50] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:51:23] "POST /ignore_ticket/RT20250328-01 HTTP/1.1" 302 -
+192.168.3.166 - - [18/Apr/2025 17:51:24] "GET /view_raised_tickets HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:51:24] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:51:24] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:51:35] "GET /ticket_details/RT20250328-01 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:52:09] "GET /ticket_details/RT20250328-01 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:52:43] "GET /create_service/RT20250418-02/IT20250418-04 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:52:43] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:52:43] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:52:43] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:52:48] "POST /save_form_state_technician HTTP/1.1" 302 -
+192.168.3.166 - - [18/Apr/2025 17:52:48] "GET /create_technician HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:52:48] "GET /create_technician HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:52:48] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:52:48] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:53:10] "POST /create_technician HTTP/1.1" 302 -
+192.168.3.166 - - [18/Apr/2025 17:53:10] "GET /create_service/RT20250418-02/IT20250418-04 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:53:10] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:53:10] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:53:10] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:56:08] "POST /create_service/RT20250418-02/IT20250418-04 HTTP/1.1" 302 -
+192.168.3.166 - - [18/Apr/2025 17:56:08] "GET /view_service HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:56:08] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:56:08] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:56:08] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:56:27] "GET /view_service HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:56:27] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:56:27] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:56:27] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:56:49] "GET /check_asset_status HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:56:49] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:56:49] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:56:49] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:57:10] "GET /check_asset_status HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:57:10] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:57:10] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:57:10] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:57:15] "GET /check_asset_status?search=&page=1&employee=03 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:57:15] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:57:15] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:57:15] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:57:25] "GET /view_assets HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:57:25] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:57:25] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:57:28] "GET /view_user_details/IT20250418-04 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:57:28] "GET /static/css/create_user_styles.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:57:28] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:57:28] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:57:45] "GET /view_assets HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:57:45] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:57:45] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:57:47] "GET /view_asset_details/IT20250418-04 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:57:47] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:57:47] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:58:02] "GET /view_service HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:58:02] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:58:02] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:58:02] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:58:13] "GET /view_asset_details/IT20250416-03 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:58:13] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:58:13] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:58:27] "GET /view_asset_details/IT20250418-04 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:58:27] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:58:27] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:58:52] "GET /view_asset_details/IT20250328-01 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:58:52] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:58:52] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:59:06] "GET /view_raised_tickets HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 17:59:06] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:59:06] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 17:59:27] "GET /ticket_details/RT20250418-02 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 18:00:10] "GET /upcoming_alerts HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 18:00:10] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 18:00:10] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 18:00:10] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 18:00:22] "GET /login?username=Nivetha%20M&role=admin&can_create_ast=1&can_read_ast=1&can_update_ast=1&can_delete_ast=1&app=asset_tracker HTTP/1.1" 302 -
+192.168.3.166 - - [18/Apr/2025 18:00:22] "GET / HTTP/1.1" 302 -
+192.168.3.166 - - [18/Apr/2025 18:00:22] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 18:00:22] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 18:00:22] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 18:00:46] "GET /get_unassigned_products?product_type=Laptop HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 18:01:15] "GET /view_assets HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 18:01:15] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 18:01:15] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 18:01:34] "GET /qr_login?asset_id=IT20250418-04 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 18:01:35] "GET /favicon.ico HTTP/1.1" 404 -
+192.168.3.166 - - [18/Apr/2025 18:01:50] "POST /qr_login?asset_id=IT20250418-04 HTTP/1.1" 302 -
+192.168.3.166 - - [18/Apr/2025 18:01:50] "GET /view_asset_details/IT20250418-04 HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 18:01:50] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 18:01:50] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 18:02:13] "GET /view_insurance HTTP/1.1" 200 -
+192.168.3.166 - - [18/Apr/2025 18:02:13] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 18:02:13] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.166 - - [18/Apr/2025 18:02:13] "GET /static/css/service_styles.css HTTP/1.1" 200 -
+start_now = 2025-04-23 12:04:21.964531
+Database 'asset_management' is ready.
+ * Serving Flask app 'app_ba'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://192.168.2.48:8000
+Press CTRL+C to quit
+192.168.3.222 - - [23/Apr/2025 12:04:22] "GET /login?username=Nivetha%20M&role=admin&can_create_ast=1&can_read_ast=1&can_update_ast=1&can_delete_ast=1&app=asset_tracker HTTP/1.1" 302 -
+192.168.3.222 - - [23/Apr/2025 12:04:22] "GET / HTTP/1.1" 302 -
+192.168.3.222 - - [23/Apr/2025 12:04:22] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.3.222 - - [23/Apr/2025 12:04:23] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:04:23] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:04:23] "GET /favicon.ico HTTP/1.1" 404 -
+User Nivetha M logged in with role admin and id TI055
+adminn role
+adminn role
+adminn role
+start_now = 2025-04-23 12:12:12.536550
+Database 'asset_management' is ready.
+ * Serving Flask app 'app_ba'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://192.168.2.48:8000
+Press CTRL+C to quit
+192.168.3.222 - - [23/Apr/2025 12:12:20] "GET /login?username=Nivetha%20M&role=admin&can_create_ast=1&can_read_ast=1&can_update_ast=1&can_delete_ast=1&app=asset_tracker HTTP/1.1" 302 -
+192.168.3.222 - - [23/Apr/2025 12:12:20] "GET / HTTP/1.1" 302 -
+192.168.3.222 - - [23/Apr/2025 12:12:20] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.3.222 - - [23/Apr/2025 12:12:20] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:12:20] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:12:24] "GET /view_assets HTTP/1.1" 200 -
+192.168.3.222 - - [23/Apr/2025 12:12:25] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:12:25] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:12:28] "GET /view_asset_details/IT20250418-04 HTTP/1.1" 200 -
+192.168.3.222 - - [23/Apr/2025 12:12:28] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:12:28] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:38:12] "GET /view_raised_tickets HTTP/1.1" 200 -
+192.168.3.222 - - [23/Apr/2025 12:38:12] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:38:12] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:38:29] "GET /ticket_details/RT20250328-01 HTTP/1.1" 200 -
+192.168.3.222 - - [23/Apr/2025 12:38:40] "GET /ticket_details/RT20250418-02 HTTP/1.1" 200 -
+192.168.3.222 - - [23/Apr/2025 12:38:46] "GET /create_replacement HTTP/1.1" 200 -
+192.168.3.222 - - [23/Apr/2025 12:38:46] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:38:46] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:38:58] "GET /create_replacement HTTP/1.1" 200 -
+192.168.3.222 - - [23/Apr/2025 12:38:58] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:38:58] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:39:39] "GET /view_assets HTTP/1.1" 200 -
+192.168.3.222 - - [23/Apr/2025 12:39:39] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:39:39] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:39:44] "GET /create_raise_ticket/IT20250328-01 HTTP/1.1" 200 -
+192.168.3.222 - - [23/Apr/2025 12:39:45] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:39:45] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:39:57] "GET /view_service HTTP/1.1" 200 -
+192.168.3.222 - - [23/Apr/2025 12:39:57] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:39:57] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:39:57] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:40:14] "GET /edit_service/SI20250328-01 HTTP/1.1" 200 -
+192.168.3.222 - - [23/Apr/2025 12:40:14] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:40:14] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:40:14] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:46:18] "GET /edit_service/SI20250328-01 HTTP/1.1" 200 -
+192.168.3.222 - - [23/Apr/2025 12:46:18] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:46:18] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:46:18] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:46:25] "GET /logout HTTP/1.1" 302 -
+192.168.3.222 - - [23/Apr/2025 12:46:32] "GET /login?username=Nivetha%20M&role=admin&can_create_ast=1&can_read_ast=1&can_update_ast=1&can_delete_ast=1&app=asset_tracker HTTP/1.1" 302 -
+192.168.3.222 - - [23/Apr/2025 12:46:32] "GET / HTTP/1.1" 302 -
+192.168.3.222 - - [23/Apr/2025 12:46:33] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.3.222 - - [23/Apr/2025 12:46:33] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:46:33] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:46:36] "GET /view_assets HTTP/1.1" 200 -
+192.168.3.222 - - [23/Apr/2025 12:46:36] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:46:36] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:46:39] "GET /create_raise_ticket/IT20250328-01 HTTP/1.1" 200 -
+192.168.3.222 - - [23/Apr/2025 12:46:39] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:46:39] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:46:41] "GET /view_raised_tickets/IT20250328-01 HTTP/1.1" 200 -
+192.168.3.222 - - [23/Apr/2025 12:46:41] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:46:41] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:47:58] "GET /view_assets HTTP/1.1" 200 -
+192.168.3.222 - - [23/Apr/2025 12:47:58] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:47:58] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:48:01] "GET /create_raise_ticket/IT20250328-01 HTTP/1.1" 200 -
+192.168.3.222 - - [23/Apr/2025 12:48:01] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:48:01] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:48:04] "GET /view_raised_tickets/IT20250328-01 HTTP/1.1" 200 -
+192.168.3.222 - - [23/Apr/2025 12:48:04] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.222 - - [23/Apr/2025 12:48:04] "GET /static/js/header.js HTTP/1.1" 304 -

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Details - {{ asset.asset_id }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 95%;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1, h3 {
+            color: #2f276f;
+            margin-bottom: 20px;
+        }
+        .two-column-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .detail-item {
+            margin: 8px 0;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .detail-item strong {
+            color: #2f276f;
+            display: block;
+            margin-bottom: 4px;
+            text-transform: capitalize;
+        }
+        .detail-item span {
+            color: #333;
+            word-break: break-word;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #2f276f;
+            color: white;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .print-btn {
+            background-color: #2f276f;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+            float: right;
+        }
+        .print-btn:hover {
+            background-color: #1f1a4f;
+        }
+        @media print {
+            .back-link, .print-btn {
+                display: none;
+            }
+            .container {
+                box-shadow: none;
+                margin: 0;
+                padding: 10px;
+                width: 100%;
+            }
+            .two-column-grid {
+                display: block;
+            }
+            table {
+                page-break-inside: auto;
+            }
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+        }
+		
+				.header {
+    background-color: #2f276f;
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    position: relative; /* Ensure header is a positioning context */
+    z-index: 998; /* Lower than dropdown but higher than other content */
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.menu {
+    cursor: pointer;
+    font-size: 24px;
+    position: relative; /* Ensure menu icon is a reference point */
+}
+
+.menu-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%; /* Position it directly below the menu icon */
+    right: 20px; /* Align with the right edge of the header */
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    z-index: 1000; /* Ensure it appears above the header */
+    min-width: 150px; /* Optional: Ensure it has a minimum width */
+}
+
+.menu-dropdown button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: left;
+    color: black;
+}
+
+.menu-dropdown button:hover {
+    background: #f0f0f0;
+}
+    </style>
+	    </style>
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
+</head>
+<body>
+
+
+    {% include 'header.html' %}
+    
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+	
+    <div class="container">
+        <h1>Asset Details - {{ asset.asset_id }}</h1>
+
+        {% if permissions.role == 'employee' %}
+            <!-- Employee View -->
+            <div class="two-column-grid">
+                <div>
+                    <div class="detail-item">
+                        <strong>Asset ID:</strong>
+                        <span>{{ asset.asset_id or 'N/A' }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Product Name:</strong>
+                        <span>{{ asset.product_name or 'N/A' }}</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="detail-item">
+                        <strong>Serial No:</strong>
+                        <span>{{ asset.serial_no or 'N/A' }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Make Model:</strong>
+                        <span>{{ asset.make or 'N/A' }} {{ asset.model or '' }}</span>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <!-- Admin/Manager View -->
+            {% set field_order = [
+                'id', 'created_by', 'created_at', 'asset_id', 'asset_category', 'product_type',
+                'product_name', 'serial_no', 'make', 'model', 'part_no', 'description',
+                'purchase_date', 'product_age', 'vendor_name', 'vendor_id', 'company_name',
+                'asset_type', 'purchase_value', 'product_condition', 'adp_production',
+                'insurance', 'warranty_checked', 'warranty_exists', 'warranty_start',
+                'warranty_period', 'warranty_end', 'extended_warranty_exists',
+                'extended_warranty_period', 'extended_warranty_end', 'has_amc',
+                'recurring_alert_for_amc', 'image_path', 'purchase_bill_path',
+                'modified_by', 'modified_at', 'remarks'
+            ] %}
+            {% set mid_point = (field_order|length / 2)|round(0, 'ceil')|int %}
+            {% set left_fields = field_order[:mid_point] %}
+            {% set right_fields = field_order[mid_point:] %}
+
+            <div class="two-column-grid">
+                <div>
+                    {% for key in left_fields %}
+                        {% if key in asset %}
+                            {% if key == 'created_by' and 'created_at' in asset %}
+                                <div class="detail-item">
+                                    <strong>Created By at Created At:</strong>
+                                    <span>{{ asset[key] or 'N/A' }} at {{ asset.created_at.strftime('%Y-%m-%d') if asset.created_at else 'N/A' }}</span>
+                                </div>
+                            {% elif key != 'created_at' %}
+                                <div class="detail-item">
+                                    <strong>{{ key|replace('_', ' ')|title }}:</strong>
+                                    <span>{{ asset[key].strftime('%Y-%m-%d') if key in ['purchase_date', 'warranty_start', 'warranty_end', 'extended_warranty_end', 'created_at', 'modified_at'] and asset[key] else asset[key] or 'N/A' }}</span>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div>
+                    {% for key in right_fields %}
+                        {% if key in asset %}
+                            {% if key == 'modified_by' and 'modified_at' in asset %}
+                                <div class="detail-item">
+                                    <strong>Modified By at Modified At:</strong>
+                                    <span>{{ asset[key] or 'N/A' }} at {{ asset.modified_at.strftime('%Y-%m-%d') if asset.modified_at else 'N/A' }}</span>
+                                </div>
+                            {% elif key != 'modified_at' %}
+                                <div class="detail-item">
+                                    <strong>{{ key|replace('_', ' ')|title }}:</strong>
+                                    <span>{{ asset[key].strftime('%Y-%m-%d') if key in ['purchase_date', 'warranty_start', 'warranty_end', 'extended_warranty_end', 'created_at', 'modified_at'] and asset[key] else asset[key] or 'N/A' }}</span>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Related Data -->
+            <div id="related-data">
+                <h3>Service Details</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Service ID</th>
+                            <th>Service Type</th>
+                            <th>Ticket ID</th>
+                            <th>Work Done</th>
+                            <th>Next Service Date</th>
+                            <th>Charge</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if related_data.service_details %}
+                            {% for service in related_data.service_details %}
+                                <tr>
+                                    <td>{{ service.service_id or 'N/A' }}</td>
+                                    <td>{{ service.warranty_type or 'N/A' }}</td>
+                                    <td>{{ service.ticket_id or 'N/A' }}</td>
+                                    <td>{{ service.work_done or 'N/A' }}</td>
+                                    <td>{{ service.next_service_date.strftime('%Y-%m-%d') if service.next_service_date else 'N/A' }}</td>
+                                    <td>{{ service.service_charge or 'N/A' }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="6">No service details available</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+
+                <h3>Raised Tickets</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ticket ID</th>
+                            <th>Problem Description</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if related_data.raised_tickets %}
+                            {% for ticket in related_data.raised_tickets %}
+                                <tr>
+                                    <td>{{ ticket.ticket_id or 'N/A' }}</td>
+                                    <td>{{ ticket.problem_description or 'N/A' }}</td>
+                                    <td>{{ ticket.ticket_status or 'N/A' }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="3">No raised tickets available</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+
+                <h3>Extended Warranty Info</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Warranty Asset ID</th>
+                            <th>Warranty Purchase Date</th>
+                            <th>Extended Warranty</th>
+                            <th>Warranty End Date</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if related_data.extended_warranty_info %}
+                            {% for warranty in related_data.extended_warranty_info %}
+                                <tr>
+                                    <td>{{ warranty.warranty_asset_id or 'N/A' }}</td>
+                                    <td>{{ warranty.extended_warranty_start.strftime('%Y-%m-%d') if warranty.extended_warranty_start else 'N/A' }}</td>
+                                    <td>{{ warranty.extended_warranty_period or 'N/A' }}</td>
+                                    <td>{{ warranty.extended_warranty_end_date.strftime('%Y-%m-%d') if warranty.extended_warranty_end_date else 'N/A' }}</td>
+                                    <td>{{ warranty.warranty_value or 'N/A' }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="5">No extended warranty info available</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+
+                <h3>Insurance Details</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Policy Number</th>
+                            <th>Insurance Value</th>
+                            <th>Start Date</th>
+                            <th>Period</th>
+                            <th>End Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if related_data.insurance_details %}
+                            {% for insurance in related_data.insurance_details %}
+                                <tr>
+                                    <td>{{ insurance.policy_number or 'N/A' }}</td>
+                                    <td>{{ insurance.insurance_value or 'N/A' }}</td>
+                                    <td>{{ insurance.insurance_start.strftime('%Y-%m-%d') if insurance.insurance_start else 'N/A' }}</td>
+                                    <td>{{ insurance.insurance_period or 'N/A' }}</td>
+                                    <td>{{ insurance.insurance_end.strftime('%Y-%m-%d') if insurance.insurance_end else 'N/A' }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="5">No insurance details available</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+
+        <a href="{{ url_for('view_assets') }}" class="back-link">Back to Assets List</a>
+        <button class="print-btn" onclick="window.print()">Print</button>
+    </div>
+</body>
+</html>

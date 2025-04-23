@@ -75,6 +75,92 @@
         .provider-details {
             display: none;
         }
+		
+
+    .remove-btn {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-left: 10px;
+    }
+    .remove-btn:hover {
+        background-color: #c82333;
+    }
+    ul {
+        list-style-type: none;
+        padding-left: 0;
+    }
+    li {
+        margin-bottom: 5px;
+    }
+	 .header {
+            background-color: #2f276f;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 998;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .menu {
+            cursor: pointer;
+            font-size: 24px;
+            position: relative;
+        }
+        .menu-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 20px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            z-index: 1000;
+            min-width: 150px;
+        }
+        .menu-dropdown button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: left;
+            color: black;
+        }
+        .menu-dropdown button:hover {
+            background: #f0f0f0;
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 95%; /* Match the header's width */
+            margin: 10px auto; /* Reduced top/bottom margin */
+            padding: 10px 20px; /* Reduced top/bottom padding */
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .no-records {
+            text-align: center;
+            padding: 20px;
+            color: #721c24;
+        }
+	
+	
+
     </style>
 	
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
@@ -166,16 +252,22 @@
                 </select>
             </div>
 
-            <div class="form-group">
-                <label for="extended_warranty_bill">Upload Additional Extended Warranty Bills:</label>
-                <input type="file" id="extended_warranty_bill" name="extended_warranty_bill" multiple accept=".png,.jpg,.jpeg,.pdf">
-                {% if warranty.extended_warranty_bill_path %}
-                    <p><strong>Existing Bills:</strong></p>
-                    {% for path in warranty.extended_warranty_bill_path.split(',') %}
-                        <a href="{{ url_for('static', filename='uploads/' + path) }}" target="_blank">{{ path.split('/')[-1] }}</a><br>
-                    {% endfor %}
-                {% endif %}
-            </div>
+<div class="form-group">
+    <label for="extended_warranty_bill">Upload Additional Extended Warranty Bills:</label>
+    <input type="file" id="extended_warranty_bill" name="extended_warranty_bill" multiple accept=".png,.jpg,.jpeg,.pdf">
+    {% if warranty.extended_warranty_bill_path %}
+        <p><strong>Existing Bills:</strong></p>
+        <ul id="bill-list">
+            {% for path in warranty.extended_warranty_bill_path.split(',') %}
+                <li data-full-path="{{ path }}">
+                    <a href="{{ url_for('static', filename='uploads/' + path) }}" target="_blank">{{ path.split('/')[-1] }}</a>
+                    <button type="button" class="remove-btn" onclick="removeFile(this)">Remove</button>
+                </li>
+            {% endfor %}
+        </ul>
+        <input type="hidden" name="removed_bills" id="removed-bills" value="">
+    {% endif %}
+</div>
 
             <div class="form-group">
                 <label for="product_condition">Product Condition:</label>
@@ -289,5 +381,28 @@
             providerLocationInput.setAttribute('required', 'required');
         }
     </script>
+	
+<!-- JavaScript at the bottom of the file, before </body> -->
+<script>
+    function removeFile(button) {
+            const li = button.parentElement;
+            const fullPath = li.getAttribute('data-full-path');
+            const fileName = fullPath.split('/').pop(); // Extract the file name for the confirmation message
+
+            // Ask for confirmation
+            if (confirm(`Are you sure you want to remove "${fileName}"?`)) {
+                // If user clicks "OK", proceed with removal
+                li.remove();
+
+                const hiddenInput = document.getElementById('removed-bills');
+                let removedFiles = hiddenInput.value ? hiddenInput.value.split(',') : [];
+                if (!removedFiles.includes(fullPath)) {
+                    removedFiles.push(fullPath);
+                    hiddenInput.value = removedFiles.join(',');
+                }
+            }
+            // If user clicks "Cancel", do nothing (function ends here)
+        }
+</script>
 </body>
 </html>

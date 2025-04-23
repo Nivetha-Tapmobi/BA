@@ -1,15 +1,40 @@
+
+
 <div class="header">
     <h1>IT Asset Tracker</h1>
-    <div class="menu" onclick="headertoggleMenu()">☰</div>
+    <div class="menu">☰</div>
     <div class="menu-dropdown" id="menuDropdown">
-        <button class="add-asset-btn" onclick="location.href='{{ url_for('create_asset') }}';">+ Add Asset</button>
-        <button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_raised_tickets') }}';">Raised Tickets</button>
-        <button class="details-button" onclick="location.href='{{ url_for('view_assets') }}';">IT Assets</button>
-        <button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_service') }}';">Services</button>
-        <button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_insurance') }}';">Insurance</button>
-        <button class="view-all-tickets-btn" onclick="location.href='{{ url_for('view_extended_warranty') }}';">EXW</button>
-        <button class="view-all-tickets-btn" onclick="location.href='{{ url_for('check_asset_status') }}';">Audit</button>
-        <button class="view-all-tickets-btn" onclick="location.href='{{ url_for('all_assets') }}';">M Services</button>
-        <button class="view-all-tickets-btn" onclick="location.href='{{ url_for('upcoming_alerts') }}';">Alerts</button>
+
+		
+		
+		{% if header_permissions.view_raised_tickets %}
+        <button onclick="location.href='{{ url_for('view_raised_tickets') }}';">Raised Tickets</button>
+				{% endif %}
+		{% if header_permissions.view_assets %}
+        <button onclick="location.href='{{ url_for('view_assets') }}';">IT Assets</button>
+				{% endif %}
+				{% if header_permissions.view_service %}
+        <button onclick="location.href='{{ url_for('view_service') }}';">Services</button>
+				{% endif %}
+				{% if header_permissions.view_insurance %}
+        <button onclick="location.href='{{ url_for('view_insurance') }}';">Insurance</button>
+				{% endif %}
+				{% if header_permissions.view_extended_warranty %}
+        <button onclick="location.href='{{ url_for('view_extended_warranty') }}';">EXW</button>
+				{% endif %}
+				{% if header_permissions.check_asset_status %}
+        <button onclick="location.href='{{ url_for('check_asset_status') }}';">Audit</button>
+	
+				{% endif %}
+				{% if header_permissions.all_assets %}
+        <button onclick="location.href='{{ url_for('all_assets') }}';">M Services</button>
+				{% endif %}
+				{% if header_permissions.upcoming_alerts %}
+        <button onclick="location.href='{{ url_for('upcoming_alerts') }}';">Alerts</button>
+				{% endif %}
+				
+		{% if header_permissions.logout %}
+        <button onclick="location.href='{{ url_for('logout') }}';">Logout</button>
+				{% endif %}
     </div>
 </div>

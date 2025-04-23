@@ -5,17 +5,193 @@
     <title>All Assets</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/create_multiple_service_style.css') }}">
     <style>
-        /* [Your existing styles remain unchanged] */
-        .filter-container { display: flex; gap: 20px; align-items: center; }
+        .form-container {
+            width: 95%; /* Match the header's width */
+            max-width: none; /* Remove the max-width constraint */
+            margin: 10px auto; /* Reduced top margin */
+            padding: 10px 20px; /* Reduced top/bottom padding */
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            background-color: #f8f9fa;
+        }
+        .asset-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0; /* Reduced top margin */
+            background-color: white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        .asset-table th, .asset-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            font-size: 18px;
+        }
+        .asset-table th {
+            background-color: #2f276f;
+            color: white;
+        }
+        .action-btn {
+            padding: 8px 12px; /* Consistent padding */
+            margin: 2px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            color: white;
+            font-size: 14px; /* Consistent font size */
+            line-height: 1; /* Prevent line-height differences */
+            box-sizing: border-box; /* Ensure padding is included in size */
+            min-width: 120px; /* Slightly wider for longer text */
+            text-align: center; /* Center the text */
+            background-color: #2f276f; /* Match the view-btn color */
+        }
+        .action-btn:hover {
+            background-color: #3f357f; /* Slightly lighter shade on hover */
+        }
+        .flash-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .flash-message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .flash-message.danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .no-records {
+            text-align: center;
+            padding: 20px;
+            color: #721c24;
+        }
+        .filter-container {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin: 10px 0; /* Reduced margin */
+        }
+        .filter-container label {
+            margin-right: 5px;
+            color: #2f276f;
+            font-weight: bold;
+        }
+        .filter-container select, .filter-container input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .filter-container input[type="text"] {
+            width: 250px; /* Match search input width from previous templates */
+        }
+        .pagination {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .pagination a, .pagination span {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #2f276f;
+        }
+        .pagination a:hover {
+            background-color: #f4f4f4;
+        }
+        .pagination .current {
+            background-color: #2f276f;
+            color: white;
+            border-color: #2f276f;
+        }
+        .header {
+            background-color: #2f276f;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 998;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .menu {
+            cursor: pointer;
+            font-size: 24px;
+            position: relative;
+        }
+        .menu-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 20px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            z-index: 1000;
+            min-width: 150px;
+        }
+        .menu-dropdown button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: left;
+            color: black;
+        }
+        .menu-dropdown button:hover {
+            background: #f0f0f0;
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 95%; /* Match the header's width */
+            margin: 10px auto; /* Reduced top/bottom margin */
+            padding: 10px 20px; /* Reduced top/bottom padding */
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        .checkbox-label {
+            color: red;
+            font-weight: bold;
+            margin: 10px 0;
+            display: block;
+        }
     </style>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
 </head>
 <body>
-    <div class="header">
+    {% include 'header.html' %}
+    
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <div class="header-container">
         <h1>All Assets</h1>
-        <div>
+        <div class="button-group">
             <button class="action-btn" onclick="createMultipleServices()">Create Multiple Services</button>
             <button class="action-btn" onclick="editMultipleServices()">Edit Multiple Services</button>
-            <button class="back-button" onclick="window.history.back()">Back</button>
         </div>
     </div>
 
@@ -56,11 +232,11 @@
             <div>
                 <input type="text" id="search-input" placeholder="Search by Asset ID, Product Name, or Serial No" value="{{ search_query }}">
             </div>
-        </div><br><br>
+        </div>
 
-        <label for="select-all" style="color: red; font-weight: bold;">Click checkbox for creating multiple services</label>
-        <br><br>
-        <label><input type="checkbox" id="select-all" onclick="toggleSelectAll()"> Select all </label>
+        <label class="checkbox-label">
+            <input type="checkbox" id="select-all" onclick="toggleSelectAll()"> Select all for creating multiple services
+        </label>
 
         <!-- Asset Table -->
         <form method="POST" action="{{ url_for('all_assets') }}" id="asset-form">
@@ -168,7 +344,7 @@
             document.getElementById('asset-form').submit();
         }
 
-        // Redirect to edit_related_multiple_services (prompt for ticket_id)
+        // Redirect to edit_related_multiple_services
         function editMultipleServices() {
             window.location.href = "{{ url_for('edit_related_multiple_services') }}";
         }

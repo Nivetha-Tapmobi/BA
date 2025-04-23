@@ -5,283 +5,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View All Raised Tickets</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .header {
-            background-color: #2f276f;
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .form-container {
+            width: 95%; /* Match the header's width */
+            max-width: none; /* Remove the max-width constraint */
+            margin: 10px auto; /* Reduced top margin */
+            padding: 10px 20px; /* Reduced top/bottom padding */
             border-radius: 8px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            background-color: #f8f9fa;
         }
-
-        .header h1 {
-            margin: 0;
-            font-size: 28px;
-            color: white;
-        }
-
-        .menu {
-            cursor: pointer;
-            font-size: 24px;
-            padding: 10px;
-            background-color: #2f276f;
-            border: none;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.3s;
-        }
-
-        .menu:hover {
-            background-color: #291e6c;
-        }
-
-        .menu-dropdown {
-            display: none;
-            position: absolute;
-            top: 60px;
-            right: 20px;
-            background-color: white;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            overflow: hidden;
-            z-index: 1000;
-        }
-
-        .menu-dropdown a,
-        .menu-dropdown button {
-            display: block;
-            text-decoration: none;
-            color: #2f276f;
-            padding: 10px 20px;
-            border: none;
-            background: none;
-            text-align: left;
-            width: 100%;
-            cursor: pointer;
-        }
-
-        .menu-dropdown a:hover,
-        .menu-dropdown button:hover {
-            background-color: #f4f4f9;
-        }
-
-        .ticket-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-            background-color: #f4f4f9;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .ticket-actions h1 {
-            margin: 0;
-            font-size: 28px;
-            color: #2f276f;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 20px;
-        }
-
-        table {
+        .ticket-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin: 10px 0; /* Reduced top margin */
             background-color: white;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
-
-        th, td {
-            border: 1px solid #ccc;
+        .ticket-table th, .ticket-table td {
+            border: 1px solid #ddd;
             padding: 10px;
             text-align: left;
+            font-size: 18px;
         }
-
-        th {
+        .ticket-table th {
             background-color: #2f276f;
             color: white;
-            font-weight: bold;
         }
-
-        td {
-            background-color: #fff;
-        }
-
         .actions, .status {
             display: flex;
             gap: 5px;
             justify-content: center;
         }
-
-        .actions-btn, .status-btn {
-            padding: 5px 10px;
+        .actions-btn, .status-btn, .replacement-btn, .submit-ignore-btn, .print-btn, .close-btn {
+            padding: 8px 12px; /* Consistent padding */
+            margin: 2px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            color: white;
-            font-size: 14px;
-            text-align: center;
             text-decoration: none;
             display: inline-block;
+            color: white;
+            font-size: 14px; /* Consistent font size */
+            line-height: 1; /* Prevent line-height differences */
+            box-sizing: border-box; /* Ensure padding is included in size */
+            min-width: 60px; /* Ensure all buttons have the same width */
+            text-align: center; /* Center the text */
         }
-
         .view-btn {
             background-color: #2f276f;
         }
-
         .delete-btn {
             background-color: #ff4444;
         }
-
         .create-service-btn {
             background-color: #4CAF50;
         }
-
         .ignore-btn {
             background-color: #ff9800;
         }
-
-        .actions-btn:hover, .status-btn:hover {
-            opacity: 0.9;
+        .replacement-btn {
+            background-color: #008CBA;
         }
-
+        .submit-ignore-btn {
+            background-color: #2f276f;
+        }
+        .print-btn {
+            background-color: #4CAF50;
+        }
+        .close-btn {
+            background-color: #ff4444;
+        }
         .status-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             background-color: #cccccc;
         }
-
-        /* Updated Popup Styles to Match Extended Warranty Layout */
-        .popup-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            z-index: 999;
-        }
-
-        .popup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #fff;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            max-width: 600px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .popup-header {
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .popup-header h3 {
-            margin: 0;
-            font-size: 20px;
-            font-weight: bold;
-            color: #2f276f;
-        }
-
-        .popup-header .btn-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .popup-body {
-            padding: 20px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px 20px;
-        }
-
-        .ticket-detail {
-            display: flex;
-            flex-direction: column;
-            font-size: 14px;
-        }
-
-        .ticket-detail label {
-            font-weight: bold;
-            color: #2f276f;
-            margin-bottom: 5px;
-        }
-
-        .ticket-detail span {
-            color: #333;
-            word-wrap: break-word;
-        }
-
-        .print-btn {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 5px 15px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 14px;
-            transition: background-color 0.3s;
-        }
-
-        .print-btn:hover {
-            background-color: #218838;
-        }
-
-        .close-btn {
-            background-color: #ff4444;
-            color: white;
-            border: none;
-            padding: 5px 15px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 14px;
-            transition: background-color 0.3s;
-        }
-
-        .close-btn:hover {
-            background-color: #cc0000;
-        }
-
-        /* Responsive Adjustments for Popup */
-        @media (max-width: 600px) {
-            .popup {
-                width: 95%;
-            }
-
-            .popup-body {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Ignore Popup Styles */
-        .ignore-overlay {
+        .popup-overlay, .ignore-overlay {
             display: none;
             position: fixed;
             top: 0;
@@ -291,8 +90,7 @@
             background-color: rgba(0, 0, 0, 0.5);
             z-index: 999;
         }
-
-        .ignore-popup {
+        .popup, .ignore-popup {
             display: none;
             position: fixed;
             top: 50%;
@@ -301,62 +99,171 @@
             background-color: white;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             z-index: 1000;
-            max-width: 500px;
+            max-width: 600px;
             width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
         }
-
-        .ignore-popup h3 {
-            margin-top: 0;
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .popup-header h3 {
+            margin: 0;
             color: #2f276f;
+            font-size: 24px;
         }
-
+        .popup-body {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        .ticket-detail {
+            width: 48%;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .ticket-detail label {
+            color: #2f276f;
+            display: block;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .ticket-detail span {
+            color: #333;
+            word-break: break-word;
+        }
+        .ignore-popup h3 {
+            margin: 0 0 20px;
+            color: #2f276f;
+            font-size: 24px;
+        }
+        .ignore-popup label {
+            color: #2f276f;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
         .ignore-popup textarea {
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
             border: 1px solid #ddd;
             border-radius: 5px;
+            font-size: 14px;
         }
-
-        .submit-ignore-btn {
-            background-color: #2f276f;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+        .ignore-popup .char-count {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
         }
-
-        .submit-ignore-btn:hover {
-            background-color: #291e6c;
+        .ignore-popup .error-msg {
+            color: red;
+            margin-bottom: 10px;
+            display: none;
         }
-
-        .replacement-btn {
-            background-color: #008CBA;
-            color: white;
+        .pagination {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .pagination button {
             padding: 5px 10px;
-            text-decoration: none;
+            border: 1px solid #ddd;
+            background-color: #f4f4f4;
+            cursor: pointer;
             border-radius: 4px;
         }
-
-        .replacement-btn:hover {
-            background-color: #007B9A;
+        .pagination button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .pagination button.active {
+            background-color: #2f276f;
+            color: white;
+            border-color: #2f276f;
+        }
+        .no-records {
+            text-align: center;
+            padding: 20px;
+            color: #721c24;
+        }
+        .header {
+            background-color: #2f276f;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 998;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .menu {
+            cursor: pointer;
+            font-size: 24px;
+            position: relative;
+        }
+        .menu-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 20px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            z-index: 1000;
+            min-width: 150px;
+        }
+        .menu-dropdown button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: left;
+            color: black;
+        }
+        .menu-dropdown button:hover {
+            background: #f0f0f0;
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 95%; /* Match the header's width */
+            margin: 10px auto; /* Reduced top/bottom margin */
+            padding: 10px 20px; /* Reduced top/bottom padding */
+            background-color: #f8f9fa;
+            border-radius: 5px;
         }
     </style>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
 </head>
 <body>
-    <div class="header">
-        <h1>View All Raised Tickets</h1>
-        <button class="menu">☰</button>
-        <div class="menu-dropdown">
-            <a href="{{ url_for('view_assets') }}">View Assets</a>
-            <!-- Add more menu items as needed -->
-        </div>
+    {% include 'header.html' %}
+    
+    <div class="content">
+        {% block content %}{% endblock %}
     </div>
 
-    <div class="ticket-actions">
+    <div class="header-container">
         {% if asset_id %}
             <h1>All Raised Tickets for Asset ID: {{ asset_id }}</h1>
         {% else %}
@@ -364,58 +271,98 @@
         {% endif %}
     </div>
 
-    <div class="container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Created By</th>
-                    <th>Ticket ID</th>
-                    <th>Raised By</th>
-                    <th>Problem Description</th>
-                    <th>Ticket Status</th>
-                    <th>Ignore Reason</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                    <th>Replacement</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for ticket in tickets %}
-                <tr>
-                    <td>{{ ticket.created_by }}</td>
-                    <td>{{ ticket.ticket_id }}</td>
-                    <td>{{ ticket.raised_by }}</td>
-                    <td>{{ ticket.problem_description }}</td>
-                    <td>{{ ticket.ticket_status }}</td>
-                    <td>{{ ticket.ignore_reason if ticket.ignore_reason else 'N/A' }}</td>
-                    <td>
-                        <button class="status-btn create-service-btn" 
-                            onclick="window.location.href='{{ url_for('create_service', ticket_id=ticket.ticket_id, asset_id=ticket.asset_id) }}'"
-                            {% if ticket_is_processed(ticket.ticket_id) %}disabled{% endif %}>
-                            Create Service
-                        </button><br>
-                        <button class="status-btn ignore-btn" 
-                            onclick="openIgnorePopup('{{ ticket.ticket_id }}')"
-                            {% if ticket_is_processed(ticket.ticket_id) %}disabled{% endif %}>
-                            Ignore
-                        </button>
-                    </td>
-                    <td>
-                        <button class="actions-btn view-btn" onclick="openViewPopup('{{ ticket.ticket_id }}')">View</button><br>
-                        <form action="{{ url_for('delete_ticket', ticket_id=ticket.ticket_id) }}" method="post" style="display:inline;">
-                            <button type="submit" class="actions-btn delete-btn" onclick="return confirm('Are you sure you want to delete this ticket?');">Delete</button>
-                        </form>
-                    </td>
-                    <td>
-                        <a href="{{ url_for('fetch_unassigned_assets') }}" class="replacement-btn">Select Replacement</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="form-container">
+    <table class="ticket-table" id="ticketTable">
+        <thead>
+            <tr>
+                <th>Created By</th>
+                <th>Ticket ID</th>
+                <th>Raised By</th>
+                <th>Problem Description</th>
+                <th>Ticket Status</th>
+                <th>Ignore Reason</th>
+
+                {% if permissions.create_service or permissions.ignore_ticket %}
+                <th>Status</th>
+                {% endif %}
+                
+                {% if permissions.view or permissions.delete %}
+                <th>Actions</th>
+                {% endif %}
+                
+                {% if permissions.replacement %}
+                <th>Replacement</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody id="ticketBody">
+            {% for ticket in tickets %}
+            <tr data-ticket-id="{{ ticket.ticket_id }}">
+                <td>{{ ticket.created_by }}</td>
+                <td>{{ ticket.ticket_id }}</td>
+                <td>{{ ticket.raised_by }}</td>
+                <td>{{ ticket.problem_description }}</td>
+                <td>{{ ticket.ticket_status }}</td>
+                <td>{{ ticket.ignore_reason if ticket.ignore_reason else 'N/A' }}</td>
+
+                {% if permissions.create_service or permissions.ignore_ticket %}
+                <td>
+                    {% if permissions.create_service %}
+                    <button class="status-btn create-service-btn" 
+                        onclick="window.location.href='{{ url_for('create_service', ticket_id=ticket.ticket_id, asset_id=ticket.asset_id) }}'"
+                        {% if ticket_is_processed(ticket.ticket_id) %}disabled{% endif %}>
+                        Create Service
+                    </button>
+                    {% endif %}
+                    
+                    {% if permissions.ignore_ticket %}
+                    <button class="status-btn ignore-btn" 
+                        onclick="openIgnorePopup('{{ ticket.ticket_id }}')"
+                        {% if ticket_is_processed(ticket.ticket_id) %}disabled{% endif %}>
+                        Ignore
+                    </button>
+                    {% endif %}
+                </td>
+                {% endif %}
+
+                {% if permissions.view or permissions.delete %}
+                <td>
+                    {% if permissions.view %}
+                    <button class="actions-btn view-btn" onclick="openViewPopup('{{ ticket.ticket_id }}')">View</button>
+                    {% endif %}
+                    
+                    {% if permissions.delete %}
+                    <form action="{{ url_for('delete_ticket', ticket_id=ticket.ticket_id) }}" method="post" style="display:inline;">
+                        <button type="submit" class="actions-btn delete-btn" onclick="return confirm('Are you sure you want to delete this ticket?');">Delete</button>
+                    </form>
+                    {% endif %}
+                </td>
+                {% endif %}
+
+                {% if permissions.replacement %}
+                <td>
+                    <a href="{{ url_for('fetch_unassigned_assets') }}" class="replacement-btn">Select Replacement</a>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination">
+            <!-- Pagination buttons will be populated dynamically -->
+        </div>
+
+        <!-- No Records Message -->
+        <div class="no-records" id="noRecords" style="display: none;">
+            <p>No tickets found.</p>
+        </div>
     </div>
 
-    <!-- Updated View Popup to Match Extended Warranty Layout -->
+    <!-- View Popup -->
     <div class="popup-overlay" id="viewPopupOverlay"></div>
     <div class="popup" id="viewPopup">
         <div class="popup-header">
@@ -437,18 +384,74 @@
         <form id="ignoreForm" action="" method="POST" onsubmit="return validateIgnoreReason()">
             <label for="ignore_reason">Ignore Reason:</label>
             <textarea id="ignore_reason" name="ignore_reason" rows="3" placeholder="Enter the reason for ignoring this ticket (minimum 15 characters)..." required></textarea>
-            <p id="charCount" style="font-size: 12px; color: #666;">Characters: 0</p>
-            <p id="errorMsg" style="color: red; display: none;">Reason must be at least 15 characters long</p>
+            <p class="char-count" id="charCount">Characters: 0</p>
+            <p class="error-msg" id="errorMsg">Reason must be at least 15 characters long</p>
             <button type="submit" class="submit-ignore-btn">Submit</button>
             <button type="button" class="close-btn" onclick="closeIgnorePopup()">Cancel</button>
         </form>
     </div>
 
     <script>
-        // Menu Toggle
-        document.querySelector('.menu').addEventListener('click', function() {
-            const dropdown = document.querySelector('.menu-dropdown');
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        const allTicketsData = {{ tickets | tojson | safe }};
+        const itemsPerPage = 5;
+        let currentPage = 1;
+        const allRows = Array.from(document.querySelectorAll('#ticketBody tr'));
+        let filteredRows = [...allRows];
+
+        // Display the current page
+        function displayPage(totalPages) {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+
+            allRows.forEach(row => row.style.display = 'none');
+
+            const rowsToShow = filteredRows.slice(startIndex, endIndex);
+            rowsToShow.forEach(row => {
+                row.style.display = '';
+            });
+
+            updatePagination(totalPages);
+        }
+
+        // Update pagination controls
+        function updatePagination(totalPages) {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+
+            const prevButton = `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>`;
+            pagination.innerHTML += prevButton;
+
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, startPage + 4);
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = `<button onclick="changePage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
+                pagination.innerHTML += pageButton;
+            }
+
+            const nextButton = `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>`;
+            pagination.innerHTML += nextButton;
+        }
+
+        // Change page and update display
+        function changePage(page) {
+            const totalPages = Math.ceil(filteredRows.length / itemsPerPage) || 1;
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            displayPage(totalPages);
+            toggleNoRecords(filteredRows.length === 0);
+        }
+
+        // Toggle no records message
+        function toggleNoRecords(show) {
+            document.getElementById('noRecords').style.display = show ? 'block' : 'none';
+            document.getElementById('ticketTable').style.display = show ? 'none' : 'table';
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            const totalPages = Math.ceil(allRows.length / itemsPerPage) || 1;
+            displayPage(totalPages);
+            toggleNoRecords(allRows.length === 0);
         });
 
         // Character count and validation for ignore reason
@@ -468,7 +471,7 @@
             return true;
         }
 
-        // Updated View Popup Functions
+        // View Popup Functions
         function openViewPopup(ticketId) {
             fetch(`/ticket_details/${ticketId}`)
                 .then(response => {
@@ -562,9 +565,6 @@
 
         function printTicketDetails() {
             const printContent = document.getElementById('ticketDetailsContent').innerHTML;
-            const originalContent = document.body.innerHTML;
-
-            // Create a new window for printing
             const printWindow = window.open('', '_blank');
             printWindow.document.write(`
                 <html>
@@ -572,9 +572,11 @@
                     <title>Print Ticket Details</title>
                     <style>
                         body { font-family: Arial, sans-serif; padding: 20px; }
-                        .ticket-detail { display: flex; flex-direction: column; margin-bottom: 15px; }
-                        .ticket-detail label { font-weight: bold; color: #2f276f; margin-bottom: 5px; }
-                        .ticket-detail span { color: #333; }
+                        h3 { color: #2f276f; border-bottom: 2px solid #2f276f; padding-bottom: 10px; }
+                        .two-column-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 10px 0; }
+                        .ticket-detail { margin: 8px 0; padding: 8px; background-color: #f8f9fa; }
+                        .ticket-detail label { color: #2f276f; display: block; margin-bottom: 4px; font-weight: bold; }
+                        .ticket-detail span { color: #333; word-break: break-word; }
                     </style>
                 </head>
                 <body>
@@ -584,7 +586,9 @@
                 </html>
             `);
             printWindow.document.close();
+            printWindow.focus();
             printWindow.print();
+            printWindow.close();
         }
 
         // Ignore Popup Functions

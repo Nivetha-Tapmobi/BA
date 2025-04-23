@@ -5,25 +5,160 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit User Asset Assignment</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/create_user_styles.css') }}">
-		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
-    <!-- Include Header JS -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
     <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        .form-container {
+            max-width: 600px; /* Reduced width for better readability */
+            margin: 40px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 15px 20px;
+            margin-top: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .header-container h1 {
+            margin: 0;
+            font-size: 28px;
+            color: #2f276f;
+        }
+        .form-container form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* Space between form elements */
+        }
+        .form-container label {
+            font-weight: bold;
+            color: #2f276f;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .form-container input[type="date"],
+        .form-container select,
+        .form-container textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .form-container select {
+            appearance: none; /* Remove default arrow for custom styling */
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"><path fill="%23333" d="M7 10l5 5 5-5z"/></svg>') no-repeat right 10px center;
+            background-size: 12px;
+        }
+        .form-container textarea {
+            resize: vertical; /* Allow vertical resizing only */
+        }
+        .form-container input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            align-self: flex-start; /* Align button to the left */
+        }
+        .form-container input[type="submit"]:hover {
+            background-color: #45a049;
+        }
         .error-message {
-            color: red;
-            margin-bottom: 10px;
+            color: #ff4444;
+            margin-top: 5px;
+            font-size: 14px;
             display: none;
+        }
+        .flash-message {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .flash-message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .flash-message.danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .header {
+            background-color: #2f276f;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 998;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .menu {
+            cursor: pointer;
+            font-size: 24px;
+            position: relative;
+        }
+        .menu-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 20px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            z-index: 1000;
+            min-width: 150px;
+        }
+        .menu-dropdown button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: left;
+            color: black;
+        }
+        .menu-dropdown button:hover {
+            background: #f0f0f0;
         }
     </style>
 </head>
 <body>
-<!-- Include the header HTML -->
     {% include 'header.html' %}
     
     <div class="content">
         {% block content %}{% endblock %}
     </div>
 
+    <div class="header-container">
+        <h1>Edit User Asset Assignment</h1>
+    </div>
 
     <div class="form-container">
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -33,40 +168,49 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
+
         <form action="{{ url_for('edit_user_asset', assignment_code=assignment_code) }}" method="post" enctype="multipart/form-data">
             <input type="hidden" name="asset_id" value="{{ asset_id }}">
 
             <!-- Person who is using the asset -->
-            <label for="assigned_user">Person who is using the asset:</label>
-            <select id="assigned_user" name="assigned_user" required>
-                <option value="" disabled>Select an employee</option>
-                {% for employee in employees %}
-                    <option value="{{ employee['username'] }}|{{ employee['employee_id'] }}"
-                        {% if last_user and employee['username'] == last_user['assigned_user'] and employee['employee_id'] == last_user['employee_code'] %}selected{% endif %}>
-                        {{ employee['username'] }} - {{ employee['designation'] }} - {{ employee['employee_id'] }}
-                    </option>
-                {% endfor %}
-            </select>
+            <div>
+                <label for="assigned_user">Person who is using the asset:</label>
+                <select id="assigned_user" name="assigned_user" required>
+                    <option value="" disabled>Select an employee</option>
+                    {% for employee in employees %}
+                        <option value="{{ employee['username'] }}|{{ employee['employee_id'] }}"
+                            {% if last_user and employee['username'] == last_user['assigned_user'] and employee['employee_id'] == last_user['employee_code'] %}selected{% endif %}>
+                            {{ employee['username'] }} - {{ employee['designation'] }} - {{ employee['employee_id'] }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
 
             <!-- Effective Date -->
-            <label for="effective_date">Effective Date:</label>
-            <input type="date" id="effective_date" name="effective_date" 
-                   value="{{ last_user['effective_date'] }}" required onchange="validateEffectiveDate()">
-            <div id="effective_date_error" class="error-message"></div>
-            <input type="hidden" id="purchase_date" value="{{ purchase_date }}">
+            <div>
+                <label for="effective_date">Effective Date:</label>
+                <input type="date" id="effective_date" name="effective_date" 
+                       value="{{ last_user['effective_date'] }}" required onchange="validateEffectiveDate()">
+                <div id="effective_date_error" class="error-message"></div>
+                <input type="hidden" id="purchase_date" value="{{ purchase_date }}">
+            </div>
 
             <!-- End Date -->
-            <label for="end_date">End Date:</label>
-            <input type="date" id="end_date" name="end_date" 
-                   value="{{ last_user['end_date'] or '' }}" onchange="validateEndDate()">
-            <div id="end_date_error" class="error-message"></div>
+            <div>
+                <label for="end_date">End Date:</label>
+                <input type="date" id="end_date" name="end_date" 
+                       value="{{ last_user['end_date'] or '' }}" onchange="validateEndDate()">
+                <div id="end_date_error" class="error-message"></div>
+            </div>
 
             <!-- Remarks -->
-            <label for="remarks">Remarks:</label>
-            <textarea id="remarks" name="remarks" rows="4" cols="50">{{ last_user['remarks'] }}</textarea>
+            <div>
+                <label for="remarks">Remarks:</label>
+                <textarea id="remarks" name="remarks" rows="4" placeholder="Enter any remarks (optional)">{{ last_user['remarks'] or '' }}</textarea>
+            </div>
 
             <!-- Submit Button -->
-            <input type="submit" id="submit_btn" value="Update User" style="background-color:green;color:white;">
+            <input type="submit" id="submit_btn" value="Update User">
         </form>
     </div>
 
@@ -83,7 +227,8 @@
 
             // Check if effective_date is earlier than purchase_date
             if (effectiveDate < purchaseDate) {
-                alert('Effective date cannot be earlier than the purchase date (' + purchaseDate.toISOString().split('T')[0] + ').');
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = 'Effective date cannot be earlier than the purchase date (' + purchaseDate.toISOString().split('T')[0] + ').';
                 effectiveDateInput.value = ''; // Clear the invalid date
                 return;
             }
@@ -108,7 +253,8 @@
 
             // Validate end_date (if provided)
             if (endDate && endDate < effectiveDate) {
-                alert('End date cannot be earlier than the effective date (' + effectiveDate.toISOString().split('T')[0] + ').');
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = 'End date cannot be earlier than the effective date (' + effectiveDate.toISOString().split('T')[0] + ').';
                 endDateInput.value = ''; // Clear the invalid end_date
                 return;
             }

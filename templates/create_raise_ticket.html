@@ -200,15 +200,14 @@
     <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
 </head>
 <body>
-<!-- Include the header HTML -->
+    <!-- Include the header HTML -->
     {% include 'header.html' %}
     
     <div class="content">
         {% block content %}{% endblock %}
     </div>
 
-
-    <!-- Container for "Raise Ticket" title and "View All Raised Tickets" button below the header -->
+    <!-- Container for "Raise Ticket" title and "View All Raised Tickets" button -->
     <div class="ticket-actions">
         <h1>Raise Ticket</h1>
         <button class="view-all-button" onclick="location.href='/view_raised_tickets/{{ asset_id }}'">
@@ -227,13 +226,10 @@
         <input type="text" id="serial_no" name="serial_no" value="{{ serial_no }}" readonly>
 
         <label for="raised_by">Raised By</label>
-        {% if user_name %}
-            <!-- Read-only input field if user_name is provided -->
-            <input type="text" id="raised_by" name="raised_by" value="{{ user_name }}" readonly required>
-        {% else %}
-            <!-- Editable input field if user_name is None -->
-            <input type="text" id="raised_by" name="raised_by" placeholder="Enter your name" required>
-        {% endif %}
+        <input type="text" id="raised_by" name="raised_by" value="{{ user_name }}" readonly required>
+
+        <label for="last_user">Used By</label>
+        <input type="text" id="last_user" name="last_user" value="{{ last_user if last_user else 'Not Assigned' }}" readonly>
 
         <label for="problem_description">Describe the Problem</label>
         <textarea id="problem_description" name="problem_description" rows="5" placeholder="Describe the issue..." required></textarea>

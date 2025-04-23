@@ -4,63 +4,20 @@
     <meta charset="UTF-8">
     <title>Check Asset Status</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/service_styles.css') }}">
-    <script src="{{ url_for('static', filename='js/search_pagination.js') }}"></script>
     <style>
-        .header {
-            background-color: #2f276f;
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .form-container {
+            width: 95%; /* Match the header's width */
+            max-width: none; /* Remove the max-width constraint */
+            margin: 10px auto; /* Reduced top margin */
+            padding: 10px 20px; /* Reduced top/bottom padding */
             border-radius: 8px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 28px;
-        }
-        .back-button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .form-container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 20px;
-        }
-        .filter-container {
-            margin-bottom: 20px;
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
-        .filter-container select, .filter-container input {
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-        }
-        .search-container {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .search-button {
-            padding: 8px 16px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+            background-color: #f8f9fa;
         }
         .asset-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin: 10px 0; /* Reduced top margin */
             background-color: white;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
@@ -68,52 +25,51 @@
             border: 1px solid #ddd;
             padding: 10px;
             text-align: left;
+            font-size: 18px;
         }
         .asset-table th {
             background-color: #2f276f;
             color: white;
         }
-        .action-btn {
-            padding: 5px 10px;
+        .action-btn, .back-button, .search-button, .submit-btn {
+            padding: 8px 12px; /* Consistent padding */
+            margin: 2px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
             color: white;
+            font-size: 14px; /* Consistent font size */
+            line-height: 1; /* Prevent line-height differences */
+            box-sizing: border-box; /* Ensure padding is included in size */
+            min-width: 60px; /* Ensure all buttons have the same width */
+            text-align: center; /* Center the text */
+        }
+        .back-button {
+            background-color: #4CAF50;
+        }
+        .search-button {
+            background-color: #2f276f;
         }
         .update-btn {
             background-color: #4CAF50;
         }
+        .submit-btn {
+            background-color: #4CAF50;
+            width: 100%;
+        }
         .checked {
-            background-color: #e6ffe6;  /* Light green for checked assets */
+            background-color: #e6ffe6; /* Light green for checked assets */
         }
         .not-checked-within-week {
-            background-color: #fff9e6;  /* Mild yellow for not checked within 1 week */
+            background-color: #fff9e6; /* Mild yellow for not checked within 1 week */
         }
         .not-checked-after-week {
-            background-color: #ff3333;  /* Red for not checked after 1 week */
+            background-color: #ff3333; /* Red for not checked after 1 week */
         }
         .overdue {
-            background-color: #ffe6e6;  /* Light red for overdue */
-        }
-        .pagination {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .pagination a, .pagination span {
-            margin: 0 5px;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            text-decoration: none;
-            color: #2f276f;
-        }
-        .pagination a:hover {
-            background-color: #f0f0f0;
-        }
-        .pagination .current {
-            background-color: #2f276f;
-            color: white;
-            border-color: #2f276f;
+            background-color: #ffe6e6; /* Light red for overdue */
         }
         .overlay {
             display: none;
@@ -133,16 +89,22 @@
             transform: translate(-50%, -50%);
             background-color: white;
             padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             z-index: 1000;
             max-width: 400px;
             width: 90%;
         }
+        .popup h2 {
+            margin: 0 0 20px;
+            color: #2f276f;
+            font-size: 24px;
+        }
         .popup-content label {
             display: block;
             margin: 10px 0 5px;
+            color: #2f276f;
+            font-weight: bold;
         }
         .popup-content select, .popup-content input, .popup-content textarea {
             width: 100%;
@@ -150,6 +112,7 @@
             margin-bottom: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
+            font-size: 14px;
         }
         .close-btn {
             background-color: #ff4444;
@@ -160,15 +123,6 @@
             float: right;
             border-radius: 4px;
         }
-        .submit-btn {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            width: 100%;
-        }
         .flash-message {
             padding: 10px;
             margin: 10px 0;
@@ -178,20 +132,142 @@
             background-color: #d4edda;
             color: #155724;
         }
+        .flash-message.danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
         .no-records {
             text-align: center;
             padding: 20px;
             color: #721c24;
+        }
+        .filter-container {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin: 10px 0; /* Reduced margin */
+        }
+        .filter-container label {
+            margin-right: 5px;
+            color: #2f276f;
+            font-weight: bold;
+        }
+        .filter-container select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .search-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .search-container input {
+            padding: 8px;
+            width: 250px; /* Match previous templates */
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .pagination {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .pagination a, .pagination span {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #2f276f;
+        }
+        .pagination a:hover {
+            background-color: #f4f4f4;
+        }
+        .pagination .current {
+            background-color: #2f276f;
+            color: white;
+            border-color: #2f276f;
+        }
+        .color-legend {
+            margin: 10px 0;
         }
         .color-legend span {
             padding: 2px 8px;
             border-radius: 4px;
             margin-right: 5px;
         }
+        .header {
+            background-color: #2f276f;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 998;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .menu {
+            cursor: pointer;
+            font-size: 24px;
+            position: relative;
+        }
+        .menu-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 20px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            z-index: 1000;
+            min-width: 150px;
+        }
+        .menu-dropdown button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: left;
+            color: black;
+        }
+        .menu-dropdown button:hover {
+            background: #f0f0f0;
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 95%; /* Match the header's width */
+            margin: 10px auto; /* Reduced top/bottom margin */
+            padding: 10px 20px; /* Reduced top/bottom padding */
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
     </style>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
 </head>
 <body>
-    <div class="header">
+    {% include 'header.html' %}
+    
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <div class="header-container">
         <h1>Check Asset Status (Under Audit)</h1>
         <button class="back-button" onclick="window.history.back()">Back</button>
     </div>
@@ -284,9 +360,8 @@
             <!-- Pagination -->
             <div class="pagination">
                 {% if page > 1 %}
-                    <a href="{{ url_for('check_asset_status', page=page-1, employee=selected_employee, search=search_query) }}">&laquo; Previous</a>
+                    <a href="{{ url_for('check_asset_status', page=page-1, employee=selected_employee, search=search_query) }}">« Previous</a>
                 {% endif %}
-
                 {% for p in range(1, total_pages + 1) %}
                     {% if p == page %}
                         <span class="current">{{ p }}</span>
@@ -294,9 +369,8 @@
                         <a href="{{ url_for('check_asset_status', page=p, employee=selected_employee, search=search_query) }}">{{ p }}</a>
                     {% endif %}
                 {% endfor %}
-
                 {% if page < total_pages %}
-                    <a href="{{ url_for('check_asset_status', page=page+1, employee=selected_employee, search=search_query) }}">Next &raquo;</a>
+                    <a href="{{ url_for('check_asset_status', page=page+1, employee=selected_employee, search=search_query) }}">Next »</a>
                 {% endif %}
             </div>
         {% else %}
@@ -354,6 +428,38 @@
             document.getElementById('popup').style.display = 'none';
             document.getElementById('overlay').style.display = 'none';
         }
+
+        // Search functionality
+        let searchTimeout;
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+
+        searchButton.addEventListener('click', function() {
+            const searchQuery = searchInput.value.trim();
+            const urlParams = new URLSearchParams(window.location.search);
+            if (searchQuery) {
+                urlParams.set('search', searchQuery);
+            } else {
+                urlParams.delete('search');
+            }
+            urlParams.set('page', '1');
+            window.location.search = urlParams.toString();
+        });
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const searchQuery = searchInput.value.trim();
+                const urlParams = new URLSearchParams(window.location.search);
+                if (searchQuery) {
+                    urlParams.set('search', searchQuery);
+                } else {
+                    urlParams.delete('search');
+                }
+                urlParams.set('page', '1');
+                window.location.search = urlParams.toString();
+            }, 300);
+        });
     </script>
 </body>
 </html>

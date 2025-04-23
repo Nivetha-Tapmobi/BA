@@ -5,20 +5,6 @@
     <title>View Service</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/service_styles.css') }}">
     <style>
-        .header {
-            background-color: #2f276f;
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 28px;
-        }
         .back-button {
             background-color: #4CAF50;
             color: white;
@@ -43,13 +29,14 @@
             border: 1px solid #ddd;
             padding: 10px;
             text-align: left;
+            font-size: 18px;
         }
         .service-table th {
             background-color: #2f276f;
             color: white;
         }
         .action-btn {
-            padding: 5px 10px;
+            padding: 8px 12px;
             margin: 2px;
             border: none;
             border-radius: 4px;
@@ -57,6 +44,11 @@
             text-decoration: none;
             display: inline-block;
             color: white;
+            font-size: 14px;
+            line-height: 1;
+            box-sizing: border-box;
+            min-width: 60px;
+            text-align: center;
         }
         .view-btn {
             background-color: #2f276f;
@@ -65,7 +57,7 @@
             background-color: #4CAF50;
         }
         .delete-btn {
-            background-color: #ff4444;
+            background-color: #ff4444 !important; /* Increase specificity with !important */
         }
         .overlay {
             display: none;
@@ -187,47 +179,134 @@
             padding: 20px;
             color: #721c24;
         }
+        .header {
+            background-color: #2f276f;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 998;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .menu {
+            cursor: pointer;
+            font-size: 24px;
+            position: relative;
+        }
+        .menu-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 20px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            z-index: 1000;
+            min-width: 150px;
+        }
+        .menu-dropdown button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: left;
+            color: black;
+        }
+        .menu-dropdown button:hover {
+            background: #f0f0f0;
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 15px 20px;
+            margin-top: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .search-container input {
+            padding: 8px;
+            font-size: 14px;
+            width: 250px;
+        }
     </style>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
 </head>
 <body>
-    <div class="header">
-        <h1>Service Details</h1>
-        <button class="back-button" onclick="window.history.back()">Back</button>
+    {% include 'header.html' %}
+    
+    <div class="content">
+        {% block content %}{% endblock %}
     </div>
 
-    <div class="form-container">
-        <!-- Search Bar -->
+    <div class="header-container">
+        <h1>View Services</h1>
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Search by Service ID, Ticket ID, or Asset ID" onkeyup="filterAndPaginate()">
         </div>
+    </div>
 
-        <!-- Service Table -->
-        <table class="service-table" id="serviceTable">
-            <thead>
-                <tr>
-                    <th>Service ID</th>
-                    <th>Ticket ID</th>
-                    <th>Asset ID</th>
-                    <th>Work Done</th>
-                    <th>Next Service Date</th>
-                    <th>Service Charge</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="serviceBody">
-                <!-- Table body will be populated dynamically -->
-            </tbody>
-        </table>
+    <!-- Service Table -->
+    <table class="service-table" id="serviceTable">
+        <thead>
+            <tr>
+                <th>Service ID</th>
+                <th>Ticket ID</th>
+                <th>Asset ID</th>
+                <th>Work Done</th>
+                <th>Next Service Date</th>
+                <th>Service Charge</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="serviceBody">
+            {% for s in service %}
+            <tr data-service-id="{{ s.service_id }}">
+                <td>{{ s.service_id }}</td>
+                <td>{{ s.ticket_id }}</td>
+                <td>{{ s.asset_id }}</td>
+                <td>{{ s.work_done }}</td>
+                <td>{{ s.next_service_date or 'N/A' }}</td>
+                <td>{{ s.service_charge or 'N/A' }}</td>
+                <td>
+                    {% if permissions.view %}
+                        <button class="action-btn view-btn" onclick="showPopup('{{ s.service_id }}')">View</button>
+                    {% endif %}
+                    {% if permissions.edit %}
+                        <a href="{{ url_for('edit_service', service_id=s.service_id) }}" class="action-btn edit-btn">Edit</a>
+                    {% endif %}
+                    {% if permissions.delete %}
+                        <form action="{{ url_for('delete_service', service_id=s.service_id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this service?');">Delete</button>
+                        </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-        <!-- Pagination -->
-        <div class="pagination" id="pagination">
-            <!-- Pagination buttons will be populated dynamically -->
-        </div>
+    <!-- Pagination -->
+    <div class="pagination" id="pagination">
+        <!-- Pagination buttons will be populated dynamically -->
+    </div>
 
-        <!-- No Records Message -->
-        <div class="no-records" id="noRecords" style="display: none;">
-            <p>No service records found.</p>
-        </div>
+    <!-- No Records Message -->
+    <div class="no-records" id="noRecords" style="display: none;">
+        <p>No service records found.</p>
     </div>
 
     <!-- Popup Overlay -->
@@ -249,65 +328,47 @@
 
     <script>
         const allServicesData = {{ service | tojson | safe }};
-        const itemsPerPage = 5; // Adjust as needed
+        const itemsPerPage = 5;
         let currentPage = 1;
+        const allRows = Array.from(document.querySelectorAll('#serviceBody tr'));
+        let filteredRows = [...allRows];
 
-        // Normalize service data to array
-        const servicesArray = Array.isArray(allServicesData) ? allServicesData : (allServicesData && Object.keys(allServicesData).length > 0 ? [allServicesData] : []);
-
-        // Filter and paginate services
         function filterAndPaginate() {
             const searchQuery = document.getElementById('searchInput').value.toLowerCase();
 
-            let filteredServices = servicesArray.filter(s => {
+            filteredRows = allRows.filter(row => {
+                const serviceId = row.cells[0].textContent.toLowerCase();
+                const ticketId = row.cells[1].textContent.toLowerCase();
+                const assetId = row.cells[2].textContent.toLowerCase();
                 return (
-                    s.service_id.toLowerCase().includes(searchQuery) ||
-                    s.ticket_id.toLowerCase().includes(searchQuery) ||
-                    s.asset_id.toLowerCase().includes(searchQuery)
+                    serviceId.includes(searchQuery) ||
+                    ticketId.includes(searchQuery) ||
+                    assetId.includes(searchQuery)
                 );
             });
 
-            const totalItems = filteredServices.length;
+            const totalItems = filteredRows.length;
             const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
             currentPage = Math.min(currentPage, totalPages);
 
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-            const paginatedServices = filteredServices.slice(startIndex, endIndex);
-
-            updateTable(paginatedServices);
-            updatePagination(totalPages);
+            displayPage(totalPages);
             toggleNoRecords(totalItems === 0);
         }
 
-        // Update table with services
-        function updateTable(services) {
-            const tbody = document.getElementById('serviceBody');
-            tbody.innerHTML = '';
+        function displayPage(totalPages) {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
 
-            services.forEach(s => {
-                const row = `
-                    <tr data-service-id="${s.service_id}">
-                        <td>${s.service_id}</td>
-                        <td>${s.ticket_id}</td>
-                        <td>${s.asset_id}</td>
-                        <td>${s.work_done}</td>
-                        <td>${s.next_service_date || 'N/A'}</td>
-                        <td>${s.service_charge || 'N/A'}</td>
-                        <td>
-                            <button class="action-btn view-btn" onclick="showPopup('${s.service_id}')">View</button>
-                            <a href="{{ url_for('edit_service', service_id='') }}${s.service_id}" class="action-btn edit-btn">Edit</a>
-                            <form action="{{ url_for('delete_service', service_id='') }}${s.service_id}" method="POST" style="display:inline;">
-                                <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this service?');">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                `;
-                tbody.innerHTML += row;
+            allRows.forEach(row => row.style.display = 'none');
+
+            const rowsToShow = filteredRows.slice(startIndex, endIndex);
+            rowsToShow.forEach(row => {
+                row.style.display = '';
             });
+
+            updatePagination(totalPages);
         }
 
-        // Update pagination controls (always show, even for 1 page)
         function updatePagination(totalPages) {
             const pagination = document.getElementById('pagination');
             pagination.innerHTML = '';
@@ -326,22 +387,20 @@
             pagination.innerHTML += nextButton;
         }
 
-        // Change page and update display
         function changePage(page) {
-            if (page < 1 || page > Math.ceil(servicesArray.length / itemsPerPage) && servicesArray.length > 0) return;
+            const totalPages = Math.ceil(filteredRows.length / itemsPerPage) || 1;
+            if (page < 1 || page > totalPages) return;
             currentPage = page;
             filterAndPaginate();
         }
 
-        // Toggle no records message
         function toggleNoRecords(show) {
             document.getElementById('noRecords').style.display = show ? 'block' : 'none';
             document.getElementById('serviceTable').style.display = show ? 'none' : 'table';
         }
 
-        // Show popup with service details
         function showPopup(serviceId) {
-            const service = servicesArray.find(s => s.service_id === serviceId);
+            const service = allServicesData.find(s => s.service_id === serviceId);
             if (service) {
                 const content = `
                     <div class="popup-column">
@@ -373,14 +432,12 @@
                             <strong>Warranty Type</strong>
                             <span>${service.warranty_type || 'N/A'}</span>
                         </div>
-						
-						 <div class="detail-item">
+                        <div class="detail-item">
                             <strong>Work Done</strong>
                             <span>${service.work_done}</span>
                         </div>
                     </div>
                     <div class="popup-column">
-
                         <div class="detail-item">
                             <strong>Next Service Date</strong>
                             <span>${service.next_service_date || 'N/A'}</span>
@@ -426,14 +483,12 @@
             }
         }
 
-        // Hide popup
         function hidePopup() {
             document.getElementById('popup').style.display = 'none';
             document.getElementById('overlay').style.display = 'none';
             document.getElementById('popup-content').innerHTML = '';
         }
 
-        // Print modal function
         function printModal() {
             const modalContent = document.getElementById('popup-content');
             if (!modalContent) return;
@@ -494,7 +549,6 @@
             printWindow.close();
         }
 
-        // Initial load
         document.addEventListener('DOMContentLoaded', () => {
             filterAndPaginate();
         });
