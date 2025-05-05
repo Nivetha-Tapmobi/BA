@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Re-raised Service</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/service_styles.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
+    <style>
+        .form-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .form-column {
+            flex: 1;
+            min-width: 300px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-group input[readonly] {
+            background: #f8f9fa;
+            cursor: not-allowed;
+        }
+        .form-group textarea {
+            resize: vertical;
+        }
+        button[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .service-history {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+        }
+        .service-history-entry {
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        .service-history-entry:last-child {
+            margin-bottom: 0;
+        }
+        .service-history-entry strong {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        .service-history-entry div {
+            margin-left: 20px;
+            color: #555;
+            line-height: 1.5;
+        }
+        .service-history-entry ul {
+            list-style-type: none;
+            padding-left: 20px;
+            margin: 5px 0;
+        }
+        .service-history-entry li {
+            margin-bottom: 5px;
+        }
+        .service-history-entry a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .service-history-entry a:hover {
+            text-decoration: underline;
+        }
+        .no-history {
+            color: #777;
+            font-style: italic;
+        }
+        .flash-message {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .flash-message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .flash-message.danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .hidden-field {
+            display: none;
+        }
+    </style>
+	
+			<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+		<!-- JS -->
+		<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+</head>
+<body>
+    {% include 'header.html' %}
+    
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <div class="form-container">
+        <div class="form-column">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <div class="form-group">
+                <label for="asset_id">Asset ID:</label>
+                <input type="text" name="asset_id" id="asset_id" value="{{ asset_id }}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="ticket_id">Ticket ID:</label>
+                <input type="text" name="ticket_id" id="ticket_id" value="{{ ticket_id }}" readonly>
+            </div>
+
+            <!-- Service History -->
+            <div class="form-group">
+                <label>Service History for Ticket {{ ticket_id }} (Read-only):</label>
+                <div class="service-history">
+                    {% if service_history %}
+                        {% for history in service_history %}
+                            <div class="service-history-entry">
+                                <strong>Service ID:</strong> {{ history.service_id }}<br>
+                                <strong>Technician:</strong> {{ history.technician_name or 'N/A' }}<br>
+                                <strong>Work Done:</strong><br>
+                                <div>
+                                    {{ history.work_done | replace('\n', '<br>') | safe if history.work_done else 'None' }}
+                                </div>
+                                <strong>Service Bills:</strong><br>
+                                <div>
+                                    {% if history.service_bill_path %}
+                                        <ul>
+                                            {% for path in history.service_bill_path.split(',') %}
+                                                <li>
+                                                    <a href="{{ url_for('static', filename='Uploads/' + path) }}" target="_blank">
+                                                        {{ path.split('/')[-1] }}
+                                                    </a>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        None
+                                    {% endif %}
+                                </div>
+                                <strong>Created At:</strong> {{ history.created_at }}<br>
+                                <strong>Modified At:</strong> {{ history.modified_at if history.modified_at else 'N/A' }}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="no-history">No service history available.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Form for New Service -->
+            <form method="POST" enctype="multipart/form-data" id="serviceForm" novalidate>
+                <div class="form-group hidden-field">
+                    <label for="asset_id">Asset ID:</label>
+                    <input type="text" name="asset_id" id="asset_id" value="{{ asset_id }}" readonly>
+                </div>
+
+                <div class="form-group hidden-field">
+                    <label for="ticket_id">Ticket ID:</label>
+                    <input type="text" name="ticket_id" id="ticket_id" value="{{ ticket_id }}" readonly>
+                </div>
+            </div>
+
+            <div class="form-column">
+                <div class="form-group">
+                    <label for="technician_source">Technician Source:</label>
+                    <select name="technician_source" id="technician_source" onchange="toggleTechnicianFields()" class="searchable-dropdown">
+                        <option value="outhouse">Outhouse</option>
+                        <option value="inhouse">Inhouse</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="technician_name_group">
+                    <label for="technician_name">Technician Name:</label>
+                    <select name="technician_name" id="technician_name" onchange="updateTechnicianId()" class="searchable-dropdown">
+                        <option value="">Select Technician</option>
+                        {% for tech in technicians %}
+                            <option value="{{ tech.technician_name }}" data-technician-id="{{ tech.technician_id }}">
+                                {{ tech.technician_name }}
+                            </option>
+                        {% endfor %}
+                        <option value="add_new_technician" style="color: blue; font-weight: bold;">+ Add New Technician</option>
+                    </select>
+                </div>
+                <input type="hidden" name="ticket_id" value="{{ ticket_id }}">
+                <input type="hidden" name="asset_id" value="{{ asset_id }}">
+
+                <div class="form-group" id="technician_id_group">
+                    <label for="technician_id">Technician ID:</label>
+                    <input type="text" name="technician_id" id="technician_id" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label for="work_done">Work Done:</label>
+                    <textarea name="work_done" id="work_done" rows="4" required placeholder="Enter new work done (will be saved with timestamp)"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="next_service_date">Next Service Date:</label>
+                    <input type="date" name="next_service_date" id="next_service_date">
+                </div>
+
+                <div class="form-group">
+                    <label for="service_charge">Service Charge:</label>
+                    <input type="number" name="service_charge" id="service_charge" step="0.01">
+                </div>
+
+                <div class="form-group">
+                    <label for="service_case_id">Service Case ID (Optional):</label>
+                    <input type="text" name="service_case_id" id="service_case_id">
+                </div>
+
+                <div class="form-group">
+                    <label for="remarks">Remarks:</label>
+                    <textarea name="remarks" id="remarks" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="service_bill">Service Bill Upload:</label>
+                    <input type="file" name="service_bill" id="service_bill" multiple accept=".png,.jpg,.jpeg,.gif,.pdf,.docx">
+                </div>
+
+                <button type="submit">Create Service</button>
+            </div>
+        </form>
+
+        <!-- Hidden form for fallback submission -->
+        <form method="POST" id="redirectForm" action="{{ url_for('save_form_state_technician') }}" style="display: none;">
+            <input type="hidden" name="ticket_id" value="{{ ticket_id }}">
+            <input type="hidden" name="asset_id" value="{{ asset_id }}">
+        </form>
+    </div>
+
+    <script>
+        function toggleTechnicianFields() {
+            const technicianSource = document.getElementById('technician_source').value;
+            const technicianNameGroup = document.getElementById('technician_name_group');
+            const technicianIdGroup = document.getElementById('technician_id_group');
+            const technicianNameSelect = document.getElementById('technician_name');
+            const technicianIdInput = document.getElementById('technician_id');
+
+            if (technicianSource === 'inhouse') {
+                technicianNameGroup.style.display = 'none';
+                technicianIdGroup.style.display = 'none';
+                technicianNameSelect.removeAttribute('required');
+                technicianIdInput.removeAttribute('required');
+                technicianNameSelect.value = '{{ session.username }}';
+                technicianIdInput.value = '{{ session.emp_id }}';
+            } else { // outhouse
+                technicianNameGroup.style.display = 'block';
+                technicianIdGroup.style.display = 'block';
+                technicianNameSelect.setAttribute('required', 'required');
+                technicianIdInput.setAttribute('required', 'required');
+                technicianNameSelect.value = '';
+                technicianIdInput.value = '';
+            }
+        }
+
+        function updateTechnicianId() {
+            const select = document.getElementById('technician_name');
+            const selectedOption = select.options[select.selectedIndex];
+            const technicianId = selectedOption.getAttribute('data-technician-id');
+            const technicianName = selectedOption.value;
+
+            if (technicianName === 'add_new_technician') {
+                fetch('/save_form_state_technician', {
+                    method: 'POST',
+                    body: new FormData(document.getElementById('serviceForm'))
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        response.text().then(text => {
+                            console.error('Fetch failed with status:', response.status);
+                            console.error('Response text:', text);
+                        });
+                        throw new Error('Failed to save form state');
+                    }
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error saving form state:', error);
+                    document.getElementById('redirectForm').submit();
+                });
+            } else if (technicianId) {
+                document.getElementById('technician_id').value = technicianId;
+            } else {
+                document.getElementById('technician_id').value = '';
+            }
+        }
+
+        // Initialize form based on technician_source and add validation
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleTechnicianFields(); // Ensure initial state is set
+            // Add form submission validation
+            const form = document.getElementById('serviceForm');
+            form.addEventListener('submit', function(event) {
+                const technicianSource = document.getElementById('technician_source').value;
+                const technicianName = document.getElementById('technician_name').value;
+                const technicianId = document.getElementById('technician_id').value;
+
+                if (technicianSource === 'outhouse' && (!technicianName || !technicianId)) {
+                    event.preventDefault();
+                    alert('Please select a Technician Name and ensure Technician ID is populated for Outhouse.');
+                }
+            });
+        });
+    </script>
+	<script>
+  $(document).ready(function() {
+    $('.searchable-dropdown').select2({
+      width: '100%',
+      placeholder: 'Select an option',
+      allowClear: true
+    });
+  });
+</script>
+
+</body>
+</html>

@@ -1,557 +1,624 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>View Service</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/service_styles.css') }}">
-    <style>
-        .back-button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .form-container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 20px;
-        }
-        .service-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background-color: white;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
-        .service-table th, .service-table td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-            font-size: 18px;
-        }
-        .service-table th {
-            background-color: #2f276f;
-            color: white;
-        }
-        .action-btn {
-            padding: 8px 12px;
-            margin: 2px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            color: white;
-            font-size: 14px;
-            line-height: 1;
-            box-sizing: border-box;
-            min-width: 60px;
-            text-align: center;
-        }
-        .view-btn {
-            background-color: #2f276f;
-        }
-        .edit-btn {
-            background-color: #4CAF50;
-        }
-        .delete-btn {
-            background-color: #ff4444 !important; /* Increase specificity with !important */
-        }
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-        }
-        .popup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            max-width: 700px;
-            width: 90%;
-        }
-        .popup-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .popup-header h2 {
-            margin: 0;
-            color: #2f276f;
-            font-size: 24px;
-        }
-        .popup-content {
-            display: flex;
-            justify-content: space-between;
-            gap: 20px;
-        }
-        .popup-column {
-            width: 48%;
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .detail-item {
-            margin: 10px 0;
-            padding: 8px;
-            border-bottom: 1px solid #eee;
-        }
-        .detail-item:last-child {
-            border-bottom: none;
-        }
-        .detail-item strong {
-            color: #2f276f;
-            display: block;
-            font-weight: bold;
-            margin-bottom: 4px;
-        }
-        .detail-item span, .detail-item a {
-            color: #333;
-            word-break: break-word;
-        }
-        .detail-item a {
-            text-decoration: none;
-            color: #2f276f;
-        }
-        .detail-item a:hover {
-            text-decoration: underline;
-        }
-        .close-btn, .print-btn {
-            padding: 5px 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            color: white;
-        }
-        .close-btn {
-            background-color: #ff4444;
-        }
-        .print-btn {
-            background-color: #4CAF50;
-            margin-left: 10px;
-        }
-        .search-container {
-            margin: 20px 0;
-        }
-        .search-container input {
-            padding: 8px;
-            width: 300px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .pagination {
-            margin: 20px 0;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-        .pagination button {
-            padding: 5px 10px;
-            border: 1px solid #ddd;
-            background-color: #f4f4f4;
-            cursor: pointer;
-        }
-        .pagination button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-        .pagination button.active {
-            background-color: #2f276f;
-            color: white;
-        }
-        .no-records {
-            text-align: center;
-            padding: 20px;
-            color: #721c24;
-        }
-        .header {
-            background-color: #2f276f;
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            position: relative;
-            z-index: 998;
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 28px;
-        }
-        .menu {
-            cursor: pointer;
-            font-size: 24px;
-            position: relative;
-        }
-        .menu-dropdown {
-            display: none;
-            position: absolute;
-            top: 100%;
-            right: 20px;
-            background: white;
-            border-radius: 5px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            z-index: 1000;
-            min-width: 150px;
-        }
-        .menu-dropdown button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            border: none;
-            background: none;
-            cursor: pointer;
-            font-size: 16px;
-            text-align: left;
-            color: black;
-        }
-        .menu-dropdown button:hover {
-            background: #f0f0f0;
-        }
-        .header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            padding: 15px 20px;
-            margin-top: 20px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-        }
-        .search-container input {
-            padding: 8px;
-            font-size: 14px;
-            width: 250px;
-        }
-    </style>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
-    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
-</head>
-<body>
-    {% include 'header.html' %}
-    
-    <div class="content">
-        {% block content %}{% endblock %}
-    </div>
+	<head>
+			<meta charset="UTF-8">
+			<title>View Service</title>
+			<link rel="stylesheet" href="{{ url_for('static', filename='css/service_styles.css') }}">
+			<style>
+				.back-button {
+					background-color: #4CAF50;
+					color: white;
+					padding: 10px 20px;
+					border: none;
+					border-radius: 4px;
+					cursor: pointer;
+				}
+				.form-container {
+					max-width: 1200px;
+					margin: 20px auto;
+					padding: 20px;
+				}
+				.service-table {
+					width: 100%;
+					border-collapse: collapse;
+					margin: 20px 0;
+					background-color: white;
+					box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+				}
+				.service-table th, .service-table td {
+					border: 1px solid #ddd;
+					padding: 10px;
+					text-align: left;
+					font-size: 18px;
+				}
+				.service-table th {
+					background-color: #2f276f;
+					color: white;
+				}
+				.action-btn {
+					padding: 8px 12px;
+					margin: 2px;
+					border: none;
+					border-radius: 4px;
+					cursor: pointer;
+					text-decoration: none;
+					display: inline-block;
+					color: white;
+					font-size: 14px;
+					line-height: 1;
+					box-sizing: border-box;
+					min-width: 60px;
+					text-align: center;
+				}
+				.view-btn {
+					background-color: #2f276f;
+				}
+				.edit-btn {
+					background-color: #4CAF50;
+				}
+				.delete-btn {
+					background-color: #ff4444 !important; /* Increase specificity with !important */
+				}
+				.overlay {
+					display: none;
+					position: fixed;
+					top: 0;
+					left: 0;
+					width: 100%;
+					height: 100%;
+					background-color: rgba(0, 0, 0, 0.5);
+					z-index: 999;
+				}
+				.popup {
+					display: none;
+					position: fixed;
+					top: 50%;
+					left: 50%;
+					transform: translate(-50%, -50%);
+					background-color: white;
+					padding: 20px;
+					border-radius: 8px;
+					box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+					z-index: 1000;
+					max-width: 700px;
+					width: 90%;
+				}
+				.popup-header {
+					display: flex;
+					justify-content: space-between;
+					align-items: center;
+					margin-bottom: 20px;
+				}
+				.popup-header h2 {
+					margin: 0;
+					color: #2f276f;
+					font-size: 24px;
+				}
+				.popup-content {
+					display: flex;
+					justify-content: space-between;
+					gap: 20px;
+				}
+				.popup-column {
+					width: 48%;
+					background-color: #f8f9fa;
+					padding: 15px;
+					border-radius: 6px;
+					box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+				}
+				.detail-item {
+					margin: 10px 0;
+					padding: 8px;
+					border-bottom: 1px solid #eee;
+				}
+				.detail-item:last-child {
+					border-bottom: none;
+				}
+				.detail-item strong {
+					color: #2f276f;
+					display: block;
+					font-weight: bold;
+					margin-bottom: 4px;
+				}
+				.detail-item span, .detail-item a {
+					color: #333;
+					word-break: break-word;
+				}
+				.detail-item a {
+					text-decoration: none;
+					color: #2f276f;
+				}
+				.detail-item a:hover {
+					text-decoration: underline;
+				}
+				.close-btn, .print-btn {
+					padding: 5px 10px;
+					border: none;
+					border-radius: 4px;
+					cursor: pointer;
+					color: white;
+				}
+				.close-btn {
+					background-color: #ff4444;
+				}
+				.print-btn {
+					background-color: #4CAF50;
+					margin-left: 10px;
+				}
+				.search-container {
+					margin: 20px 0;
+				}
+				.search-container input {
+					padding: 8px;
+					width: 300px;
+					border: 1px solid #ddd;
+					border-radius: 4px;
+				}
+				.pagination {
+					margin: 20px 0;
+					display: flex;
+					gap: 10px;
+					justify-content: center;
+				}
+				.pagination button {
+					padding: 5px 10px;
+					border: 1px solid #ddd;
+					background-color: #f4f4f4;
+					cursor: pointer;
+				}
+				.pagination button:disabled {
+					background-color: #cccccc;
+					cursor: not-allowed;
+				}
+				.pagination button.active {
+					background-color: #2f276f;
+					color: white;
+				}
+				.no-records {
+					text-align: center;
+					padding: 20px;
+					color: #721c24;
+				}
+				.header {
+					background-color: #2f276f;
+					color: white;
+					padding: 20px;
+					display: flex;
+					justify-content: space-between;
+					align-items: center;
+					border-radius: 8px;
+					box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+					position: relative;
+					z-index: 998;
+				}
+				.header h1 {
+					margin: 0;
+					font-size: 28px;
+				}
+				.menu {
+					cursor: pointer;
+					font-size: 24px;
+					position: relative;
+				}
+				.menu-dropdown {
+					display: none;
+					position: absolute;
+					top: 100%;
+					right: 20px;
+					background: white;
+					border-radius: 5px;
+					box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+					padding: 10px;
+					z-index: 1000;
+					min-width: 150px;
+				}
+				.menu-dropdown button {
+					display: block;
+					width: 100%;
+					padding: 10px;
+					border: none;
+					background: none;
+					cursor: pointer;
+					font-size: 16px;
+					text-align: left;
+					color: black;
+				}
+				.menu-dropdown button:hover {
+					background: #f0f0f0;
+				}
+				.header-container {
+					display: flex;
+					justify-content: space-between;
+					align-items: center;
+					width: 100%;
+					padding: 15px 20px;
+					margin-top: 20px;
+					background-color: #f8f9fa;
+					border-radius: 5px;
+				}
+				.search-container input {
+					padding: 8px;
+					font-size: 14px;
+					width: 250px;
+				}
+				
+						.action-btn {
+					padding: 8px 12px; /* Consistent padding */
+					border: none;
+					border-radius: 4px;
+					cursor: pointer;
+					color: white;
+					font-size: 14px;
+					line-height: 1;
+					box-sizing: border-box;
+					min-width: 60px;
+					text-align: center;
+					background-color: #2f276f; /* Match the view-btn color */
+				}
+				.action-btn:hover {
+					background-color: #3f357f; /* Slightly lighter shade on hover */
+				}
+			</style>
+			<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+			<script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
+			<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+	</head>
 
-    <div class="header-container">
-        <h1>View Services</h1>
-        <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search by Service ID, Ticket ID, or Asset ID" onkeyup="filterAndPaginate()">
-        </div>
-    </div>
+	<body>
+			{% include 'header.html' %}
+		
+			<div class="content">
+				{% block content %}{% endblock %}
+			</div>
+		
+			{% with messages = get_flashed_messages(with_categories=true) %}
+				{% if messages %}
+					{% for category, message in messages %}
+						{% if category in ("create_reraised_service", "create_service", "edit_service_reraised", "edit_service", "delete_service") %}
+							<div class="flash-message {{ category }}">{{ message }}</div>
+						{% endif %}
+					{% endfor %}
+				{% endif %}
+			{% endwith %}
 
-    <!-- Service Table -->
-    <table class="service-table" id="serviceTable">
-        <thead>
-            <tr>
-                <th>Service ID</th>
-                <th>Ticket ID</th>
-                <th>Asset ID</th>
-                <th>Work Done</th>
-                <th>Next Service Date</th>
-                <th>Service Charge</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="serviceBody">
-            {% for s in service %}
-            <tr data-service-id="{{ s.service_id }}">
-                <td>{{ s.service_id }}</td>
-                <td>{{ s.ticket_id }}</td>
-                <td>{{ s.asset_id }}</td>
-                <td>{{ s.work_done }}</td>
-                <td>{{ s.next_service_date or 'N/A' }}</td>
-                <td>{{ s.service_charge or 'N/A' }}</td>
-                <td>
-                    {% if permissions.view %}
-                        <button class="action-btn view-btn" onclick="showPopup('{{ s.service_id }}')">View</button>
-                    {% endif %}
-                    {% if permissions.edit %}
-                        <a href="{{ url_for('edit_service', service_id=s.service_id) }}" class="action-btn edit-btn">Edit</a>
-                    {% endif %}
-                    {% if permissions.delete %}
-                        <form action="{{ url_for('delete_service', service_id=s.service_id) }}" method="POST" style="display:inline;">
-                            <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this service?');">Delete</button>
-                        </form>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+			<div class="header-container">
+				<h1>View Services</h1>
+				<div class="search-container">
+					<input type="text" id="searchInput" placeholder="Search by Service ID, Ticket ID, or Asset ID" onkeyup="filterAndPaginate()">
+					<button id="downloadExcel" class="action-btn" style="margin-left: 10px;">Download Excel</button>
+				</div>
+			</div>
+			
 
-    <!-- Pagination -->
-    <div class="pagination" id="pagination">
-        <!-- Pagination buttons will be populated dynamically -->
-    </div>
+			<!-- Service Table -->
+			<table class="service-table" id="serviceTable">
+				<thead>
+					<tr>
+						<th>Service ID</th>
+						<th>Ticket ID</th>
+						<th>Asset ID</th>
+						<th>Work Done</th>
+						<th>Next Service Date</th>
+						<th>Service Charge</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody id="serviceBody">
+					{% for s in service %}
+					<tr data-service-id="{{ s.service_id }}">
+						<td>{{ s.service_id }}</td>
+						<td>{{ s.ticket_id }}</td>
+						<td>{{ s.asset_id }}</td>
+						<td>{{ s.work_done }}</td>
+						<td>{{ s.next_service_date or 'N/A' }}</td>
+						<td>{{ s.service_charge or 'N/A' }}</td>
+						<td>
+							{% if permissions.view %}
+								<button class="action-btn view-btn" onclick="showPopup('{{ s.service_id }}')">View</button>
+							{% endif %}
+							{% if permissions.edit %}
+								<a href="{{ url_for('edit_service', service_id=s.service_id) }}" class="action-btn edit-btn">Edit</a>
+							{% endif %}
+							{% if permissions.delete %}
+								<form action="{{ url_for('delete_service', service_id=s.service_id) }}" method="POST" style="display:inline;">
+									<button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this service?');">Delete</button>
+								</form>
+							{% endif %}
+						</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
 
-    <!-- No Records Message -->
-    <div class="no-records" id="noRecords" style="display: none;">
-        <p>No service records found.</p>
-    </div>
+			<!-- Pagination -->
+			<div class="pagination" id="pagination">
+				<!-- Pagination buttons will be populated dynamically -->
+			</div>
 
-    <!-- Popup Overlay -->
-    <div class="overlay" id="overlay" onclick="hidePopup()"></div>
+			<!-- No Records Message -->
+			<div class="no-records" id="noRecords" style="display: none;">
+				<p>No service records found.</p>
+			</div>
 
-    <!-- Popup Window -->
-    <div class="popup" id="popup">
-        <div class="popup-header">
-            <h2>Service Details</h2>
-            <div>
-                <button class="print-btn" onclick="printModal()">Print</button>
-                <button class="close-btn" onclick="hidePopup()">Close</button>
-            </div>
-        </div>
-        <div class="popup-content" id="popup-content">
-            <!-- Popup content will be populated dynamically -->
-        </div>
-    </div>
+			<!-- Popup Overlay -->
+			<div class="overlay" id="overlay" onclick="hidePopup()"></div>
 
-    <script>
-        const allServicesData = {{ service | tojson | safe }};
-        const itemsPerPage = 5;
-        let currentPage = 1;
-        const allRows = Array.from(document.querySelectorAll('#serviceBody tr'));
-        let filteredRows = [...allRows];
+			<!-- Popup Window -->
+			<div class="popup" id="popup">
+				<div class="popup-header">
+					<h2>Service Details</h2>
+					<div>
+						<button class="print-btn" onclick="printModal()">Print</button>
+						<button class="close-btn" onclick="hidePopup()">Close</button>
+					</div>
+				</div>
+				<div class="popup-content" id="popup-content">
+					<!-- Popup content will be populated dynamically -->
+				</div>
+			</div>
 
-        function filterAndPaginate() {
-            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+		<script>
+			const allServicesData = {{ service | tojson | safe }};
+			const itemsPerPage = 5;
+			let currentPage = 1;
+			const allRows = Array.from(document.querySelectorAll('#serviceBody tr'));
+			let filteredRows = [...allRows];
 
-            filteredRows = allRows.filter(row => {
-                const serviceId = row.cells[0].textContent.toLowerCase();
-                const ticketId = row.cells[1].textContent.toLowerCase();
-                const assetId = row.cells[2].textContent.toLowerCase();
-                return (
-                    serviceId.includes(searchQuery) ||
-                    ticketId.includes(searchQuery) ||
-                    assetId.includes(searchQuery)
-                );
-            });
+			function filterAndPaginate() {
+				const searchQuery = document.getElementById('searchInput').value.toLowerCase();
 
-            const totalItems = filteredRows.length;
-            const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
-            currentPage = Math.min(currentPage, totalPages);
+				filteredRows = allRows.filter(row => {
+					const serviceId = row.cells[0].textContent.toLowerCase();
+					const ticketId = row.cells[1].textContent.toLowerCase();
+					const assetId = row.cells[2].textContent.toLowerCase();
+					return (
+						serviceId.includes(searchQuery) ||
+						ticketId.includes(searchQuery) ||
+						assetId.includes(searchQuery)
+					);
+				});
 
-            displayPage(totalPages);
-            toggleNoRecords(totalItems === 0);
-        }
+				const totalItems = filteredRows.length;
+				const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+				currentPage = Math.min(currentPage, totalPages);
 
-        function displayPage(totalPages) {
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
+				displayPage(totalPages);
+				toggleNoRecords(totalItems === 0);
+			}
 
-            allRows.forEach(row => row.style.display = 'none');
+			function displayPage(totalPages) {
+				const startIndex = (currentPage - 1) * itemsPerPage;
+				const endIndex = startIndex + itemsPerPage;
 
-            const rowsToShow = filteredRows.slice(startIndex, endIndex);
-            rowsToShow.forEach(row => {
-                row.style.display = '';
-            });
+				allRows.forEach(row => row.style.display = 'none');
 
-            updatePagination(totalPages);
-        }
+				const rowsToShow = filteredRows.slice(startIndex, endIndex);
+				rowsToShow.forEach(row => {
+					row.style.display = '';
+				});
 
-        function updatePagination(totalPages) {
-            const pagination = document.getElementById('pagination');
-            pagination.innerHTML = '';
+				updatePagination(totalPages);
+			}
 
-            const prevButton = `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>`;
-            pagination.innerHTML += prevButton;
+			function updatePagination(totalPages) {
+				const pagination = document.getElementById('pagination');
+				pagination.innerHTML = '';
 
-            const startPage = Math.max(1, currentPage - 2);
-            const endPage = Math.min(totalPages, startPage + 4);
-            for (let i = startPage; i <= endPage; i++) {
-                const pageButton = `<button onclick="changePage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
-                pagination.innerHTML += pageButton;
-            }
+				const prevButton = `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>`;
+				pagination.innerHTML += prevButton;
 
-            const nextButton = `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>`;
-            pagination.innerHTML += nextButton;
-        }
+				const startPage = Math.max(1, currentPage - 2);
+				const endPage = Math.min(totalPages, startPage + 4);
+				for (let i = startPage; i <= endPage; i++) {
+					const pageButton = `<button onclick="changePage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
+					pagination.innerHTML += pageButton;
+				}
 
-        function changePage(page) {
-            const totalPages = Math.ceil(filteredRows.length / itemsPerPage) || 1;
-            if (page < 1 || page > totalPages) return;
-            currentPage = page;
-            filterAndPaginate();
-        }
+				const nextButton = `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>`;
+				pagination.innerHTML += nextButton;
+			}
 
-        function toggleNoRecords(show) {
-            document.getElementById('noRecords').style.display = show ? 'block' : 'none';
-            document.getElementById('serviceTable').style.display = show ? 'none' : 'table';
-        }
+			function changePage(page) {
+				const totalPages = Math.ceil(filteredRows.length / itemsPerPage) || 1;
+				if (page < 1 || page > totalPages) return;
+				currentPage = page;
+				filterAndPaginate();
+			}
 
-        function showPopup(serviceId) {
-            const service = allServicesData.find(s => s.service_id === serviceId);
-            if (service) {
-                const content = `
-                    <div class="popup-column">
-                        <div class="detail-item">
-                            <strong>Service ID</strong>
-                            <span>${service.service_id}</span>
-                        </div>
-                        <div class="detail-item">
-                            <strong>Ticket ID</strong>
-                            <span>${service.ticket_id}</span>
-                        </div>
-                        <div class="detail-item">
-                            <strong>Asset ID</strong>
-                            <span>${service.asset_id}</span>
-                        </div>
-                        <div class="detail-item">
-                            <strong>Service Case ID</strong>
-                            <span>${service.service_case_id || 'N/A'}</span>
-                        </div>
-                        <div class="detail-item">
-                            <strong>Technician Name</strong>
-                            <span>${service.technician_name}</span>
-                        </div>
-                        <div class="detail-item">
-                            <strong>Technician ID</strong>
-                            <span>${service.technician_id || 'N/A'}</span>
-                        </div>
-                        <div class="detail-item">
-                            <strong>Warranty Type</strong>
-                            <span>${service.warranty_type || 'N/A'}</span>
-                        </div>
-                        <div class="detail-item">
-                            <strong>Work Done</strong>
-                            <span>${service.work_done}</span>
-                        </div>
-                    </div>
-                    <div class="popup-column">
-                        <div class="detail-item">
-                            <strong>Next Service Date</strong>
-                            <span>${service.next_service_date || 'N/A'}</span>
-                        </div>
-                        <div class="detail-item">
-                            <strong>Service Charge</strong>
-                            <span>${service.service_charge || 'N/A'}</span>
-                        </div>
-                        <div class="detail-item">
-                            <strong>Remarks</strong>
-                            <span>${service.remarks || 'N/A'}</span>
-                        </div>
-                        <div class="detail-item">
-                            <strong>Service Bill Paths</strong>
-                            <span>${
-                                service.service_bill_path ?
-                                service.service_bill_path.split(',').map(path => 
-                                    `<a href="${path}" target="_blank">${path.split('/').pop()}</a><br>`
-                                ).join('') : 'N/A'
-                            }</span>
-                        </div>
-                        <div class="detail-item">
-                            <strong>Created By</strong>
-                            <span>${service.created_by}</span>
-                        </div>
-                        <div class="detail-item">
-                            <strong>Created At</strong>
-                            <span>${service.created_at}</span>
-                        </div>
-                        <div class="detail-item">
-                            <strong>Modified By</strong>
-                            <span>${service.modified_by || 'N/A'}</span>
-                        </div>
-                        <div class="detail-item">
-                            <strong>Modified At</strong>
-                            <span>${service.modified_at || 'N/A'}</span>
-                        </div>
-                    </div>
-                `;
-                document.getElementById('popup-content').innerHTML = content;
-                document.getElementById('popup').style.display = 'block';
-                document.getElementById('overlay').style.display = 'block';
-            }
-        }
+			function toggleNoRecords(show) {
+				document.getElementById('noRecords').style.display = show ? 'block' : 'none';
+				document.getElementById('serviceTable').style.display = show ? 'none' : 'table';
+			}
 
-        function hidePopup() {
-            document.getElementById('popup').style.display = 'none';
-            document.getElementById('overlay').style.display = 'none';
-            document.getElementById('popup-content').innerHTML = '';
-        }
+			function showPopup(serviceId) {
+				const service = allServicesData.find(s => s.service_id === serviceId);
+				if (service) {
+					const content = `
+						<div class="popup-column">
+							<div class="detail-item">
+								<strong>Service ID</strong>
+								<span>${service.service_id}</span>
+							</div>
+							<div class="detail-item">
+								<strong>Ticket ID</strong>
+								<span>${service.ticket_id}</span>
+							</div>
+							<div class="detail-item">
+								<strong>Asset ID</strong>
+								<span>${service.asset_id}</span>
+							</div>
+							<div class="detail-item">
+								<strong>Service Case ID</strong>
+								<span>${service.service_case_id || 'N/A'}</span>
+							</div>
+							<div class="detail-item">
+								<strong>Technician Name</strong>
+								<span>${service.technician_name}</span>
+							</div>
+							<div class="detail-item">
+								<strong>Technician ID</strong>
+								<span>${service.technician_id || 'N/A'}</span>
+							</div>
+							<div class="detail-item">
+								<strong>Warranty Type</strong>
+								<span>${service.warranty_type || 'N/A'}</span>
+							</div>
+							<div class="detail-item">
+								<strong>Work Done</strong>
+								<span>${service.work_done}</span>
+							</div>
+						</div>
+						<div class="popup-column">
+							<div class="detail-item">
+								<strong>Next Service Date</strong>
+								<span>${service.next_service_date || 'N/A'}</span>
+							</div>
+							<div class="detail-item">
+								<strong>Service Charge</strong>
+								<span>${service.service_charge || 'N/A'}</span>
+							</div>
+							<div class="detail-item">
+								<strong>Remarks</strong>
+								<span>${service.remarks || 'N/A'}</span>
+							</div>
+							<div class="detail-item">
+								<strong>Service Bill Paths</strong>
+								<span>${
+									service.service_bill_path ?
+									service.service_bill_path.split(',').map(path => 
+										`<a href="${path}" target="_blank">${path.split('/').pop()}</a><br>`
+									).join('') : 'N/A'
+								}</span>
+							</div>
+							<div class="detail-item">
+								<strong>Created By</strong>
+								<span>${service.created_by}</span>
+							</div>
+							<div class="detail-item">
+								<strong>Created At</strong>
+								<span>${service.created_at}</span>
+							</div>
+							<div class="detail-item">
+								<strong>Modified By</strong>
+								<span>${service.modified_by || 'N/A'}</span>
+							</div>
+							<div class="detail-item">
+								<strong>Modified At</strong>
+								<span>${service.modified_at || 'N/A'}</span>
+							</div>
+						</div>
+					`;
+					document.getElementById('popup-content').innerHTML = content;
+					document.getElementById('popup').style.display = 'block';
+					document.getElementById('overlay').style.display = 'block';
+				}
+			}
 
-        function printModal() {
-            const modalContent = document.getElementById('popup-content');
-            if (!modalContent) return;
+			function hidePopup() {
+				document.getElementById('popup').style.display = 'none';
+				document.getElementById('overlay').style.display = 'none';
+				document.getElementById('popup-content').innerHTML = '';
+			}
 
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
-                <html>
-                <head>
-                    <title>Print Service Details</title>
-                    <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            padding: 20px;
-                        }
-                        h2 {
-                            color: #2f276f;
-                            border-bottom: 2px solid #2f276f;
-                            padding-bottom: 10px;
-                        }
-                        .two-column-grid {
-                            display: grid;
-                            grid-template-columns: 1fr 1fr;
-                            gap: 20px;
-                            padding: 10px 0;
-                        }
-                        .detail-item {
-                            margin: 8px 0;
-                            padding: 8px;
-                            background-color: #f8f9fa;
-                        }
-                        .detail-item strong {
-                            color: #2f276f;
-                            display: block;
-                            margin-bottom: 4px;
-                        }
-                        .detail-item span {
-                            color: #333;
-                            word-break: break-word;
-                        }
-                        .no-print {
-                            display: none;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <h2>Service Details</h2>
-                    ${modalContent.innerHTML}
-                </body>
-                </html>
-            `);
+			function printModal() {
+				const modalContent = document.getElementById('popup-content');
+				if (!modalContent) return;
 
-            printWindow.document.querySelector('.close-btn')?.classList.add('no-print');
-            printWindow.document.querySelector('.print-btn')?.classList.add('no-print');
+				const printWindow = window.open('', '_blank');
+				printWindow.document.write(`
+					<html>
+					<head>
+						<title>Print Service Details</title>
+						<style>
+							body {
+								font-family: Arial, sans-serif;
+								padding: 20px;
+							}
+							h2 {
+								color: #2f276f;
+								border-bottom: 2px solid #2f276f;
+								padding-bottom: 10px;
+							}
+							.two-column-grid {
+								display: grid;
+								grid-template-columns: 1fr 1fr;
+								gap: 20px;
+								padding: 10px 0;
+							}
+							.detail-item {
+								margin: 8px 0;
+								padding: 8px;
+								background-color: #f8f9fa;
+							}
+							.detail-item strong {
+								color: #2f276f;
+								display: block;
+								margin-bottom: 4px;
+							}
+							.detail-item span {
+								color: #333;
+								word-break: break-word;
+							}
+							.no-print {
+								display: none;
+							}
+						</style>
+					</head>
+					<body>
+						<h2>Service Details</h2>
+						${modalContent.innerHTML}
+					</body>
+					</html>
+				`);
 
-            printWindow.document.close();
-            printWindow.focus();
-            printWindow.print();
-            printWindow.close();
-        }
+				printWindow.document.querySelector('.close-btn')?.classList.add('no-print');
+				printWindow.document.querySelector('.print-btn')?.classList.add('no-print');
 
-        document.addEventListener('DOMContentLoaded', () => {
-            filterAndPaginate();
-        });
-    </script>
-</body>
+				printWindow.document.close();
+				printWindow.focus();
+				printWindow.print();
+				printWindow.close();
+			}
+
+			document.addEventListener('DOMContentLoaded', () => {
+				filterAndPaginate();
+			});
+		</script>
+		
+		<script>
+			function downloadExcel() {
+				const headers = [
+					'#',
+					'Service ID',
+					'Ticket ID',
+					'Asset ID',
+					'Work Done',
+					'Next Service Date',
+					'Service Charge'
+				];
+
+				// Build data array based on filteredRows (not only visible rows)
+				const data = filteredRows.map((row, index) => [
+					index + 1,
+					row.cells[0].textContent,
+					row.cells[1].textContent,
+					row.cells[2].textContent,
+					row.cells[3].textContent,
+					row.cells[4].textContent,
+					row.cells[5].textContent // Service Charge is in column 5
+				]);
+
+				const worksheet = XLSX.utils.aoa_to_sheet([headers, ...data]);
+				const workbook = XLSX.utils.book_new();
+				XLSX.utils.book_append_sheet(workbook, worksheet, 'Services');
+
+				XLSX.writeFile(workbook, 'services.xlsx');
+			}
+
+
+			document.getElementById('downloadExcel').addEventListener('click', downloadExcel);
+
+
+		</script>
+	</body>
 </html>

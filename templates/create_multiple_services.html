@@ -6,6 +6,11 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/service_styles.css') }}">
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
     <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
+			<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+		<!-- JS -->
+		<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </head>
 <body>
     {% include 'header.html' %}
@@ -14,13 +19,18 @@
     </div>
 
     <div class="form-container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash-message {{ category }}">{{ message }}</div>
-                {% endfor %}
+	
+	
+	{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+		 {% if category in ("create_multiple_services") %}
+            
+                <div class="flash-message {{ category }}">{{ message }}</div>
             {% endif %}
-        {% endwith %}
+        {% endfor %}
+    {% endif %}
+  {% endwith %}
 
         <form method="POST" enctype="multipart/form-data" id="serviceForm">
             <div class="form-column">
@@ -33,12 +43,18 @@
                         {% endfor %}
                     </div>
                 </div>
-
-
-
+				
                 <div class="form-group">
+                    <label for="technician_source">Technician Source:</label>
+                    <select name="technician_source" id="technician_source" onchange="toggleTechnicianFields()">
+                        <option value="outhouse">Outhouse</option>
+                        <option value="inhouse">Inhouse</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="technician_name_group">
                     <label for="technician_name">Technician Name:</label>
-                    <select name="technician_name" id="technician_name" required onchange="updateTechnicianId()">
+                    <select name="technician_name" id="technician_name" onchange="updateTechnicianId()" class="searchable-dropdown">
                         <option value="">Select Technician</option>
                         {% for tech in technicians %}
                             <option value="{{ tech.technician_name }}" data-technician-id="{{ tech.technician_id }}">
@@ -49,11 +65,11 @@
                     </select>
                 </div>
 
-                <div class="form-group">
+
+                <div class="form-group" id="technician_id_group">
                     <label for="technician_id">Technician ID:</label>
-                    <input type="text" name="technician_id" id="technician_id" readonly required>
+                    <input type="text" name="technician_id" id="technician_id" readonly>
                 </div>
-            </div>
 			
 			     <div class="form-group">
                     <label for="reference_name">Reference Name for the Service:</label>
@@ -130,6 +146,58 @@
                 document.getElementById('technician_id').value = '';
             }
         }
+		
+		        // Initialize form based on technician_source
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleTechnicianFields(); // Ensure initial state is set
+            // Add form submission validation
+            const form = document.getElementById('serviceForm');
+            form.addEventListener('submit', function(event) {
+                const technicianSource = document.getElementById('technician_source').value;
+                const technicianName = document.getElementById('technician_name').value;
+                const technicianId = document.getElementById('technician_id').value;
+
+                if (technicianSource === 'outhouse' && (!technicianName || !technicianId)) {
+                    event.preventDefault();
+                    alert('Please select a Technician Name and ensure Technician ID is populated for Outhouse.');
+                }
+            });
+        });
+		
+		
+		        function toggleTechnicianFields() {
+            const technicianSource = document.getElementById('technician_source').value;
+            const technicianNameGroup = document.getElementById('technician_name_group');
+            const technicianIdGroup = document.getElementById('technician_id_group');
+            const technicianNameSelect = document.getElementById('technician_name');
+            const technicianIdInput = document.getElementById('technician_id');
+
+            if (technicianSource === 'inhouse') {
+                technicianNameGroup.style.display = 'none';
+                technicianIdGroup.style.display = 'none';
+                technicianNameSelect.removeAttribute('required');
+                technicianIdInput.removeAttribute('required');
+                technicianNameSelect.value = '{{ session.username }}';
+                technicianIdInput.value = '{{ session.emp_id }}';
+            } else { // outhouse
+                technicianNameGroup.style.display = 'block';
+                technicianIdGroup.style.display = 'block';
+                technicianNameSelect.setAttribute('required', 'required');
+                technicianIdInput.setAttribute('required', 'required');
+                technicianNameSelect.value = '';
+                technicianIdInput.value = '';
+            }
+        }
     </script>
+	<script>
+  $(document).ready(function() {
+    $('.searchable-dropdown').select2({
+      width: '100%',
+      placeholder: 'Select an option',
+      allowClear: true
+    });
+  });
+</script>
+
 </body>
 </html>

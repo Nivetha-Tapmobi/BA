@@ -8,6 +8,12 @@
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
     <!-- Include Header JS -->
     <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
+	
+		<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+		<!-- JS -->
+		<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <style>
     .remove-btn {
         background-color: #dc3545;
@@ -47,13 +53,11 @@
 
     <div class="form-container">
         <form id="assetForm" action="{{ url_for('edit_asset', asset_id=asset.asset_id) }}" method="post" enctype="multipart/form-data">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="flash-message {{ category }}">{{ message }}</div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+			<div id="flashMessagesContainer"></div>
+			<script type="text/javascript">
+				const flashMessages = {{ get_flashed_messages(with_categories=true) | tojson }};
+				showFlashMessages(flashMessages);
+			</script>
 
             <div class="form-container">
                 <div class="form-column">
@@ -68,7 +72,7 @@
 
                     <div class="form-group">
                         <label for="asset_category">Asset Category Type</label>
-                        <select id="asset_category" name="asset_category" class="dropdown-with-add">
+                        <select id="asset_category" name="asset_category" class="dropdown-with-add searchable-dropdown">
                             <option value="">--select an option--</option>
                             {% for category in asset_categories %}
                                 <option value="{{ category }}" {% if category == asset.asset_category %}selected{% endif %}>
@@ -84,18 +88,19 @@
                         <input type="text" id="serial_no" name="serial_no" value="{{ asset.serial_no|default('') }}" required>
                     </div>
 
-                    <div class="form-group">
-                        <label for="product_type">Product Type</label>
-                        <select id="product_type" name="product_type" class="dropdown-with-add">
-                            <option value="">--select an option--</option>
-                            {% for product in product_types %}
-                                <option value="{{ product }}" {% if product == asset.product_type %}selected{% endif %}>
-                                    {{ product }}
-                                </option>
-                            {% endfor %}
-                            <option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
-                        </select>
-                    </div>
+					<div class="form-group">
+						<label for="product_type">Product Type</label>
+						<select id="product_type" name="product_type" class="dropdown-with-add searchable-dropdown">
+							<option value="">--select an option--</option>
+							{% for product in product_types %}
+								<option value="{{ product }}"
+									{% if product == asset.product_type %}selected{% endif %}>
+									{{ product }}
+								</option>
+							{% endfor %}
+							<option value="add_new" style="color: green; font-weight: bold;">+ Add New Option</option>
+						</select>
+					</div>
 
                     <div class="form-group">
                         <label for="product_name">Product Name:</label>
@@ -126,28 +131,28 @@
 
 
 				
-				<div class="form-group">
-				<label for="vendor_name">Vendor Name:</label>
-				<select id="vendor_name" name="vendor_name" required>
-					<option value="">Select a vendor</option>
-					{% for vendor in vendors %}
-						<option value="{{ vendor.vendor_name }}" data-vendor-id="{{ vendor.vendor_id }}"
-								{% if vendor.vendor_name == asset.vendor_name %}selected{% endif %}>
-							{{ vendor.vendor_name }}
-						</option>
-					{% endfor %}
-					<option value="add_new_vendor" style="color: blue; font-weight: bold;">+ Add New Vendor</option>
-				</select>
-				<input type="hidden" id="vendor_id" name="vendor_id" value="{{ asset.vendor_id|default('') }}">
-				<p>Selected Vendor ID: <span id="vendor_id_display">{{ asset.vendor_id|default('None') }}</span></p>
-			</div>
-							
+						<div class="form-group">
+						<label for="vendor_name">Vendor Name:</label>
+						<select id="vendor_name" name="vendor_name" class="searchable-dropdown" required>
+							<option value="">Select a vendor</option>
+							{% for vendor in vendors %}
+								<option value="{{ vendor.vendor_name }}" data-vendor-id="{{ vendor.vendor_id }}"
+										{% if vendor.vendor_name == asset.vendor_name %}selected{% endif %}>
+									{{ vendor.vendor_name }}
+								</option>
+							{% endfor %}
+							<option value="add_new_vendor" style="color: blue; font-weight: bold;">+ Add New Vendor</option>
+						</select>
+						<input type="hidden" id="vendor_id" name="vendor_id" value="{{ asset.vendor_id|default('') }}">
+						<p>Selected Vendor ID: <span id="vendor_id_display">{{ asset.vendor_id|default('None') }}</span></p>
+					</div>
+									
 				
 				
 
                     <div class="form-group">
                         <label for="company_name">Company Name</label>
-                        <select id="company_name" name="company_name" class="dropdown-with-add">
+                        <select id="company_name" name="company_name" class="dropdown-with-add searchable-dropdown">
                             <option value="">--select an option--</option>
                             {% for company in companies %}
                                 <option value="{{ company }}" {% if company == asset.company_name %}selected{% endif %}>
@@ -160,7 +165,7 @@
 					
 					<div class="form-group">
                         <label for="location">Location</label>
-                        <select id="location" name="location" class="dropdown-with-add">
+                        <select id="location" name="location" class="dropdown-with-add searchable-dropdown">
                             <option value="">--select an option--</option>
                             {% for location in locations %}
                                 <option value="{{ location }}" {% if location == asset.location %}selected{% endif %}>
@@ -175,7 +180,7 @@
 
                     <div class="form-group">
                         <label for="asset_type">Asset Type</label>
-                        <select id="asset_type" name="asset_type" class="dropdown-with-add">
+                        <select id="asset_type" name="asset_type" class="dropdown-with-add searchable-dropdown">
                             <option value="">--select an option--</option>
                             {% for asset_type in asset_types %}
                                 <option value="{{ asset_type }}" {% if asset_type == asset.asset_type %}selected{% endif %}>
@@ -310,39 +315,39 @@
                     </div>
 					
 					
-<div class="form-group">
-    <label for="asset_image">Asset Images:</label>
-    <input type="file" id="asset_image" name="asset_image[]" multiple>
-    {% if asset.image_path %}
-        <p>Existing Images:</p>
-        <ul id="image-list">
-            {% for image in asset.image_path.split(',') %}
-                <li data-filename="{{ image }}">
-                    <a href="{{ url_for('static', filename='uploads/' + asset_id + '/Asset_Images/' + image) }}" target="_blank">{{ image }}</a>
-                    <button type="button" class="remove-btn" onclick="removeFile(this, 'image')">Remove</button>
-                </li>
-            {% endfor %}
-        </ul>
-        <input type="hidden" name="removed_images" id="removed-images" value="">
-    {% endif %}
-</div>
+					<div class="form-group">
+						<label for="asset_image">Asset Images:</label>
+						<input type="file" id="asset_image" name="asset_image[]" multiple>
+						{% if asset.image_path %}
+							<p>Existing Images:</p>
+							<ul id="image-list">
+								{% for image in asset.image_path.split(',') %}
+									<li data-filename="{{ image }}">
+										<a href="{{ url_for('static', filename='uploads/' + asset_id + '/Asset_Images/' + image) }}" target="_blank">{{ image }}</a>
+										<button type="button" class="remove-btn" onclick="removeFile(this, 'image')">Remove</button>
+									</li>
+								{% endfor %}
+							</ul>
+							<input type="hidden" name="removed_images" id="removed-images" value="">
+						{% endif %}
+					</div>
 
-<div class="form-group">
-    <label for="purchase_bill">Purchase Bill:</label>
-    <input type="file" id="purchase_bill" name="purchase_bill[]" multiple>
-    {% if asset.purchase_bill_path %}
-        <p>Existing Bills:</p>
-        <ul id="bill-list">
-            {% for bill in asset.purchase_bill_path.split(',') %}
-                <li data-filename="{{ bill }}">
-                    <a href="{{ url_for('static', filename='uploads/' + asset_id + '/Purchase_Bills/' + bill) }}" target="_blank">{{ bill }}</a>
-                    <button type="button" class="remove-btn" onclick="removeFile(this, 'bill')">Remove</button>
-                </li>
-            {% endfor %}
-        </ul>
-        <input type="hidden" name="removed_bills" id="removed-bills" value="">
-    {% endif %}
-</div>
+					<div class="form-group">
+						<label for="purchase_bill">Purchase Bill:</label>
+						<input type="file" id="purchase_bill" name="purchase_bill[]" multiple>
+						{% if asset.purchase_bill_path %}
+							<p>Existing Bills:</p>
+							<ul id="bill-list">
+								{% for bill in asset.purchase_bill_path.split(',') %}
+									<li data-filename="{{ bill }}">
+										<a href="{{ url_for('static', filename='uploads/' + asset_id + '/Purchase_Bills/' + bill) }}" target="_blank">{{ bill }}</a>
+										<button type="button" class="remove-btn" onclick="removeFile(this, 'bill')">Remove</button>
+									</li>
+								{% endfor %}
+							</ul>
+							<input type="hidden" name="removed_bills" id="removed-bills" value="">
+						{% endif %}
+					</div>
 
                     <div class="form-group">
                         <label for="remarks">Remarks:</label>
@@ -361,47 +366,47 @@
 					
 					
 					
-<div class="form-group">
-    <label for="has_amc">AMC:</label>
-    <select id="has_amc" name="has_amc" onchange="toggleAMCFields()">
-        <option value="">--select an option--</option>
-        <option value="Yes" {% if asset.has_amc == 'Yes' %}selected{% endif %}>Yes</option>
-        <option value="No" {% if asset.has_amc == 'No' %}selected{% endif %}>No</option>
-    </select>
-</div>
+					<div class="form-group">
+						<label for="has_amc">AMC:</label>
+						<select id="has_amc" name="has_amc" onchange="toggleAMCFields()">
+							<option value="">--select an option--</option>
+							<option value="Yes" {% if asset.has_amc == 'Yes' %}selected{% endif %}>Yes</option>
+							<option value="No" {% if asset.has_amc == 'No' %}selected{% endif %}>No</option>
+						</select>
+					</div>
 
-<div id="recurring-alert-section" style="display: {% if asset.has_amc == 'Yes' %}block{% else %}none{% endif %};">
-    <label for="recurring_alert_for_amc">Recurring Alert for AMC:</label>
-    <div id="recurring-alert-container">
-        {% if recurring_alert_list %}
-            {% for key, value, unit in recurring_alert_list %}
-                <div class="recurring-alert-row">
-                    <input type="text" name="recurring_alert_key[]" value="{{ key|default('') }}" placeholder="Event Type">
-                    <input type="number" name="recurring_alert_value[]" value="{{ value|default('') }}" placeholder="Every X" min="1">
-                    <select name="recurring_alert_unit[]">
-                        <option value="Days" {% if unit == 'Days' %}selected{% endif %}>Days</option>
-                        <option value="Weeks" {% if unit == 'Weeks' %}selected{% endif %}>Weeks</option>
-                        <option value="Months" {% if unit == 'Months' %}selected{% endif %}>Months</option>
-                        <option value="Years" {% if unit == 'Years' %}selected{% endif %}>Years</option>
-                    </select>
-                    <button type="button" class="add-field">+</button>
-                </div>
-            {% endfor %}
-        {% else %}
-            <div class="recurring-alert-row">
-                <input type="text" name="recurring_alert_key[]" placeholder="Event Type">
-                <input type="number" name="recurring_alert_value[]" placeholder="Every X" min="1">
-                <select name="recurring_alert_unit[]">
-                    <option value="Days">Days</option>
-                    <option value="Weeks">Weeks</option>
-                    <option value="Months">Months</option>
-                    <option value="Years">Years</option>
-                </select>
-                <button type="button" class="add-field">+</button>
-            </div>
-        {% endif %}
-    </div>
-</div>
+					<div id="recurring-alert-section" style="display: {% if asset.has_amc == 'Yes' %}block{% else %}none{% endif %};">
+						<label for="recurring_alert_for_amc">Recurring Alert for AMC:</label>
+						<div id="recurring-alert-container">
+							{% if recurring_alert_list %}
+								{% for key, value, unit in recurring_alert_list %}
+									<div class="recurring-alert-row">
+										<input type="text" name="recurring_alert_key[]" value="{{ key|default('') }}" placeholder="Event Type">
+										<input type="number" name="recurring_alert_value[]" value="{{ value|default('') }}" placeholder="Every X" min="1">
+										<select name="recurring_alert_unit[]">
+											<option value="Days" {% if unit == 'Days' %}selected{% endif %}>Days</option>
+											<option value="Weeks" {% if unit == 'Weeks' %}selected{% endif %}>Weeks</option>
+											<option value="Months" {% if unit == 'Months' %}selected{% endif %}>Months</option>
+											<option value="Years" {% if unit == 'Years' %}selected{% endif %}>Years</option>
+										</select>
+										<button type="button" class="add-field">+</button>
+									</div>
+								{% endfor %}
+							{% else %}
+								<div class="recurring-alert-row">
+									<input type="text" name="recurring_alert_key[]" placeholder="Event Type">
+									<input type="number" name="recurring_alert_value[]" placeholder="Every X" min="1">
+									<select name="recurring_alert_unit[]">
+										<option value="Days">Days</option>
+										<option value="Weeks">Weeks</option>
+										<option value="Months">Months</option>
+										<option value="Years">Years</option>
+									</select>
+									<button type="button" class="add-field">+</button>
+								</div>
+							{% endif %}
+						</div>
+					</div>
                 </div>
 
                 <div class="form-group">
@@ -437,5 +442,16 @@ function removeFile(button) {
             // If user clicks "Cancel", do nothing (function ends here)
         }
 </script>
+
+	<script>
+  $(document).ready(function() {
+    $('.searchable-dropdown').select2({
+      width: '100%',
+      placeholder: 'Select an option',
+      allowClear: true
+    });
+  });
+</script>
+
 </body>
 </html>

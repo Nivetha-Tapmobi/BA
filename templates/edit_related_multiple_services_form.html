@@ -89,6 +89,11 @@
     </style>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
     <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
+			<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+		<!-- JS -->
+		<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </head>
 <body>
     {% include 'header.html' %}
@@ -119,24 +124,33 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="technician_name">Technician Name:</label>
-                    <select name="technician_name" id="technician_name" required onchange="updateTechnicianId()">
-                        <option value="">Select Technician</option>
-                        {% for tech in technicians %}
-                            <option value="{{ tech.technician_name }}" data-technician-id="{{ tech.technician_id }}"
-                                    {% if tech.technician_name == service.technician_name %}selected{% endif %}>
-                                {{ tech.technician_name }}
-                            </option>
-                        {% endfor %}
-                        <option value="add_new_technician" style="color: blue; font-weight: bold;">+ Add New Technician</option>
-                    </select>
-                </div>
+				<div class="form-group">
+					<label for="technician_source">Technician Source:</label>
+					<select name="technician_source" id="technician_source" onchange="toggleTechnicianFields()">
+						<option value="outhouse" {% if service and service.technician_source == 'outhouse' %}selected{% endif %}>Outhouse</option>
+						<option value="inhouse" {% if service and service.technician_source == 'inhouse' %}selected{% endif %}>Inhouse</option>
+					</select>
+				</div>
 
-                <div class="form-group">
-                    <label for="technician_id">Technician ID:</label>
-                    <input type="text" name="technician_id" id="technician_id" value="{{ service.technician_id }}" readonly required>
-                </div>
+				<div class="form-group" id="technician_name_group">
+					<label for="technician_name">Technician Name:</label>
+					<select name="technician_name" id="technician_name" onchange="updateTechnicianId()" class="searchable-dropdown">
+						<option value="">Select Technician</option>
+						{% for tech in technicians %}
+							<option value="{{ tech.technician_name }}" data-technician-id="{{ tech.technician_id }}"
+									{% if service and tech.technician_name == service.technician_name and service.technician_source == 'outhouse' %}selected{% endif %}>
+								{{ tech.technician_name }}
+							</option>
+						{% endfor %}
+						<option value="add_new_technician" style="color: blue; font-weight: bold;">+ Add New Technician</option>
+					</select>
+				</div>
+
+
+				<div class="form-group" id="technician_id_group">
+					<label for="technician_id">Technician ID:</label>
+					<input type="text" name="technician_id" id="technician_id" value="{{ service.technician_id if service and service.technician_source == 'outhouse' else '' }}" readonly>
+				</div>
 
                 <div class="form-group">
                     <label>Work Done History:</label>
@@ -224,8 +238,48 @@
                 document.getElementById('technician_id').value = '';
             }
         }
+		
+		document.addEventListener('DOMContentLoaded', function() {
+            toggleTechnicianFields(); // Ensure initial state is set
+            // Add form submission validation
+            const form = document.getElementById('serviceForm');
+            form.addEventListener('submit', function(event) {
+                const technicianSource = document.getElementById('technician_source').value;
+                const technicianName = document.getElementById('technician_name').value;
+                const technicianId = document.getElementById('technician_id').value;
 
-function removeFile(button) {
+                if (technicianSource === 'outhouse' && (!technicianName || !technicianId)) {
+                    event.preventDefault();
+                    alert('Please select a Technician Name and ensure Technician ID is populated for Outhouse.');
+                }
+            });
+        });
+		
+		function toggleTechnicianFields() {
+            const technicianSource = document.getElementById('technician_source').value;
+            const technicianNameGroup = document.getElementById('technician_name_group');
+            const technicianIdGroup = document.getElementById('technician_id_group');
+            const technicianNameSelect = document.getElementById('technician_name');
+            const technicianIdInput = document.getElementById('technician_id');
+
+            if (technicianSource === 'inhouse') {
+                technicianNameGroup.style.display = 'none';
+                technicianIdGroup.style.display = 'none';
+                technicianNameSelect.removeAttribute('required');
+                technicianIdInput.removeAttribute('required');
+                technicianNameSelect.value = '{{ session.username }}';
+                technicianIdInput.value = '{{ session.emp_id }}';
+            } else { // outhouse
+                technicianNameGroup.style.display = 'block';
+                technicianIdGroup.style.display = 'block';
+                technicianNameSelect.setAttribute('required', 'required');
+                technicianIdInput.setAttribute('required', 'required');
+                technicianNameSelect.value = '';
+                technicianIdInput.value = '';
+            }
+        }
+
+		function removeFile(button) {
             const li = button.parentElement;
             const fullPath = li.getAttribute('data-full-path');
             const fileName = fullPath.split('/').pop(); // Extract the file name for the confirmation message
@@ -245,5 +299,15 @@ function removeFile(button) {
             // If user clicks "Cancel", do nothing (function ends here)
         }
     </script>
+	<script>
+  $(document).ready(function() {
+    $('.searchable-dropdown').select2({
+      width: '100%',
+      placeholder: 'Select an option',
+      allowClear: true
+    });
+  });
+</script>
+
 </body>
 </html>

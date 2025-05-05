@@ -66,10 +66,10 @@
             background-color: #fff9e6; /* Mild yellow for not checked within 1 week */
         }
         .not-checked-after-week {
-            background-color: #ff3333; /* Red for not checked after 1 week */
+            background-color: #ffe6e6; /* Red for not checked after 1 week */
         }
         .overdue {
-            background-color: #ffe6e6; /* Light red for overdue */
+            background-color: #ff3333; /* Light red for overdue */
         }
         .overlay {
             display: none;
@@ -273,13 +273,16 @@
     </div>
 
     <div class="form-container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash-message {{ category }}">{{ message }}</div>
-                {% endfor %}
+	{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+		 {% if category in ("check_asset_status") %}
+            
+                <div class="flash-message {{ category }}">{{ message }}</div>
             {% endif %}
-        {% endwith %}
+        {% endfor %}
+    {% endif %}
+  {% endwith %}
 
         <!-- Filters -->
         <div class="filter-container">
@@ -311,8 +314,8 @@
             <span class="color-legend">
                 Checked: <span style="background-color: #e6ffe6;">Light Green</span> |
                 Not Checked Within 1 Week: <span style="background-color: #fff9e6;">Mild Yellow</span> |
-                Not Checked After 1 Week: <span style="background-color: #ff3333; color: white;">Red</span> |
-                Overdue: <span style="background-color: #ffe6e6;">Light Red</span>
+                Not Checked After 1 Week: <span style="background-color: #ffe6e6; ">Red</span> |
+                Overdue: <span style="background-color: #ff3333;">Light Red</span>
             </span></p>
         {% endif %}
 

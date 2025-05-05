@@ -1,454 +1,553 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IT Asset Tracker</title>
-    <style>
-        .form-container {
-            width: 95%; /* Match the header's width */
-            max-width: none; /* Remove the max-width constraint */
-            margin: 10px auto; /* Reduced top margin */
-            padding: 10px 20px; /* Reduced top/bottom padding */
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            background-color: #f8f9fa;
-        }
-        .asset-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 10px 0; /* Reduced top margin */
-            background-color: white;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
-        .asset-table th, .asset-table td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: center;
-            font-size: 18px;
-            vertical-align: middle;
-        }
-        .asset-table th {
-            background-color: #2f276f;
-            color: white;
-            font-size: 15px;
-        }
-        .barcode-container img {
-            display: block;
-            margin: auto;
-            width: 80px;
-            height: 80px;
-        }
-        .download-link {
-            display: block;
-            color: #2f276f;
-            font-size: 13px;
-            text-decoration: underline;
-            margin-top: 5px;
-            text-align: center;
-        }
-        .download-link:hover {
-            color: #3f357f;
-        }
-        .status-container {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-            font-size: 13px;
-            line-height: 1.3;
-        }
-        .status-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .action-dropdown {
-            position: relative;
-            display: inline-block;
-        }
-        .action-btn {
-            padding: 8px 12px; /* Consistent padding */
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            color: white;
-            font-size: 14px;
-            line-height: 1;
-            box-sizing: border-box;
-            min-width: 60px;
-            text-align: center;
-            background-color: #2f276f; /* Match the view-btn color */
-        }
-        .action-btn:hover {
-            background-color: #3f357f; /* Slightly lighter shade on hover */
-        }
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: white;
-            min-width: 140px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            z-index: 1;
-            border-radius: 4px;
-            right: 0;
-        }
-        .dropdown-content a, .dropdown-content button {
-            color: #333;
-            padding: 8px 14px;
-            text-decoration: none;
-            display: block;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-            font-size: 13px;
-            cursor: pointer;
-        }
-        .dropdown-content a:hover, .dropdown-content button:hover {
-            background-color: #f1f1f1;
-        }
-        .action-dropdown:hover .dropdown-content {
-            display: block;
-        }
-        .view-btn { color: #2f276f; }
-        .edit-btn { color: #4CAF50; }
-        .adduser-btn { color: #17a2b8; }
-        .raise-btn { color: #ffc107; }
-        .exwarranty-btn { color: #6f42c1; }
-        .insurance-btn { color: #fd7e14; }
-        .delete-btn { color: #ff4444; }
-        th:nth-child(1), td:nth-child(1) { width: 5%; } /* # */
-        th:nth-child(2), td:nth-child(2) { width: 15%; } /* Product Type */
-        th:nth-child(3), td:nth-child(3) { width: 15%; } /* Product Name */
-        th:nth-child(4), td:nth-child(4) { width: 15%; } /* Serial No */
-        th:nth-child(5), td:nth-child(5) { width: 10%; } /* Make */
-        th:nth-child(6), td:nth-child(6) { width: 10%; } /* Status */
-        th:nth-child(7), td:nth-child(7) { width: 10%; } /* QR Code */
-        th:nth-child(8), td:nth-child(8) { width: 10%; } /* Actions */
-        .search-container {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .search-container input {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-            width: 250px; /* Match previous templates */
-        }
-        .pagination {
-            margin: 20px 0;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-        .pagination button {
-            padding: 5px 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background: none;
-            color: #2f276f;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        .pagination button:hover {
-            background-color: #f4f4f4;
-        }
-        .pagination .active {
-            background-color: #2f276f;
-            color: white;
-            border-color: #2f276f;
-        }
-        .pagination .disabled {
-            color: #6c757d;
-            pointer-events: none;
-        }
-        .header {
-            background-color: #2f276f;
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            position: relative;
-            z-index: 998;
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 28px;
-        }
-        .menu {
-            cursor: pointer;
-            font-size: 24px;
-            position: relative;
-        }
-        .menu-dropdown {
-            display: none;
-            position: absolute;
-            top: 100%;
-            right: 20px;
-            background: white;
-            border-radius: 5px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            z-index: 1000;
-            min-width: 150px;
-        }
-        .menu-dropdown button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            border: none;
-            background: none;
-            cursor: pointer;
-            font-size: 16px;
-            text-align: left;
-            color: black;
-        }
-        .menu-dropdown button:hover {
-            background: #f0f0f0;
-        }
-        .header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 95%; /* Match the header's width */
-            margin: 10px auto; /* Reduced top/bottom margin */
-            padding: 10px 20px; /* Reduced top/bottom padding */
-            background-color: #f8f9fa;
-            border-radius: 5px;
-        }
-        .no-records {
-            text-align: center;
-            padding: 20px;
-            color: #721c24;
-        }
-    </style>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
-    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
-</head>
-<body>
-    {% include 'header.html' %}
-    
-    <div class="content">
-        {% block content %}{% endblock %}
-    </div>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>IT Asset Tracker</title>
+		<style>
+			.form-container {
+				width: 95%; /* Match the header's width */
+				max-width: none; /* Remove the max-width constraint */
+				margin: 10px auto; /* Reduced top margin */
+				padding: 10px 20px; /* Reduced top/bottom padding */
+				border-radius: 8px;
+				box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+				background-color: #f8f9fa;
+			}
+			.asset-table {
+				width: 100%;
+				border-collapse: collapse;
+				margin: 10px 0; /* Reduced top margin */
+				background-color: white;
+				box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+			}
+			.asset-table th, .asset-table td {
+				border: 1px solid #ddd;
+				padding: 10px;
+				text-align: center;
+				font-size: 18px;
+				vertical-align: middle;
+			}
+			.asset-table th {
+				background-color: #2f276f;
+				color: white;
+				font-size: 15px;
+			}
+			.barcode-container img {
+				display: block;
+				margin: auto;
+				width: 80px;
+				height: 80px;
+			}
+			.download-link {
+				display: block;
+				color: #2f276f;
+				font-size: 13px;
+				text-decoration: underline;
+				margin-top: 5px;
+				text-align: center;
+			}
+			.download-link:hover {
+				color: #3f357f;
+			}
+			.status-container {
+				display: flex;
+				flex-direction: column;
+				gap: 3px;
+				font-size: 13px;
+				line-height: 1.3;
+			}
+			.status-item {
+				display: flex;
+				align-items: center;
+				gap: 5px;
+			}
+			.action-dropdown {
+				position: relative;
+				display: inline-block;
+			}
+			.action-btn {
+				padding: 8px 12px; /* Consistent padding */
+				border: none;
+				border-radius: 4px;
+				cursor: pointer;
+				color: white;
+				font-size: 14px;
+				line-height: 1;
+				box-sizing: border-box;
+				min-width: 60px;
+				text-align: center;
+				background-color: #2f276f; /* Match the view-btn color */
+			}
+			.action-btn:hover {
+				background-color: #3f357f; /* Slightly lighter shade on hover */
+			}
+			.dropdown-content {
+				display: none;
+				position: absolute;
+				background-color: white;
+				min-width: 140px;
+				box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+				z-index: 1;
+				border-radius: 4px;
+				right: 0;
+			}
+			.dropdown-content a, .dropdown-content button {
+				color: #333;
+				padding: 8px 14px;
+				text-decoration: none;
+				display: block;
+				border: none;
+				background: none;
+				width: 100%;
+				text-align: left;
+				font-size: 13px;
+				cursor: pointer;
+			}
+			.dropdown-content a:hover, .dropdown-content button:hover {
+				background-color: #f1f1f1;
+			}
+			.action-dropdown:hover .dropdown-content {
+				display: block;
+			}
+			.view-btn { color: #2f276f; }
+			.edit-btn { color: #4CAF50; }
+			.adduser-btn { color: #17a2b8; }
+			.raise-btn { color: #ffc107; }
+			.exwarranty-btn { color: #6f42c1; }
+			.insurance-btn { color: #fd7e14; }
+			.delete-btn { color: #ff4444; }
+			th:nth-child(1), td:nth-child(1) { width: 5%; } /* # */
+			th:nth-child(2), td:nth-child(2) { width: 15%; } /* Product Type */
+			th:nth-child(3), td:nth-child(3) { width: 15%; } /* Product Name */
+			th:nth-child(4), td:nth-child(4) { width: 15%; } /* Serial No */
+			th:nth-child(5), td:nth-child(5) { width: 10%; } /* Make */
+			th:nth-child(6), td:nth-child(6) { width: 10%; } /* Status */
+			th:nth-child(7), td:nth-child(7) { width: 10%; } /* QR Code */
+			th:nth-child(8), td:nth-child(8) { width: 10%; } /* Actions */
+			.search-container {
+				display: flex;
+				gap: 10px;
+				align-items: center;
+			}
+			.search-container input {
+				padding: 8px;
+				border: 1px solid #ddd;
+				border-radius: 4px;
+				font-size: 14px;
+				width: 250px; /* Match previous templates */
+			}
+			.pagination {
+				margin: 20px 0;
+				display: flex;
+				gap: 10px;
+				justify-content: center;
+			}
+			.pagination button {
+				padding: 5px 10px;
+				border: 1px solid #ddd;
+				border-radius: 4px;
+				background: none;
+				color: #2f276f;
+				font-size: 14px;
+				cursor: pointer;
+			}
+			.pagination button:hover {
+				background-color: #f4f4f4;
+			}
+			.pagination .active {
+				background-color: #2f276f;
+				color: white;
+				border-color: #2f276f;
+			}
+			.pagination .disabled {
+				color: #6c757d;
+				pointer-events: none;
+			}
+			.header {
+				background-color: #2f276f;
+				color: white;
+				padding: 20px;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				border-radius: 8px;
+				box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+				position: relative;
+				z-index: 998;
+			}
+			.header h1 {
+				margin: 0;
+				font-size: 28px;
+			}
+			.menu {
+				cursor: pointer;
+				font-size: 24px;
+				position: relative;
+			}
+			.menu-dropdown {
+				display: none;
+				position: absolute;
+				top: 100%;
+				right: 20px;
+				background: white;
+				border-radius: 5px;
+				box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+				padding: 10px;
+				z-index: 1000;
+				min-width: 150px;
+			}
+			.menu-dropdown button {
+				display: block;
+				width: 100%;
+				padding: 10px;
+				border: none;
+				background: none;
+				cursor: pointer;
+				font-size: 16px;
+				text-align: left;
+				color: black;
+			}
+			.menu-dropdown button:hover {
+				background: #f0f0f0;
+			}
+			.header-container {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				width: 95%; /* Match the header's width */
+				margin: 10px auto; /* Reduced top/bottom margin */
+				padding: 10px 20px; /* Reduced top/bottom padding */
+				background-color: #f8f9fa;
+				border-radius: 5px;
+			}
+			.no-records {
+				text-align: center;
+				padding: 20px;
+				color: #721c24;
+			}
+			
+					.flash-message {
+			position: fixed;
+			top: 20px;
+			left: 50%;
+			transform: translateX(-50%);
+			background-color: #4CAF50; /* Green for success */
+			color: white;
+			padding: 15px 20px;
+			border-radius: 8px;
+			box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+			font-size: 16px;
+			font-weight: bold;
+			z-index: 1000;
+			opacity: 1;
+			transition: opacity 0.5s ease-in-out;
+		}
 
-    <div class="header-container">
-        <h1>View Assets</h1>
-        <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search by Asset ID, Product Type, etc." onkeyup="searchAndPaginate()">
-        </div>
-    </div>
+		.flash-message.danger {
+			background-color: #f44336; /* Red for errors */
+		}
+		</style>
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+		<script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
+		<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+		
+	</head>
+	<body>
+		{% include 'header.html' %}
+		
+		<div class="content">
+			{% block content %}{% endblock %}
+		</div>
+	
+		{% with messages = get_flashed_messages(with_categories=true) %}
+		{% if messages %}
+			{% for category, message in messages %}
+			 {% if category in ("create_asset", "edit_asset") %}
+				
+					<div class="flash-message {{ category }}">{{ message }}</div>
+				{% endif %}
+			{% endfor %}
+		{% endif %}
+	  {% endwith %}
+	
 
-    <div class="form-container">
-        <table class="asset-table" id="assetsTable">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Product Type</th>
-                    <th>Product Name</th>
-                    <th>Serial No</th>
-                    <th>Make</th>
-                    <th>Status</th>
-                    <th>QR Code</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="assetsTableBody">
-                {% for asset in all_assets %}
-                <tr data-asset-id="{{ asset.asset_id }}">
-                    <td class="index"></td>
-                    <td>{{ asset.product_type }}</td>
-                    <td>{{ asset.product_name }}</td>
-                    <td>{{ asset.serial_no }}</td>
-                    <td>{{ asset.make }}</td>
-                    <td>
-                        <div class="status-container">
-                            <span class="status-item">
-                                {% if asset.warranty_exists == 'Yes' and asset.warranty_end and asset.warranty_end >= today %}
-                                    ✅ Warranty
-                                {% else %}
-                                    ❌ Warranty
-                                {% endif %}
-                            </span>
-                            <span class="status-item">
-                                {% if asset.extended_warranty_end and asset.extended_warranty_end >= today %}
-                                    ✅ Ext. Warranty
-                                {% else %}
-                                    ❌ Ext. Warranty
-                                {% endif %}
-                            </span>
-                            <span class="status-item">
-                                {% if asset.insurance == 'Yes' %}
-                                    ✅ Insurance
-                                {% else %}
-                                    ❌ Insurance
-                                {% endif %}
-                            </span>
-                            <span class="status-item">
-                                {% if asset.has_amc == '1' %}
-                                    ✅ AMC
-                                {% else %}
-                                    ❌ AMC
-                                {% endif %}
-                            </span>
-                        </div>
-                    </td>
-                    <td class="barcode-container">
-                        {% if asset.qr_code_base64 %}
-                            <img src="data:image/png;base64,{{ asset.qr_code_base64 }}" alt="QR Code">
-                            {% if permissions.role == 'admin' or permissions.role == 'manager' %}
-                                <a href="data:image/png;base64,{{ asset.qr_code_base64 }}" download="qrcode-{{ asset.asset_id }}.png" class="download-link">Download</a>
-                            {% endif %}
-                        {% else %}
-                            <div>QR Code Not Available</div>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <div class="action-dropdown">
-                            <button class="action-btn">Actions</button>
-                            <div class="dropdown-content">
-                                {% if permissions.permissions.view_details %}
-                                    <a href="{{ url_for('view_asset_details', asset_id=asset.asset_id) }}" class="view-btn">View Details</a>
-                                {% endif %}
-                                {% if permissions.permissions.edit %}
-                                    <a href="/edit_asset/{{ asset.asset_id }}" class="edit-btn">Edit</a>
-                                {% endif %}
-                                {% if permissions.permissions.add_user %}
-                                    <a href="/view_user_details/{{ asset.asset_id }}" class="adduser-btn">Add User</a>
-                                {% endif %}
-                                {% if permissions.permissions.raise_ticket %}
-                                    <a href="/create_raise_ticket/{{ asset.asset_id }}" class="raise-btn">Raise Ticket</a>
-                                {% endif %}
-                                {% if permissions.permissions.ex_warranty %}
-                                    <a href="/create_extended_warranty/{{ asset.asset_id }}" class="exwarranty-btn">EX Warranty</a>
-                                {% endif %}
-                                {% if permissions.permissions.insurance %}
-                                    <a href="/create_insurance/{{ asset.asset_id }}" class="insurance-btn">Insurance</a>
-                                {% endif %}
-                                {% if permissions.permissions.delete %}
-                                    <form method="POST" action="/delete_asset/{{ asset.asset_id }}" onsubmit="return confirm('Are you sure you want to delete this asset?');">
-                                        <button type="submit" class="delete-btn">Delete</button>
-                                    </form>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+		<div class="header-container">
+			<h1>View Assets</h1>
 
-        <!-- Pagination -->
-        <div class="pagination" id="pagination">
-            <!-- Pagination buttons will be generated by JavaScript -->
-        </div>
 
-        <!-- No Records Message -->
-        <div class="no-records" id="noRecords" style="display: none;">
-            <p>No assets found.</p>
-        </div>
-    </div>
+			<div class="search-container">
+				<input type="text" id="searchInput" placeholder="Search by Asset ID, Product Type, etc." onkeyup="searchAndPaginate()">
+				{% if permissions.role == 'admin' or permissions.role == 'manager' %}
+					<button id="downloadExcel" class="action-btn" style="margin-left: 10px;">Download Excel</button>
+				{% endif %}
+			<button class="action-btn" onclick="location.href='{{ url_for('create_asset') }}';">
+            <span> + </span> Add Asset
+			</button>
+			</div>
+		</div>
 
-    <script>
-        const perPage = 5; // Reduced to 5 to match previous templates
-        let currentPage = 1;
-        let allRows = Array.from(document.querySelectorAll('#assetsTableBody tr'));
-        let filteredRows = [...allRows];
 
-        function searchAndPaginate() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
 
-            filteredRows = allRows.filter(row => {
-                const assetId = row.getAttribute('data-asset-id').toLowerCase();
-                const productType = row.cells[1].textContent.toLowerCase();
-                const productName = row.cells[2].textContent.toLowerCase();
-                const serialNo = row.cells[3].textContent.toLowerCase();
-                const make = row.cells[4].textContent.toLowerCase();
+		</div>
 
-                return (
-                    assetId.includes(searchTerm) ||
-                    productType.includes(searchTerm) ||
-                    productName.includes(searchTerm) ||
-                    serialNo.includes(searchTerm) ||
-                    make.includes(searchTerm)
-                );
-            });
+		<div class="form-container">
+			<table class="asset-table" id="assetsTable">
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>Product Type</th>
+						<th>Product Name</th>
+						<th>Serial No</th>
+						<th>Make</th>
+						<th>Status</th>
+						<th>QR Code</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody id="assetsTableBody">
+					{% for asset in all_assets %}
+					<tr data-asset-id="{{ asset.asset_id }}">
+						<td class="index"></td>
+						<td>{{ asset.product_type }}</td>
+						<td>{{ asset.product_name }}</td>
+						<td>{{ asset.serial_no }}</td>
+						<td>{{ asset.make }}</td>
+						<td>
+							<div class="status-container">
+								<span class="status-item">
+									{% if asset.warranty_exists == 'Yes' and asset.warranty_end and asset.warranty_end >= today %}
+										✅ Warranty
+									{% else %}
+										❌ Warranty
+									{% endif %}
+								</span>
+								<span class="status-item">
+									{% if asset.extended_warranty_end and asset.extended_warranty_end >= today %}
+										✅ Ext. Warranty
+									{% else %}
+										❌ Ext. Warranty
+									{% endif %}
+								</span>
+								<span class="status-item">
+									{% if asset.insurance == 'Yes' %}
+										✅ Insurance
+									{% else %}
+										❌ Insurance
+									{% endif %}
+								</span>
+								<span class="status-item">
+									{% if asset.has_amc == '1' %}
+										✅ AMC
+									{% else %}
+										❌ AMC
+									{% endif %}
+								</span>
+							</div>
+						</td>
+						<td class="barcode-container">
+							{% if asset.qr_code_base64 %}
+								<img src="data:image/png;base64,{{ asset.qr_code_base64 }}" alt="QR Code">
+								{% if permissions.role == 'admin' or permissions.role == 'manager' %}
+									<a href="data:image/png;base64,{{ asset.qr_code_base64 }}" download="qrcode-{{ asset.asset_id }}.png" class="download-link">Download</a>
+								{% endif %}
+							{% else %}
+								<div>QR Code Not Available</div>
+							{% endif %}
+						</td>
+						<td>
+							<div class="action-dropdown">
+								<button class="action-btn">Actions</button>
+								<div class="dropdown-content">
+									{% if permissions.permissions.view_details %}
+										<a href="{{ url_for('view_asset_details', asset_id=asset.asset_id) }}" class="view-btn">View Details</a>
+									{% endif %}
+									{% if permissions.permissions.edit %}
+										<a href="/edit_asset/{{ asset.asset_id }}" class="edit-btn">Edit</a>
+									{% endif %}
+									{% if permissions.permissions.add_user %}
+										<a href="/view_user_details/{{ asset.asset_id }}" class="adduser-btn">Add User</a>
+									{% endif %}
+									{% if permissions.permissions.raise_ticket %}
+										<a href="/create_raise_ticket/{{ asset.asset_id }}" class="raise-btn">Raise Ticket</a>
+									{% endif %}
+									{% if permissions.permissions.ex_warranty %}
+										<a href="/create_extended_warranty/{{ asset.asset_id }}" class="exwarranty-btn">EX Warranty</a>
+									{% endif %}
+									{% if permissions.permissions.insurance %}
+										<a href="/create_insurance/{{ asset.asset_id }}" class="insurance-btn">Insurance</a>
+									{% endif %}
+									{% if permissions.permissions.delete %}
+										<form method="POST" action="/delete_asset/{{ asset.asset_id }}" onsubmit="return confirm('Are you sure you want to delete this asset?');">
+											<button type="submit" class="delete-btn">Delete</button>
+										</form>
+									{% endif %}
+								</div>
+							</div>
+						</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
 
-            currentPage = 1;
-            displayPage();
-        }
+			<!-- Pagination -->
+			<div class="pagination" id="pagination">
+				<!-- Pagination buttons will be generated by JavaScript -->
+			</div>
 
-        function displayPage() {
-            const totalItems = filteredRows.length;
-            const totalPages = Math.ceil(totalItems / perPage) || 1;
-            const start = (currentPage - 1) * perPage;
-            const end = start + perPage;
+			<!-- No Records Message -->
+			<div class="no-records" id="noRecords" style="display: none;">
+				<p>No assets found.</p>
+			</div>
+		</div>
 
-            allRows.forEach(row => row.style.display = 'none');
+		<script>
+			const perPage = 5; // Reduced to 5 to match previous templates
+			let currentPage = 1;
+			let allRows = Array.from(document.querySelectorAll('#assetsTableBody tr'));
+			let filteredRows = [...allRows];
 
-            const rowsToShow = filteredRows.slice(start, end);
-            rowsToShow.forEach((row, index) => {
-                row.style.display = '';
-                row.cells[0].textContent = start + index + 1;
-            });
+			function searchAndPaginate() {
+				const searchTerm = document.getElementById('searchInput').value.toLowerCase();
 
-            updatePagination(totalPages);
-            toggleNoRecords(totalItems === 0);
-        }
+				filteredRows = allRows.filter(row => {
+					const assetId = row.getAttribute('data-asset-id').toLowerCase();
+					const productType = row.cells[1].textContent.toLowerCase();
+					const productName = row.cells[2].textContent.toLowerCase();
+					const serialNo = row.cells[3].textContent.toLowerCase();
+					const make = row.cells[4].textContent.toLowerCase();
 
-        function updatePagination(totalPages) {
-            const paginationDiv = document.getElementById('pagination');
-            paginationDiv.innerHTML = '';
+					return (
+						assetId.includes(searchTerm) ||
+						productType.includes(searchTerm) ||
+						productName.includes(searchTerm) ||
+						serialNo.includes(searchTerm) ||
+						make.includes(searchTerm)
+					);
+				});
 
-            const prevButton = document.createElement('button');
-            prevButton.textContent = 'Previous';
-            if (currentPage === 1) prevButton.classList.add('disabled');
-            prevButton.addEventListener('click', () => {
-                if (currentPage > 1) {
-                    currentPage--;
-                    displayPage();
-                }
-            });
-            paginationDiv.appendChild(prevButton);
+				currentPage = 1;
+				displayPage();
+			}
 
-            const startPage = Math.max(1, currentPage - 2);
-            const endPage = Math.min(totalPages, startPage + 4);
-            for (let p = startPage; p <= endPage; p++) {
-                const pageButton = document.createElement('button');
-                pageButton.textContent = p;
-                if (p === currentPage) pageButton.classList.add('active');
-                pageButton.addEventListener('click', () => {
-                    currentPage = p;
-                    displayPage();
-                });
-                paginationDiv.appendChild(pageButton);
-            }
+			function displayPage() {
+				const totalItems = filteredRows.length;
+				const totalPages = Math.ceil(totalItems / perPage) || 1;
+				const start = (currentPage - 1) * perPage;
+				const end = start + perPage;
 
-            const nextButton = document.createElement('button');
-            nextButton.textContent = 'Next';
-            if (currentPage === totalPages) nextButton.classList.add('disabled');
-            nextButton.addEventListener('click', () => {
-                if (currentPage < totalPages) {
-                    currentPage++;
-                    displayPage();
-                }
-            });
-            paginationDiv.appendChild(nextButton);
-        }
+				allRows.forEach(row => row.style.display = 'none');
 
-        function toggleNoRecords(show) {
-            document.getElementById('noRecords').style.display = show ? 'block' : 'none';
-            document.getElementById('assetsTable').style.display = show ? 'none' : 'table';
-        }
+				const rowsToShow = filteredRows.slice(start, end);
+				rowsToShow.forEach((row, index) => {
+					row.style.display = '';
+					row.cells[0].textContent = start + index + 1;
+				});
 
-        document.addEventListener('DOMContentLoaded', () => {
-            searchAndPaginate();
-        });
-    </script>
-</body>
+				updatePagination(totalPages);
+				toggleNoRecords(totalItems === 0);
+			}
+
+			function updatePagination(totalPages) {
+				const paginationDiv = document.getElementById('pagination');
+				paginationDiv.innerHTML = '';
+
+				const prevButton = document.createElement('button');
+				prevButton.textContent = 'Previous';
+				if (currentPage === 1) prevButton.classList.add('disabled');
+				prevButton.addEventListener('click', () => {
+					if (currentPage > 1) {
+						currentPage--;
+						displayPage();
+					}
+				});
+				paginationDiv.appendChild(prevButton);
+
+				const startPage = Math.max(1, currentPage - 2);
+				const endPage = Math.min(totalPages, startPage + 4);
+				for (let p = startPage; p <= endPage; p++) {
+					const pageButton = document.createElement('button');
+					pageButton.textContent = p;
+					if (p === currentPage) pageButton.classList.add('active');
+					pageButton.addEventListener('click', () => {
+						currentPage = p;
+						displayPage();
+					});
+					paginationDiv.appendChild(pageButton);
+				}
+
+				const nextButton = document.createElement('button');
+				nextButton.textContent = 'Next';
+				if (currentPage === totalPages) nextButton.classList.add('disabled');
+				nextButton.addEventListener('click', () => {
+					if (currentPage < totalPages) {
+						currentPage++;
+						displayPage();
+					}
+				});
+				paginationDiv.appendChild(nextButton);
+			}
+
+			function toggleNoRecords(show) {
+				document.getElementById('noRecords').style.display = show ? 'block' : 'none';
+				document.getElementById('assetsTable').style.display = show ? 'none' : 'table';
+			}
+
+			document.addEventListener('DOMContentLoaded', () => {
+				searchAndPaginate();
+			});
+		</script>
+		
+		<script>
+			setTimeout(function() {
+				let flashMessages = document.querySelectorAll('.flash-message');
+				flashMessages.forEach(function(message) {
+					message.style.transition = "opacity 0.5s";
+					message.style.opacity = "0";
+					setTimeout(() => message.remove(), 500); // Remove after fade-out
+				});
+			}, 3000); // Hide after 3 seconds
+		</script>
+		<script>
+		function downloadExcel() {
+			const headers = [
+				'#',
+				'Product Type',
+				'Product Name',
+				'Serial No',
+				'Make',
+				'Warranty',
+				'Extended Warranty',
+				'Insurance',
+				'AMC'
+			];
+
+			if (!filteredRows || filteredRows.length === 0) {
+				alert('No data to download.');
+				return;
+			}
+
+			const data = filteredRows.map((row, index) => {
+				const cells = row.cells;
+				return [
+					index + 1,
+					cells[1].textContent.trim(),
+					cells[2].textContent.trim(),
+					cells[3].textContent.trim(),
+					cells[4].textContent.trim(),
+					cells[5].querySelector('.status-container').children[0].textContent.includes('✅') ? 'Yes' : 'No',
+					cells[5].querySelector('.status-container').children[1].textContent.includes('✅') ? 'Yes' : 'No',
+					cells[5].querySelector('.status-container').children[2].textContent.includes('✅') ? 'Yes' : 'No',
+					cells[5].querySelector('.status-container').children[3].textContent.includes('✅') ? 'Yes' : 'No'
+				];
+			});
+
+			const worksheet = XLSX.utils.aoa_to_sheet([headers, ...data]);
+			const workbook = XLSX.utils.book_new();
+			XLSX.utils.book_append_sheet(workbook, worksheet, 'Assets');
+			XLSX.writeFile(workbook, 'Assets_Export.xlsx');
+		}
+		</script>
+
+	</body>
 </html>

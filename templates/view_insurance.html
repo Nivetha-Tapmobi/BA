@@ -250,6 +250,23 @@
             font-size: 14px;
             width: 250px;
         }
+		
+	.action-btn {
+		padding: 8px 12px; /* Consistent padding */
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		color: white;
+		font-size: 14px;
+		line-height: 1;
+		box-sizing: border-box;
+		min-width: 60px;
+		text-align: center;
+		background-color: #2f276f; /* Match the view-btn color */
+	}
+	.action-btn:hover {
+		background-color: #3f357f; /* Slightly lighter shade on hover */
+				}
     </style>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
     <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
@@ -265,17 +282,23 @@
         <h1>View Insurances</h1>
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Search by Insurance ID, Asset ID, or Product Name" onkeyup="filterAndPaginate()">
+			<button id="downloadExcel" class="action-btn" style="margin-left: 10px;">Download Excel</button>
         </div>
     </div>
 
     <div class="form-container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash-message {{ category }}">{{ message }}</div>
-                {% endfor %}
+	
+	
+	{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+		 {% if category in ("create_insurance", "edit_insurance", "delete_insurance") %}
+            
+                <div class="flash-message {{ category }}">{{ message }}</div>
             {% endif %}
-        {% endwith %}
+        {% endfor %}
+    {% endif %}
+  {% endwith %}
 
         <!-- Insurance Table -->
         <table class="service-table" id="insuranceTable">
@@ -579,5 +602,43 @@
             filterAndPaginate();
         });
     </script>
+	<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+			<script>
+			function downloadExcel() {
+				const headers = [
+					'#',
+					'Insurance ID',
+					'Product Name',
+					'Policy No',
+					'Insurance Value',
+					'Insurance Start',
+					'Insurance End'
+				];
+				
+
+
+				// Build data array based on filteredRows (not only visible rows)
+				const data = filteredRows.map((row, index) => [
+					index + 1,
+					row.cells[0].textContent,
+					row.cells[1].textContent,
+					row.cells[2].textContent,
+					row.cells[3].textContent,
+					row.cells[4].textContent,
+					row.cells[5].textContent // Service Charge is in column 5
+				]);
+
+				const worksheet = XLSX.utils.aoa_to_sheet([headers, ...data]);
+				const workbook = XLSX.utils.book_new();
+				XLSX.utils.book_append_sheet(workbook, worksheet, 'Insurances');
+
+				XLSX.writeFile(workbook, 'Insurances.xlsx');
+			}
+
+
+			document.getElementById('downloadExcel').addEventListener('click', downloadExcel);
+
+
+		</script>
 </body>
 </html>

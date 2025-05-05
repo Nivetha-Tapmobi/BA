@@ -483,3 +483,383 @@ Press CTRL+C to quit
 192.168.3.222 - - [23/Apr/2025 12:48:04] "GET /view_raised_tickets/IT20250328-01 HTTP/1.1" 200 -
 192.168.3.222 - - [23/Apr/2025 12:48:04] "GET /static/css/header.css HTTP/1.1" 304 -
 192.168.3.222 - - [23/Apr/2025 12:48:04] "GET /static/js/header.js HTTP/1.1" 304 -
+start_now = 2025-04-29 17:02:57.313176
+Database 'asset_management' is ready.
+ * Serving Flask app 'app_ba'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://192.168.2.48:8000
+Press CTRL+C to quit
+192.168.3.222 - - [29/Apr/2025 17:03:19] "GET /create_asset HTTP/1.1" 200 -
+192.168.3.222 - - [29/Apr/2025 17:03:19] "GET /static/css/create_asset_style.css HTTP/1.1" 304 -
+192.168.3.222 - - [29/Apr/2025 17:03:19] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.222 - - [29/Apr/2025 17:03:19] "GET /static/js/create_asset.js HTTP/1.1" 304 -
+192.168.3.222 - - [29/Apr/2025 17:03:19] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.222 - - [29/Apr/2025 17:07:05] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.3.222 - - [29/Apr/2025 17:07:05] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.3.222 - - [29/Apr/2025 17:07:05] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.3.222 - - [29/Apr/2025 17:07:07] "GET /logout HTTP/1.1" 302 -
+start_now = 2025-04-30 13:57:39.703615
+Database 'asset_management' is ready.
+ * Serving Flask app 'app_ba'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://192.168.2.48:8000
+Press CTRL+C to quit
+192.168.2.172 - - [30/Apr/2025 14:01:10] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.2.172 - - [30/Apr/2025 14:01:10] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [30/Apr/2025 14:01:10] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [30/Apr/2025 14:01:32] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.2.172 - - [30/Apr/2025 14:01:33] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [30/Apr/2025 14:01:33] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [30/Apr/2025 14:01:35] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.2.172 - - [30/Apr/2025 14:01:35] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [30/Apr/2025 14:01:35] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [30/Apr/2025 15:17:20] "GET /login?username=Nivetha%20M&role=admin&can_create_ast=1&can_read_ast=1&can_update_ast=1&can_delete_ast=1&app=asset_tracker HTTP/1.1" 302 -
+192.168.2.172 - - [30/Apr/2025 15:17:20] "GET / HTTP/1.1" 302 -
+192.168.2.172 - - [30/Apr/2025 15:17:20] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.2.172 - - [30/Apr/2025 15:17:20] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [30/Apr/2025 15:17:20] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [30/Apr/2025 15:18:13] "GET /it_dashboard HTTP/1.1" 500 -
+Traceback (most recent call last):
+  File "/home/muzik247/.local/lib/python3.10/site-packages/flask/app.py", line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/muzik247/.local/lib/python3.10/site-packages/flask/app.py", line 1476, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/muzik247/.local/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/muzik247/.local/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/muzik247/.local/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/muzik247/.local/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/home/muzik247/mnt/Nivetha/IOMS/app_ba.py", line 5954, in it_dashboard
+    permissions=page_perms['permissions'],
+KeyError: 'permissions'
+192.168.2.172 - - [30/Apr/2025 15:18:13] "GET /it_dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+192.168.2.172 - - [30/Apr/2025 15:18:13] "GET /it_dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+192.168.2.172 - - [30/Apr/2025 15:18:13] "GET /it_dashboard?__debugger__=yes&cmd=resource&f=console.png&s=Uw3zxpDQDA6PzVsY0fJM HTTP/1.1" 200 -
+192.168.2.172 - - [30/Apr/2025 15:18:13] "GET /it_dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+192.168.2.172 - - [30/Apr/2025 15:18:32] "GET / HTTP/1.1" 302 -
+192.168.2.172 - - [30/Apr/2025 15:18:32] "GET /login HTTP/1.1" 500 -
+Traceback (most recent call last):
+  File "/home/muzik247/.local/lib/python3.10/site-packages/flask/app.py", line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/muzik247/.local/lib/python3.10/site-packages/flask/app.py", line 1476, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/muzik247/.local/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/muzik247/.local/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/muzik247/.local/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/muzik247/.local/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/home/muzik247/mnt/Nivetha/IOMS/app_ba.py", line 118, in login
+    return render_template('login.html')
+  File "/home/muzik247/.local/lib/python3.10/site-packages/flask/templating.py", line 149, in render_template
+    template = app.jinja_env.get_or_select_template(template_name_or_list)
+  File "/home/muzik247/.local/lib/python3.10/site-packages/jinja2/environment.py", line 1081, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+  File "/home/muzik247/.local/lib/python3.10/site-packages/jinja2/environment.py", line 1010, in get_template
+    return self._load_template(name, globals)
+  File "/home/muzik247/.local/lib/python3.10/site-packages/jinja2/environment.py", line 969, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+  File "/home/muzik247/.local/lib/python3.10/site-packages/jinja2/loaders.py", line 126, in load
+    source, filename, uptodate = self.get_source(environment, name)
+  File "/home/muzik247/.local/lib/python3.10/site-packages/flask/templating.py", line 65, in get_source
+    return self._get_source_fast(environment, template)
+  File "/home/muzik247/.local/lib/python3.10/site-packages/flask/templating.py", line 99, in _get_source_fast
+    raise TemplateNotFound(template)
+jinja2.exceptions.TemplateNotFound: login.html
+192.168.2.172 - - [30/Apr/2025 15:18:32] "GET /login?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+192.168.2.172 - - [30/Apr/2025 15:18:32] "GET /login?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+192.168.2.172 - - [30/Apr/2025 15:18:32] "GET /login?__debugger__=yes&cmd=resource&f=console.png&s=Uw3zxpDQDA6PzVsY0fJM HTTP/1.1" 200 -
+192.168.2.172 - - [30/Apr/2025 15:18:32] "GET /login?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+[]
+[]
+[]
+User Nivetha M logged in with role admin and id TI055
+[]
+[]
+start_now = 2025-04-30 15:19:58.611350
+Database 'asset_management' is ready.
+ * Serving Flask app 'app_ba'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://192.168.2.48:8000
+Press CTRL+C to quit
+192.168.2.172 - - [30/Apr/2025 15:20:04] "GET /login HTTP/1.1" 302 -
+start_now = 2025-04-30 15:37:12.963638
+Database 'asset_management' is ready.
+ * Serving Flask app 'app_ba'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://192.168.2.48:8000
+Press CTRL+C to quit
+192.168.2.172 - - [30/Apr/2025 15:37:20] "GET /view_product_requests HTTP/1.1" 200 -
+192.168.2.172 - - [30/Apr/2025 15:37:20] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [30/Apr/2025 15:37:20] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [30/Apr/2025 15:37:20] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [30/Apr/2025 15:37:27] "GET /it_dashboard HTTP/1.1" 302 -
+192.168.2.172 - - [30/Apr/2025 15:37:31] "GET /view_product_requests HTTP/1.1" 302 -
+Job "<lambda> (trigger: interval[1 day, 0:00:00], next run at: 2025-05-02 15:37:12 IST)" raised an exception
+Traceback (most recent call last):
+  File "/home/muzik247/.local/lib/python3.10/site-packages/mysql/connector/connection_cext.py", line 633, in cmd_query
+    self._cmysql.query(
+_mysql_connector.MySQLInterfaceError: Unknown column 'asset_management.product_name' in 'field list'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/muzik247/.local/lib/python3.10/site-packages/apscheduler/executors/base.py", line 125, in run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "/home/muzik247/mnt/Nivetha/IOMS/app_ba.py", line 5649, in <lambda>
+    scheduler.add_job(lambda: check_and_send_alerts(get_db_connection), 'interval', days=1)
+  File "/home/muzik247/mnt/Nivetha/IOMS/app_ba.py", line 5469, in check_and_send_alerts
+    cursor.execute("""
+  File "/home/muzik247/.local/lib/python3.10/site-packages/mysql/connector/cursor_cext.py", line 330, in execute
+    result = self._cnx.cmd_query(
+  File "/home/muzik247/.local/lib/python3.10/site-packages/mysql/connector/opentelemetry/context_propagation.py", line 77, in wrapper
+    return method(cnx, *args, **kwargs)
+  File "/home/muzik247/.local/lib/python3.10/site-packages/mysql/connector/connection_cext.py", line 641, in cmd_query
+    raise get_mysql_exception(
+mysql.connector.errors.ProgrammingError: 1054 (42S22): Unknown column 'asset_management.product_name' in 'field list'
+192.168.2.172 - - [02/May/2025 11:40:55] "GET /login?username=Nivetha%20M&role=admin&can_create_ast=1&can_read_ast=1&can_update_ast=1&can_delete_ast=1&app=asset_tracker HTTP/1.1" 302 -
+192.168.2.172 - - [02/May/2025 11:40:55] "GET / HTTP/1.1" 302 -
+192.168.2.172 - - [02/May/2025 11:40:56] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 11:40:56] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 11:40:56] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 11:40:57] "GET /favicon.ico HTTP/1.1" 404 -
+192.168.2.172 - - [02/May/2025 11:41:07] "GET /create_asset HTTP/1.1" 500 -
+Traceback (most recent call last):
+  File "/home/muzik247/.local/lib/python3.10/site-packages/mysql/connector/connection_cext.py", line 633, in cmd_query
+    self._cmysql.query(
+_mysql_connector.MySQLInterfaceError: Table 'asset_management.dropdown_attributes' doesn't exist
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/muzik247/.local/lib/python3.10/site-packages/flask/app.py", line 1498, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/muzik247/.local/lib/python3.10/site-packages/flask/app.py", line 1476, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/muzik247/.local/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/muzik247/.local/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/muzik247/.local/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/muzik247/.local/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/home/muzik247/mnt/Nivetha/IOMS/app_ba.py", line 245, in decorated_function
+    return f(*args, **kwargs)
+  File "/home/muzik247/mnt/Nivetha/IOMS/app_ba.py", line 1249, in create_asset
+    dropdown_data = display_drop_down('Create_Asset')
+  File "/home/muzik247/mnt/Nivetha/IOMS/app_ba.py", line 1167, in display_drop_down
+    cursor.execute("""
+  File "/home/muzik247/.local/lib/python3.10/site-packages/mysql/connector/cursor_cext.py", line 330, in execute
+    result = self._cnx.cmd_query(
+  File "/home/muzik247/.local/lib/python3.10/site-packages/mysql/connector/opentelemetry/context_propagation.py", line 77, in wrapper
+    return method(cnx, *args, **kwargs)
+  File "/home/muzik247/.local/lib/python3.10/site-packages/mysql/connector/connection_cext.py", line 641, in cmd_query
+    raise get_mysql_exception(
+mysql.connector.errors.ProgrammingError: 1146 (42S02): Table 'asset_management.dropdown_attributes' doesn't exist
+192.168.2.172 - - [02/May/2025 11:41:07] "GET /create_asset?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 11:41:07] "GET /create_asset?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 11:41:07] "GET /create_asset?__debugger__=yes&cmd=resource&f=console.png&s=4NLYk8NLf6xvccTTEUN0 HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 11:41:07] "GET /create_asset?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 11:48:03] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 11:48:03] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 11:48:03] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 11:48:04] "GET /create_asset HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 11:48:04] "GET /static/css/create_asset_style.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 11:48:04] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 11:48:04] "GET /static/js/create_asset.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 11:48:05] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 11:49:10] "GET /create_asset HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 11:49:10] "GET /static/css/create_asset_style.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 11:49:10] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 11:49:10] "GET /static/js/create_asset.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 11:49:10] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 11:53:12] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 11:53:12] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 11:53:13] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 11:59:44] "GET /create_asset HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 11:59:44] "GET /static/css/create_asset_style.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 11:59:44] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 11:59:44] "GET /static/js/create_asset.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 11:59:44] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:03:12] "POST /save_form_state HTTP/1.1" 302 -
+192.168.2.172 - - [02/May/2025 12:03:12] "GET /create_vendor HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:03:12] "GET /static/css/create_vendor.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:03:12] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:03:12] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:03:12] "GET /static/js/create_vendor.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:03:21] "POST /create_vendor HTTP/1.1" 302 -
+192.168.2.172 - - [02/May/2025 12:03:21] "GET /create_asset HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:03:21] "GET /create_asset HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:03:21] "GET /static/css/create_asset_style.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:03:21] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:03:21] "GET /static/js/create_asset.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:03:21] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:04:11] "POST /create_asset HTTP/1.1" 302 -
+192.168.2.172 - - [02/May/2025 12:04:11] "GET /create_asset HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:04:11] "GET /static/css/create_asset_style.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:04:11] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:04:11] "GET /static/js/create_asset.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:04:11] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:04:15] "GET /view_assets HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:04:15] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:04:15] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:04:31] "GET /view_asset_details/IT20250502-01 HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:04:31] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:04:31] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:05:12] "GET /view_asset_details/IT20250502-01 HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:05:12] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:05:12] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:06:20] "GET /view_user_details/IT20250502-01 HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:06:20] "GET /static/css/create_user_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:06:20] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:06:20] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:06:20] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:06:23] "GET /create_user_asset/IT20250502-01 HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:06:23] "GET /static/css/create_user_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:06:23] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:06:23] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:06:30] "GET /view_assets HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:06:30] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:06:30] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:06:39] "GET /view_user_details/IT20250502-01 HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:06:39] "GET /static/css/create_user_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:06:39] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:06:39] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:06:39] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:06:40] "GET /create_user_asset/IT20250502-01 HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:06:40] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:06:40] "GET /static/css/create_user_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:06:41] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:07:00] "POST /create_user_asset/IT20250502-01 HTTP/1.1" 302 -
+192.168.2.172 - - [02/May/2025 12:07:00] "GET /view_user_details/IT20250502-01 HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:07:00] "GET /static/css/create_user_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:07:00] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:07:00] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:07:00] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:07:51] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:07:51] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:07:51] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:07:58] "GET /confirm_user_asset/AU20250502-01/c2ea27e1-fcb8-4cee-8e4a-2ffdc49dc78e/accept HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:08:02] "GET /it_dashboard HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:08:02] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:08:02] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:08:07] "GET /view_assets HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:08:07] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:08:07] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:08:08] "GET /view_user_details/IT20250502-01 HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:08:08] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:08:08] "GET /static/css/create_user_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:08:08] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:08:08] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:08:15] "GET /view_raised_tickets HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:08:15] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:08:15] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:08:17] "GET /view_assets HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:08:17] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:08:17] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:08:22] "GET /create_raise_ticket/IT20250502-01 HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:08:22] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:08:22] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:08:31] "POST /create_raise_ticket/IT20250502-01 HTTP/1.1" 302 -
+192.168.2.172 - - [02/May/2025 12:08:31] "GET /view_raised_tickets HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:08:31] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:08:31] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:08:42] "GET /ticket_details/RT20250502-01 HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:08:42] "GET /create_service/RT20250502-01/IT20250502-01 HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:08:42] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:08:42] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:08:42] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:09:07] "POST /create_service/RT20250502-01/IT20250502-01 HTTP/1.1" 302 -
+192.168.2.172 - - [02/May/2025 12:09:08] "GET /view_service HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:09:08] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:09:08] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:09:08] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:09:15] "GET /view_assets HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:09:15] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:09:15] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:09:18] "GET /create_raise_ticket/IT20250502-01 HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:09:18] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:09:18] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:09:20] "GET /view_raised_tickets/IT20250502-01 HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:09:21] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:09:21] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:09:39] "GET /create_replacement?ticket_id=RT20250502-01 HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:09:39] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:09:39] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:09:54] "GET /view_raised_tickets HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:09:54] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:09:54] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:13:04] "GET /view_product_requests HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:13:04] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:13:04] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:13:04] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:13:06] "GET /create_product_request HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:13:06] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:13:06] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:13:06] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:13:23] "GET /view_wfh_requests HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:13:23] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:13:23] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:13:23] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:13:25] "GET /create_wfh_request HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:13:25] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:13:25] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:13:25] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:14:05] "GET /check_asset_status HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:14:05] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:14:05] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:14:05] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:14:22] "GET /upcoming_alerts HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:14:22] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:14:22] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:14:22] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:14:57] "GET /upcoming_alerts?alert_type=all&date_range=365 HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:14:57] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:14:57] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:14:57] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:15:04] "GET /view_assets HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:15:04] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:15:04] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:15:06] "GET /view_asset_details/IT20250502-01 HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:15:06] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:15:06] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:25:16] "GET /check_asset_status HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:25:16] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:25:16] "GET /static/css/header.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:25:16] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:25:18] "GET /check_asset_status?search=&page=1&employee=TI055 HTTP/1.1" 200 -
+192.168.2.172 - - [02/May/2025 12:25:18] "GET /static/css/service_styles.css HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:25:18] "GET /static/js/header.js HTTP/1.1" 304 -
+192.168.2.172 - - [02/May/2025 12:25:18] "GET /static/css/header.css HTTP/1.1" 304 -
+Job "<lambda> (trigger: interval[1 day, 0:00:00], next run at: 2025-05-03 15:37:12 IST)" raised an exception
+Traceback (most recent call last):
+  File "/home/muzik247/.local/lib/python3.10/site-packages/mysql/connector/connection_cext.py", line 633, in cmd_query
+    self._cmysql.query(
+_mysql_connector.MySQLInterfaceError: Unknown column 'asset_management.product_name' in 'field list'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/muzik247/.local/lib/python3.10/site-packages/apscheduler/executors/base.py", line 125, in run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "/home/muzik247/mnt/Nivetha/IOMS/app_ba.py", line 5649, in <lambda>
+    scheduler.add_job(lambda: check_and_send_alerts(get_db_connection), 'interval', days=1)
+  File "/home/muzik247/mnt/Nivetha/IOMS/app_ba.py", line 5469, in check_and_send_alerts
+    cursor.execute("""
+  File "/home/muzik247/.local/lib/python3.10/site-packages/mysql/connector/cursor_cext.py", line 330, in execute
+    result = self._cnx.cmd_query(
+  File "/home/muzik247/.local/lib/python3.10/site-packages/mysql/connector/opentelemetry/context_propagation.py", line 77, in wrapper
+    return method(cnx, *args, **kwargs)
+  File "/home/muzik247/.local/lib/python3.10/site-packages/mysql/connector/connection_cext.py", line 641, in cmd_query
+    raise get_mysql_exception(
+mysql.connector.errors.ProgrammingError: 1054 (42S22): Unknown column 'asset_management.product_name' in 'field list'

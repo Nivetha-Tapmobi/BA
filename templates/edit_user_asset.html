@@ -148,6 +148,13 @@
             background: #f0f0f0;
         }
     </style>
+	
+	
+		<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+		<!-- JS -->
+		<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </head>
 <body>
     {% include 'header.html' %}
@@ -161,13 +168,14 @@
     </div>
 
     <div class="form-container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash-message {{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+	
+		
+			
+				<div id="userAssetFlashMessagesContainer"></div>
+				<script type="text/javascript">
+					const flashMessages = {{ get_flashed_messages(with_categories=true) | tojson }};
+					showFlashMessages(flashMessages);
+				</script>
 
         <form action="{{ url_for('edit_user_asset', assignment_code=assignment_code) }}" method="post" enctype="multipart/form-data">
             <input type="hidden" name="asset_id" value="{{ asset_id }}">
@@ -175,7 +183,7 @@
             <!-- Person who is using the asset -->
             <div>
                 <label for="assigned_user">Person who is using the asset:</label>
-                <select id="assigned_user" name="assigned_user" required>
+                <select id="assigned_user" name="assigned_user" class="searchable-dropdown" required>
                     <option value="" disabled>Select an employee</option>
                     {% for employee in employees %}
                         <option value="{{ employee['username'] }}|{{ employee['employee_id'] }}"
@@ -260,5 +268,17 @@
             }
         }
     </script>
+	
+	
+	<script>
+  $(document).ready(function() {
+    $('.searchable-dropdown').select2({
+      width: '100%',
+      placeholder: 'Select an option',
+      allowClear: true
+    });
+  });
+</script>
+
 </body>
 </html>

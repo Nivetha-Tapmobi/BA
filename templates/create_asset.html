@@ -6,8 +6,14 @@
     <title>IT Asset Form</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/create_asset_style.css') }}">
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
-    <!-- Include Header JS -->
-    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
+		<script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
+		<!-- CSS -->
+		<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+		<!-- JS -->
+		<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 </head>
 <body>
 <!-- Include the header HTML -->
@@ -26,28 +32,38 @@
     
     <div class="form-container">
         <form id="assetForm" action="{{ url_for('create_asset') }}" method="post" enctype="multipart/form-data">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="flash-message {{ category }}">{{ message }}</div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+		
+		
+	{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+		 {% if category in ("create_asset") %}
+            
+                <div class="flash-message {{ category }}">{{ message }}</div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+  {% endwith %}
             
             <div class="form-container">
                 <div class="form-column">
-                    <div id="modal" class="modal">
-                        <div class="modal-content">
-                            <span id="close_modal" class="close">×</span>
-                            <h2>Add New Option</h2>
-                            <input type="text" id="new_option_input" placeholder="Enter new option">
-                            <button id="add_option_btn">Add</button>
-                        </div>
-                    </div>
+				
+							<div id="modal" class="modal">
+								<div class="modal-content">
+									<span id="close_modal" class="close">×</span>
+									<h2>Add New Option</h2>
+									<input type="text" id="new_option_input" placeholder="Enter new option">
+									<button id="add_option_btn">Add</button>
+								</div>
+							</div>
+							
+
+
                     
+					
                     <div class="form-group">
                         <label for="asset_category">Asset Category Type</label>
-                        <select id="asset_category" name="asset_category" class="dropdown-with-add">
+                        <select id="asset_category" name="asset_category" class="dropdown-with-add searchable-dropdown">
                             <option value="">--select an option--</option>
                             {% for category in asset_categories %}
                                 <option value="{{ category }}"
@@ -59,14 +75,16 @@
                         </select>
                     </div>
 
+
                     <div class="form-group">
                         <label for="serial_no">Serial No:</label>
                         <input type="text" id="serial_no" name="serial_no" value="{{ form_state.serial_no|first|default('') }}" required>
                     </div>
+					
                     
                     <div class="form-group">
                         <label for="product_type">Product Type</label>
-                        <select id="product_type" name="product_type" class="dropdown-with-add">
+                        <select id="product_type" name="product_type" class="dropdown-with-add searchable-dropdown">
                             <option value="">--select an option--</option>
                             {% for product in product_types %}
                                 <option value="{{ product }}"
@@ -77,6 +95,7 @@
                             <option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
                         </select>
                     </div>
+					
 
                     <div class="form-group">
                         <label for="product_name">Product Name:</label>
@@ -92,22 +111,28 @@
                         <label for="model">Model:</label>
                         <input type="text" id="model" name="model" value="{{ form_state.model|first|default('') }}" required>
                     </div>
+					
+					
 
                     <div class="form-group">
                         <label for="part_no">Part No:</label>
                         <input type="text" id="part_no" name="part_no" value="{{ form_state.part_no|first|default('') }}" required>
                     </div>    
                 </div>    
+				
+				
 
                 <div class="form-column">
                     <div class="form-group">
                         <label for="description">Product Description:</label>
                         <textarea id="description" name="description">{{ form_state.description|first|default('') }}</textarea>
                     </div>
+					
+					
 
                     <div class="form-group">
                         <label for="vendor_name">Vendor Name:</label>
-                        <select id="vendor_name" name="vendor_name" required>
+                        <select id="vendor_name" name="vendor_name" class="searchable-dropdown" required>
                             <option value="" selected>Select a vendor</option>
                             {% for vendor in vendors %}
                                 <option value="{{ vendor.vendor_name }}" data-vendor-id="{{ vendor.vendor_id }}"
@@ -120,10 +145,12 @@
                         <input type="hidden" id="vendor_id" name="vendor_id" value="{{ form_state.vendor_id|first|default('') }}">
                         <p>Selected Vendor ID: <span id="vendor_id_display">{{ form_state.vendor_id|first|default('None') }}</span></p>
                     </div>
+					
+					
 
                     <div class="form-group">
                         <label for="company_name">Company Name</label>
-                        <select id="company_name" name="company_name" class="dropdown-with-add">
+                        <select id="company_name" name="company_name" class="dropdown-with-add searchable-dropdown">
                             <option value="">--select an option--</option>
                             {% for company in companies %}
                                 <option value="{{ company }}"
@@ -139,7 +166,7 @@
 					
 					    <div class="form-group">
                         <label for="location">Location</label>
-                        <select id="location" name="location" class="dropdown-with-add">
+                        <select id="location" name="location" class="dropdown-with-add searchable-dropdown">
                             <option value="">--select an option--</option>
                             {% for location in locations %}
                                 <option value="{{ location }}"
@@ -154,7 +181,7 @@
 
                     <div class="form-group">
                         <label for="asset_type">Asset Type</label>
-                        <select id="asset_type" name="asset_type" class="dropdown-with-add">
+                        <select id="asset_type" name="asset_type" class="dropdown-with-add searchable-dropdown">
                             <option value="">--select an option--</option>
                             {% for asset_type in asset_types %}
                                 <option value="{{ asset_type }}"
@@ -163,6 +190,7 @@
                                 </option>
                             {% endfor %}
                             <option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
+							
                         </select>
                     </div>
 
@@ -267,10 +295,7 @@
                         </select>
                     </div>
 
-                    <!--<div class="form-group">
-                        <label for="product_condition">Product Condition:</label>
-                        <input type="text" id="product_condition" name="product_condition" value="{{ form_state.product_condition|first|default('') }}">
-                    </div>-->
+
 					
 					<div class="form-group">
                         <label for="product_condition">product condition</label>
@@ -285,6 +310,7 @@
                             <option value="add_new" style="color: blue; font-weight: bold;">+ Add New Option</option>
                         </select>
                     </div>
+					
 
                     <div class="form-group">
                         <label for="asset_image">Asset Images:</label>
@@ -295,6 +321,7 @@
                         <label for="purchase_bill">Purchase Bill:</label>
                         <input type="file" id="purchase_bill" name="purchase_bill[]" multiple>
                     </div>
+
 
                     <div class="form-group">
                         <label for="remarks">Remarks:</label>
@@ -311,6 +338,7 @@
                             <option value="No" {% if form_state.under_audit|first == 'No' %}selected{% endif %}>No</option>
                         </select>
                     </div>
+					
                     
                     <div class="form-group">
                         <label for="has_amc">AMC:</label>
@@ -320,39 +348,40 @@
                             <option value="No" {% if form_state.has_amc|first == 'No' %}selected{% endif %}>No</option>
                         </select>
                     </div>
+					
                             
-<div id="recurring-alert-section" style="display: {% if form_state.has_amc|first == 'Yes' %}block{% else %}none{% endif %};">
-    <label for="recurring_alert_for_amc">Recurring Alert for AMC:</label>
-    <div id="recurring-alert-container">
-        {% if form_state['recurring_alert_key[]'] %}
-            {% for key, value, unit in zip(form_state['recurring_alert_key[]'], form_state['recurring_alert_value[]'], form_state['recurring_alert_unit[]']) %}
-                <div class="recurring-alert-row">
-                    <input type="text" name="recurring_alert_key[]" value="{{ key|default('') }}" placeholder="Event Type">
-                    <input type="number" name="recurring_alert_value[]" value="{{ value|default('') }}" placeholder="Every X" min="1">
-                    <select name="recurring_alert_unit[]">
-                        <option value="Days" {% if unit == 'Days' %}selected{% endif %}>Days</option>
-                        <option value="Weeks" {% if unit == 'Weeks' %}selected{% endif %}>Weeks</option>
-                        <option value="Months" {% if unit == 'Months' %}selected{% endif %}>Months</option>
-                        <option value="Years" {% if unit == 'Years' %}selected{% endif %}>Years</option>
-                    </select>
-                    <button type="button" class="add-field">+</button>
-                </div>
-            {% endfor %}
-        {% else %}
-            <div class="recurring-alert-row">
-                <input type="text" name="recurring_alert_key[]" placeholder="Event Type">
-                <input type="number" name="recurring_alert_value[]" placeholder="Every X" min="1">
-                <select name="recurring_alert_unit[]">
-                    <option value="Days">Days</option>
-                    <option value="Weeks">Weeks</option>
-                    <option value="Months">Months</option>
-                    <option value="Years">Years</option>
-                </select>
-                <button type="button" class="add-field">+</button>
-            </div>
-        {% endif %}
-    </div>
-</div>
+					<div id="recurring-alert-section" style="display: {% if form_state.has_amc|first == 'Yes' %}block{% else %}none{% endif %};">
+						<label for="recurring_alert_for_amc">Recurring Alert for AMC:</label>
+						<div id="recurring-alert-container">
+							{% if form_state['recurring_alert_key[]'] %}
+								{% for key, value, unit in zip(form_state['recurring_alert_key[]'], form_state['recurring_alert_value[]'], form_state['recurring_alert_unit[]']) %}
+									<div class="recurring-alert-row">
+										<input type="text" name="recurring_alert_key[]" value="{{ key|default('') }}" placeholder="Event Type">
+										<input type="number" name="recurring_alert_value[]" value="{{ value|default('') }}" placeholder="Every X" min="1">
+										<select name="recurring_alert_unit[]">
+											<option value="Days" {% if unit == 'Days' %}selected{% endif %}>Days</option>
+											<option value="Weeks" {% if unit == 'Weeks' %}selected{% endif %}>Weeks</option>
+											<option value="Months" {% if unit == 'Months' %}selected{% endif %}>Months</option>
+											<option value="Years" {% if unit == 'Years' %}selected{% endif %}>Years</option>
+										</select>
+										<button type="button" class="add-field">+</button>
+									</div>
+								{% endfor %}
+							{% else %}
+								<div class="recurring-alert-row">
+									<input type="text" name="recurring_alert_key[]" placeholder="Event Type">
+									<input type="number" name="recurring_alert_value[]" placeholder="Every X" min="1">
+									<select name="recurring_alert_unit[]">
+										<option value="Days">Days</option>
+										<option value="Weeks">Weeks</option>
+										<option value="Months">Months</option>
+										<option value="Years">Years</option>
+									</select>
+									<button type="button" class="add-field">+</button>
+								</div>
+							{% endif %}
+						</div>
+					</div>
 					
 					
                 </div>
@@ -365,5 +394,15 @@
     </div>
 
     <script src="{{ url_for('static', filename='js/create_asset.js') }}"></script>
+	<script>
+  $(document).ready(function() {
+    $('.searchable-dropdown').select2({
+      width: '100%',
+      placeholder: 'Select an option',
+      allowClear: true
+    });
+  });
+</script>
+
 </body>
 </html>

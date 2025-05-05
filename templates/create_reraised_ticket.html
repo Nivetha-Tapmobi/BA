@@ -1,0 +1,131 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Re-raise Ticket</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
+    <style>
+        .form-container {
+            width: 95%;
+            margin: 10px auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            background-color: #f8f9fa;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            color: #2f276f;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .form-group input[readonly] {
+            background-color: #e9ecef;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .submit-btn, .cancel-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        .submit-btn {
+            background-color: #2f276f;
+            color: white;
+        }
+        .cancel-btn {
+            background-color: #ff4444;
+            color: white;
+        }
+        .flash-message {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .flash-message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .flash-message.danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .char-count {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    {% include 'header.html' %}
+    
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <div class="form-container">
+        <h2>Re-raise Ticket: {{ ticket.ticket_id }}</h2>
+        
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            {% if "create_reraised_ticket" in category %}  {# Show only insurance messages #}
+                <div class="flash-message {{ category }}">{{ message }}</div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+        
+        <form method="POST" id="reraisedForm">
+            <div class="form-group">
+                <label for="ticket_id">Ticket ID:</label>
+                <input type="text" id="ticket_id" value="{{ ticket.ticket_id }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="asset_id">Asset ID:</label>
+                <input type="text" id="asset_id" value="{{ ticket.asset_id }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="current_description">Current Problem Description:</label>
+                <textarea id="current_description" readonly>{{ ticket.problem_description }}</textarea>
+            </div>
+            <div class="form-group">
+                <label for="reraised_reason">Re-raise Reason (Optional):</label>
+                <textarea id="reraised_reason" name="reraised_reason" placeholder="Enter the reason for re-raising this ticket..."></textarea>
+                <p class="char-count" id="charCount">Characters: 0</p>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="submit-btn">Re-raise Ticket</button>
+                <a href="{{ url_for('view_raised_tickets') }}" class="cancel-btn">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('reraised_reason').addEventListener('input', function() {
+            const text = this.value;
+            const charCount = text.length;
+            document.getElementById('charCount').textContent = `Characters: ${charCount}`;
+        });
+    </script>
+</body>
+</html>

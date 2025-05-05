@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reject Request</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/service_styles.css') }}">
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            resize: vertical;
+        }
+        button[type="submit"] {
+            background-color: #dc3545;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button[type="submit"]:hover {
+            background-color: #c82333;
+        }
+        .flash-message {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .flash-message.danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <h2>Reject {'Product Request' if request_type == 'product' else 'WFH Asset Request'}</h2>
+        <p>Please provide a reason for rejecting the request (Request ID: {{ request_id }}).</p>
+        
+        <form method="POST">
+            <div class="form-group">
+                <label for="rejection_reason">Rejection Reason</label>
+                <textarea name="rejection_reason" id="rejection_reason" rows="4" required placeholder="Explain why the request is being rejected"></textarea>
+            </div>
+            
+            <button type="submit">Submit Rejection</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function(event) {
+                const reason = document.getElementById('rejection_reason').value.trim();
+                if (!reason) {
+                    event.preventDefault();
+                    alert('Please provide a rejection reason.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

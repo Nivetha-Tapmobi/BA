@@ -1,40 +1,61 @@
-
-
 <div class="header">
     <h1>IT Asset Tracker</h1>
     <div class="menu">☰</div>
     <div class="menu-dropdown" id="menuDropdown">
-
-		
-		
-		{% if header_permissions.view_raised_tickets %}
-        <button onclick="location.href='{{ url_for('view_raised_tickets') }}';">Raised Tickets</button>
-				{% endif %}
-		{% if header_permissions.view_assets %}
-        <button onclick="location.href='{{ url_for('view_assets') }}';">IT Assets</button>
-				{% endif %}
-				{% if header_permissions.view_service %}
-        <button onclick="location.href='{{ url_for('view_service') }}';">Services</button>
-				{% endif %}
-				{% if header_permissions.view_insurance %}
-        <button onclick="location.href='{{ url_for('view_insurance') }}';">Insurance</button>
-				{% endif %}
-				{% if header_permissions.view_extended_warranty %}
-        <button onclick="location.href='{{ url_for('view_extended_warranty') }}';">EXW</button>
-				{% endif %}
-				{% if header_permissions.check_asset_status %}
-        <button onclick="location.href='{{ url_for('check_asset_status') }}';">Audit</button>
 	
-				{% endif %}
-				{% if header_permissions.all_assets %}
-        <button onclick="location.href='{{ url_for('all_assets') }}';">M Services</button>
-				{% endif %}
-				{% if header_permissions.upcoming_alerts %}
-        <button onclick="location.href='{{ url_for('upcoming_alerts') }}';">Alerts</button>
-				{% endif %}
-				
+		{% if header_permissions.it_dashboard %}
+			<button onclick="location.href='{{ url_for('it_dashboard') }}';">Dashboard</button>
+		{% endif %}
+		
+		{% if header_permissions.view_assets %}
+			<button onclick="location.href='{{ url_for('view_assets') }}';">Asset Entry</button>
+		{% endif %}
+
+		{% if header_permissions.view_raised_tickets %}
+			<button onclick="location.href='{{ url_for('view_raised_tickets') }}';">Ticket Desk</button>
+		{% endif %}
+
+
+		{% if header_permissions.view_service %}
+			<button onclick="location.href='{{ url_for('view_service') }}';">Maintenance Logbook</button>
+		{% endif %}
+		
+		{% if header_permissions.all_assets %}
+			<button onclick="location.href='{{ url_for('all_assets') }}';">Bulk Service Creation</button>
+		{% endif %}
+
+		{% if header_permissions.request_product %}
+			<button onclick="location.href='{{ url_for('view_product_requests') }}';">New Asset Request</button>
+		{% endif %}
+		
+		{% if header_permissions.request_wfh_asset %}
+			<button onclick="location.href='{{ url_for('view_wfh_requests') }}';">WFH Asset Requests</button>
+		{% endif %}
+		
+		{% if header_permissions.view_insurance %}
+			<button onclick="location.href='{{ url_for('view_insurance') }}';">Insurance Details</button>
+		{% endif %}
+
+		{% if header_permissions.view_extended_warranty %}
+			<button onclick="location.href='{{ url_for('view_extended_warranty') }}';">Extended Warranty & Coverage </button>
+		{% endif %}
+
+		{% if header_permissions.check_asset_status %}
+			<button onclick="location.href='{{ url_for('check_asset_status') }}';">IT Asset Audit (6-Month Check)</button>
+		{% endif %}
+
+		{% if header_permissions.upcoming_alerts %}
+			<button onclick="location.href='{{ url_for('upcoming_alerts') }}';">Upcoming Alerts</button>
+		{% endif %}
+
 		{% if header_permissions.logout %}
-        <button onclick="location.href='{{ url_for('logout') }}';">Logout</button>
-				{% endif %}
+			<button onclick="location.href='{{ url_for('logout') }}';">Logout</button>
+		{% endif %}
+
     </div>
 </div>
+
+
+
+
+

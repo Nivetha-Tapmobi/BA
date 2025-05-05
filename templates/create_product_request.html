@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Product Request</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/service_styles.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #191970;
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .content {
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .form-group textarea:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+        }
+        button[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .flash-message {
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .flash-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .flash-message.danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .error {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    {% include 'header.html' %}
+    
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <div class="container">
+	{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+		 {% if category in ("create_product_request") %}
+            
+                <div class="flash-message {{ category }}">{{ message }}</div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+        <h2>Create Product Request</h2>
+        <form method="POST" id="requestForm">
+            <div class="form-group">
+                <label for="product_needed">What Product Do You Need?</label>
+                <textarea name="product_needed" id="product_needed" rows="4" required placeholder="Describe the product you need (e.g., laptop, monitor)"></textarea>
+                <div class="error" id="product_needed_error"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="reason">Why Do You Need This Product?</label>
+                <textarea name="reason" id="reason" rows="4" required placeholder="Explain the purpose or reason for the request"></textarea>
+                <div class="error" id="reason_error"></div>
+            </div>
+
+            <button type="submit">Submit Request</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('requestForm');
+            const productNeededInput = document.getElementById('product_needed');
+            const reasonInput = document.getElementById('reason');
+            const productNeededError = document.getElementById('product_needed_error');
+            const reasonError = document.getElementById('reason_error');
+
+            form.addEventListener('submit', function(event) {
+                let isValid = true;
+                productNeededError.textContent = '';
+                reasonError.textContent = '';
+
+                const productNeeded = productNeededInput.value.trim();
+                const reason = reasonInput.value.trim();
+
+                if (!productNeeded) {
+                    productNeededError.textContent = 'This field is required.';
+                    isValid = false;
+                }
+                if (!reason) {
+                    reasonError.textContent = 'This field is required.';
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    event.preventDefault();
+                    console.log('Client-side validation failed: Missing required fields.');
+                } else {
+                    console.log('Form submission successful:', { productNeeded, reason });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

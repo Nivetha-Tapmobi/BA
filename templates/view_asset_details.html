@@ -201,7 +201,7 @@
             {% set field_order = [
                 'id', 'created_by', 'created_at', 'asset_id', 'asset_category', 'product_type',
                 'product_name', 'serial_no', 'make', 'model', 'part_no', 'description',
-                'purchase_date', 'product_age', 'vendor_name', 'vendor_id', 'company_name',
+                'purchase_date', 'product_age', 'vendor_name', 'vendor_id', 'company_name','location',
                 'asset_type', 'purchase_value', 'product_condition', 'adp_production',
                 'insurance', 'warranty_checked', 'warranty_exists', 'warranty_start',
                 'warranty_period', 'warranty_end', 'extended_warranty_exists',
@@ -289,6 +289,7 @@
                             <th>Ticket ID</th>
                             <th>Problem Description</th>
                             <th>Status</th>
+							<th>Replaced Asset ID </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -298,6 +299,8 @@
                                     <td>{{ ticket.ticket_id or 'N/A' }}</td>
                                     <td>{{ ticket.problem_description or 'N/A' }}</td>
                                     <td>{{ ticket.ticket_status or 'N/A' }}</td>
+									<td>{{ ticket.replacement_asset_id or ''}}</td>
+									
                                 </tr>
                             {% endfor %}
                         {% else %}

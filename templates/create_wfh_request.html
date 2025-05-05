@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create WFH Asset Request</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/service_styles.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #191970;
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .content {
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+        }
+        button[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .flash-message {
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .flash-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .flash-message.danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .error {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    {% include 'header.html' %}
+    
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <div class="container">
+	{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+		 {% if category in ("create_wfh_request") %}
+            
+                <div class="flash-message {{ category }}">{{ message }}</div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+        <h2>Create WFH Asset Request</h2>
+        <form method="POST" id="requestForm">
+            <div class="form-group">
+                <label for="asset_id">Select Asset</label>
+                <select name="asset_id" id="asset_id" required>
+                    <option value="">Select an asset</option>
+                    {% for asset in assets %}
+                        <option value="{{ asset.asset_id }}">{{ asset.product_name }} ({{ asset.asset_id }}) - {{ asset.product_type }}</option>
+                    {% endfor %}
+                </select>
+                <div class="error" id="asset_id_error"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="duration_days">Duration (Days)</label>
+                <input type="number" name="duration_days" id="duration_days" min="1" required>
+                <div class="error" id="duration_days_error"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="start_date">Start Date</label>
+                <input type="date" name="start_date" id="start_date" required>
+                <div class="error" id="start_date_error"></div>
+            </div>
+
+            <div class="form-group" id="end_date_group">
+                <label for="end_date">End Date</label>
+                <input type="date" name="end_date" id="end_date" readonly>
+                <div class="error" id="end_date_error"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="reason">Why Do You Need This Asset for WFH?</label>
+                <textarea name="reason" id="reason" rows="4" required placeholder="Explain the purpose or reason for the WFH request"></textarea>
+                <div class="error" id="reason_error"></div>
+            </div>
+
+            <button type="submit">Submit Request</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('requestForm');
+            const assetIdInput = document.getElementById('asset_id');
+            const durationDaysInput = document.getElementById('duration_days');
+            const startDateInput = document.getElementById('start_date');
+            const endDateInput = document.getElementById('end_date');
+            const endDateGroup = document.getElementById('end_date_group');
+            const reasonInput = document.getElementById('reason');
+            const assetIdError = document.getElementById('asset_id_error');
+            const durationDaysError = document.getElementById('duration_days_error');
+            const startDateError = document.getElementById('start_date_error');
+            const endDateError = document.getElementById('end_date_error');
+            const reasonError = document.getElementById('reason_error');
+
+            function updateEndDate() {
+                const duration = parseInt(durationDaysInput.value, 10);
+                const startDate = new Date(startDateInput.value);
+
+                // If duration is 1, hide end date and set it equal to start date
+                if (duration === 1) {
+                    endDateGroup.classList.add('hidden');
+                    if (startDateInput.value) {
+                        endDateInput.value = startDateInput.value;
+                    } else {
+                        endDateInput.value = '';
+                    }
+                } else if (duration >= 2 && startDateInput.value) {
+                    // Show end date and calculate it
+                    endDateGroup.classList.remove('hidden');
+                    const endDate = new Date(startDate);
+                    endDate.setDate(startDate.getDate() + duration - 1);
+                    const year = endDate.getFullYear();
+                    const month = String(endDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(endDate.getDate()).padStart(2, '0');
+                    endDateInput.value = `${year}-${month}-${day}`;
+                } else {
+                    endDateGroup.classList.add('hidden');
+                    endDateInput.value = '';
+                }
+            }
+
+            function validateDates() {
+                const duration = parseInt(durationDaysInput.value, 10);
+                const startDate = new Date(startDateInput.value);
+                const endDate = new Date(endDateInput.value);
+
+                if (duration && startDate && endDate) {
+                    const diffDays = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+                    if (diffDays !== duration) {
+                        endDateError.textContent = 'End date must match the duration from start date.';
+                        return false;
+                    } else {
+                        endDateError.textContent = '';
+                        return true;
+                    }
+                }
+                return true;
+            }
+
+            form.addEventListener('submit', function(event) {
+                let isValid = true;
+                assetIdError.textContent = '';
+                durationDaysError.textContent = '';
+                startDateError.textContent = '';
+                endDateError.textContent = '';
+                reasonError.textContent = '';
+
+                const assetId = assetIdInput.value.trim();
+                const durationDays = durationDaysInput.value;
+                const startDate = startDateInput.value;
+                const endDate = endDateInput.value;
+                const reason = reasonInput.value.trim();
+
+                if (!assetId) {
+                    assetIdError.textContent = 'Please select an asset.';
+                    isValid = false;
+                }
+                if (!durationDays || durationDays <= 0) {
+                    durationDaysError.textContent = 'Please enter a valid duration greater than 0.';
+                    isValid = false;
+                }
+                if (!startDate) {
+                    startDateError.textContent = 'Please select a start date.';
+                    isValid = false;
+                }
+                if (!endDate) {
+                    endDateError.textContent = 'End date is required.';
+                    isValid = false;
+                }
+                if (!reason) {
+                    reasonError.textContent = 'Please provide a reason.';
+                    isValid = false;
+                }
+
+                if (isValid) {
+                    isValid = validateDates();
+                }
+
+                if (!isValid) {
+                    event.preventDefault();
+                    console.log('Client-side validation failed.');
+                } else {
+                    console.log('Form submission successful:', { assetId, durationDays, startDate, endDate, reason });
+                }
+            });
+
+            // Update end date whenever duration or start date changes
+            durationDaysInput.addEventListener('input', updateEndDate);
+            startDateInput.addEventListener('input', updateEndDate);
+
+            // Initial call to set the correct state
+            updateEndDate();
+        });
+    </script>
+</body>
+</html>

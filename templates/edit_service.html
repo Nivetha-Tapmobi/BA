@@ -4,29 +4,37 @@
     <meta charset="UTF-8">
     <title>Edit Service</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/service_styles.css') }}">
-		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
     <script src="{{ url_for('static', filename='js/header.js') }}" defer></script>
-	<style>
-	    .remove-btn {
-        background-color: #dc3545;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 4px;
-        cursor: pointer;
-        margin-left: 10px;
-    }
-    .remove-btn:hover {
-        background-color: #c82333;
-    }
-    ul {
-        list-style-type: none;
-        padding-left: 0;
-    }
-    li {
-        margin-bottom: 5px;
-    }
-	</style>
+	
+	
+    <style>
+        .remove-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .remove-btn:hover {
+            background-color: #c82333;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+    </style>
+	
+		<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+		<!-- JS -->
+		<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </head>
 <body>
     {% include 'header.html' %}
@@ -55,37 +63,41 @@
                     <input type="text" name="ticket_id" id="ticket_id" value="{{ service.ticket_id }}" readonly>
                 </div>
 
-<div class="form-group">
-                    <label for="technician_name">Technician Name:</label>
-                    <select name="technician_name" id="technician_name" required onchange="updateTechnicianId()">
-                        <option value="">Select Technician</option>
-                        {% for tech in technicians %}
-                            <option value="{{ tech.technician_name }}" data-technician-id="{{ tech.technician_id }}"
-                                    {% if service and tech.technician_name == service.technician_name %}selected{% endif %}>
-                                {{ tech.technician_name }}
-                            </option>
-                        {% endfor %}
-                        <option value="add_new_technician" style="color: blue; font-weight: bold;">+ Add New Technician</option>
-                    </select>
-                </div>
-                <input type="hidden" name="service_id" value="{{ service.service_id if service else '' }}">
+				<div class="form-group">
+					<label for="technician_source">Technician Source:</label>
+					<select name="technician_source" id="technician_source" onchange="toggleTechnicianFields()">
+						<option value="outhouse" {% if service and service.technician_source == 'outhouse' %}selected{% endif %}>Outhouse</option>
+						<option value="inhouse" {% if service and service.technician_source == 'inhouse' %}selected{% endif %}>Inhouse</option>
+					</select>
+				</div>
 
+				<div class="form-group" id="technician_name_group">
+					<label for="technician_name">Technician Name:</label>
+					<select name="technician_name" id="technician_name" onchange="updateTechnicianId()" class="searchable-dropdown">
+						<option value="">Select Technician</option>
+						{% for tech in technicians %}
+							<option value="{{ tech.technician_name }}" data-technician-id="{{ tech.technician_id }}"
+									{% if service and tech.technician_name == service.technician_name and service.technician_source == 'outhouse' %}selected{% endif %}>
+								{{ tech.technician_name }}
+							</option>
+						{% endfor %}
+						<option value="add_new_technician" style="color: blue; font-weight: bold;">+ Add New Technician</option>
+					</select>
+				</div>
+				<input type="hidden" name="service_id" value="{{ service.service_id if service else '' }}">
+
+				<div class="form-group" id="technician_id_group">
+					<label for="technician_id">Technician ID:</label>
+					<input type="text" name="technician_id" id="technician_id" value="{{ service.technician_id if service and service.technician_source == 'outhouse' else '' }}" readonly>
+				</div>
+                
                 <div class="form-group">
-                    <label for="technician_id">Technician ID:</label>
-                    <input type="text" name="technician_id" id="technician_id" value="{{ service.technician_id }}" readonly required>
-                </div>
-				
-				                <div class="form-group">
                     <label for="work_done">Work Done:</label>
                     <textarea name="work_done" id="work_done" rows="4" required>{{ service.work_done }}</textarea>
                 </div>
-
-
             </div>
 
             <div class="form-column">
-
-
                 <div class="form-group">
                     <label for="next_service_date">Next Service Date:</label>
                     <input type="date" name="next_service_date" id="next_service_date" value="{{ service.next_service_date }}">
@@ -106,36 +118,78 @@
                     <textarea name="remarks" id="remarks" rows="3">{{ service.remarks }}</textarea>
                 </div>
 
-<div class="form-group">
-    <label for="service_bill">Service Bill Upload (Add More Files):</label>
-    <input type="file" name="service_bill" id="service_bill" multiple accept=".png,.jpg,.jpeg,.gif,.pdf,.docx">
-    {% if service.service_bill_path %}
-        <p><strong>Existing Files:</strong></p>
-        <ul id="bill-list">
-            {% for path in service.service_bill_path.split(',') %}
-                <li data-full-path="{{ path }}">
-                    <a href="{{ url_for('static', filename='uploads/' + path) }}" target="_blank">{{ path.split('/')[-1] }}</a>
-                    <button type="button" class="remove-btn" onclick="removeFile(this)">Remove</button>
-                </li>
-            {% endfor %}
-        </ul>
-        <input type="hidden" name="removed_bills" id="removed-bills" value="">
-    {% else %}
-        <p>Existing Files: None</p>
-    {% endif %}
-</div>
-
+                <div class="form-group">
+                    <label for="service_bill">Service Bill Upload (Add More Files):</label>
+                    <input type="file" name="service_bill" id="service_bill" multiple accept=".png,.jpg,.jpeg,.gif,.pdf,.docx">
+                    {% if service.service_bill_path %}
+                        <p><strong>Existing Files:</strong></p>
+                        <ul id="bill-list">
+                            {% for path in service.service_bill_path.split(',') %}
+                                <li data-full-path="{{ path }}">
+                                    <a href="{{ url_for('static', filename='Uploads/' + path) }}" target="_blank">{{ path.split('/')[-1] }}</a>
+                                    <button type="button" class="remove-btn" onclick="removeFile(this)">Remove</button>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <input type="hidden" name="removed_bills" id="removed-bills" value="">
+                    {% else %}
+                        <p>Existing Files: None</p>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="service_image">Service Images:</label>
+                    <input type="file" id="service_image" name="service_image" multiple accept=".png,.jpg,.jpeg,.gif,.pdf,.docx">
+                    {% if service.service_photo_path %}
+                        <p><strong>Existing Images:</strong></p>
+                        <ul id="image-list">
+                            {% for image in service.service_photo_path.split(',') %}
+                                <li data-full-path="{{ image }}">
+                                    <a href="{{ url_for('static', filename='Uploads/' + image) }}" target="_blank">{{ image.split('/')[-1] }}</a>
+                                    <button type="button" class="remove-btn" onclick="removeFile(this, 'image')">Remove</button>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <input type="hidden" name="removed_images" id="removed-images" value="">
+                    {% else %}
+                        <p>Existing Files: None</p>
+                    {% endif %}
+                </div>
+                
                 <button type="submit">Update Service</button>
             </div>
         </form>
-		
-		<!-- Hidden form for fallback submission -->
+        
+        <!-- Hidden form for fallback submission -->
         <form method="POST" id="redirectForm" action="{{ url_for('save_form_state_technician') }}" style="display: none;">
             <input type="hidden" name="service_id" value="{{ service.service_id if service else '' }}">
         </form>
     </div>
 
-   <script>
+    <script>
+function toggleTechnicianFields() {
+        const technicianSource = document.getElementById('technician_source').value;
+        const technicianNameGroup = document.getElementById('technician_name_group');
+        const technicianIdGroup = document.getElementById('technician_id_group');
+        const technicianNameSelect = document.getElementById('technician_name');
+        const technicianIdInput = document.getElementById('technician_id');
+
+        if (technicianSource === 'inhouse') {
+            technicianNameGroup.style.display = 'none';
+            technicianIdGroup.style.display = 'none';
+            technicianNameSelect.removeAttribute('required');
+            technicianIdInput.removeAttribute('required');
+            technicianNameSelect.value = '{{ session.username }}';
+            technicianIdInput.value = '{{ session.emp_id }}';
+        } else { // outhouse
+            technicianNameGroup.style.display = 'block';
+            technicianIdGroup.style.display = 'block';
+            technicianNameSelect.setAttribute('required', 'required');
+            technicianIdInput.setAttribute('required', 'required');
+            // Do not clear existing values; they are set by Jinja2 for outhouse
+        }
+    }
+
         function updateTechnicianId() {
             const select = document.getElementById('technician_name');
             const selectedOption = select.options[select.selectedIndex];
@@ -143,28 +197,24 @@
             const technicianName = selectedOption.value;
 
             if (technicianName === 'add_new_technician') {
-                // Primary approach: Use fetch
                 fetch('/save_form_state_technician', {
                     method: 'POST',
                     body: new FormData(document.getElementById('serviceForm'))
                 })
                 .then(response => {
                     if (!response.ok) {
-                        // Log the status and response text for debugging
                         response.text().then(text => {
                             console.error('Fetch failed with status:', response.status);
                             console.error('Response text:', text);
                         });
                         throw new Error('Failed to save form state');
                     }
-                    // Check if the response is a redirect
                     if (response.redirected) {
-                        window.location.href = response.url;  // Follow the redirect
+                        window.location.href = response.url;
                     }
                 })
                 .catch(error => {
                     console.error('Error saving form state:', error);
-                    // Fallback: Use traditional form submission
                     document.getElementById('redirectForm').submit();
                 });
             } else if (technicianId) {
@@ -173,27 +223,38 @@
                 document.getElementById('technician_id').value = '';
             }
         }
-    </script>
-	<script>
-    function removeFile(button) {
+
+        function removeFile(button, type = 'bill') {
             const li = button.parentElement;
             const fullPath = li.getAttribute('data-full-path');
-            const fileName = fullPath.split('/').pop(); // Extract the file name for the confirmation message
+            const fileName = fullPath.split('/').pop();
 
-            // Ask for confirmation
             if (confirm(`Are you sure you want to remove "${fileName}"?`)) {
-                // If user clicks "OK", proceed with removal
                 li.remove();
-
-                const hiddenInput = document.getElementById('removed-bills');
+                const hiddenInputId = type === 'image' ? 'removed-images' : 'removed-bills';
+                const hiddenInput = document.getElementById(hiddenInputId);
                 let removedFiles = hiddenInput.value ? hiddenInput.value.split(',') : [];
                 if (!removedFiles.includes(fullPath)) {
                     removedFiles.push(fullPath);
                     hiddenInput.value = removedFiles.join(',');
                 }
             }
-            // If user clicks "Cancel", do nothing (function ends here)
         }
+
+        // Initialize form based on technician_source
+        document.addEventListener('DOMContentLoaded', toggleTechnicianFields);
+    </script>
+	
+	
+	<script>
+  $(document).ready(function() {
+    $('.searchable-dropdown').select2({
+      width: '100%',
+      placeholder: 'Select an option',
+      allowClear: true
+    });
+  });
 </script>
+
 </body>
 </html>

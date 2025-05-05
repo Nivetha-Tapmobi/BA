@@ -135,7 +135,6 @@
 </head>
 <body>
     {% include 'header.html' %}
-    
     <div class="content">
         {% block content %}{% endblock %}
     </div>
@@ -153,7 +152,9 @@
                 {% endfor %}
             </select>
         </div>
-
+		
+		<input type="hidden" id="ticketId" value="{{ ticket_id or '' }}">
+	
         <!-- Assets Table -->
         <table id="assetsTable">
             <thead>
@@ -182,6 +183,10 @@
         const allAssets = {{ assets | tojson | safe }};
         const itemsPerPage = 5; // Adjust as needed
         let currentPage = 1;
+		
+		// Get ticket_id from URL query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const ticketId = urlParams.get('ticket_id');
 
         // Filter and paginate assets
         function filterAndPaginate() {
@@ -272,10 +277,12 @@
             filterAndPaginate();
         }
 
-        // Add user function (unchanged)
-        function addUser(assetId) {
-            window.location.href = `/create_user_asset/${assetId}`;
-        }
+		// Add user function
+			function addUser(assetId) {
+				if (ticketId) {
+					window.location.href = `/create_user_asset_replacement/${ticketId}/${assetId}`;
+				} 
+			}
 
         // Initial load
         document.addEventListener('DOMContentLoaded', () => {

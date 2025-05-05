@@ -175,6 +175,7 @@
                     <option value="extended_warranty_end" {% if alert_type == 'extended_warranty_end' %}selected{% endif %}>Extended Warranty End</option>
                     <option value="insurance_end" {% if alert_type == 'insurance_end' %}selected{% endif %}>Insurance End</option>
                     <option value="next_service_date" {% if alert_type == 'next_service_date' %}selected{% endif %}>Next Service</option>
+					<option value="extended_warranty_end_extended_warranty_info" {% if alert_type == 'extended_warranty_end_extended_warranty_info' %}selected{% endif %}>Seperate Extended Warranty End</option>
                 </select>
 
                 <label for="date_range">Date Range:</label>
@@ -182,6 +183,7 @@
                     <option value="7" {% if date_range == 7 %}selected{% endif %}>Next 7 Days</option>
                     <option value="30" {% if date_range == 30 %}selected{% endif %}>Next 30 Days</option>
                     <option value="90" {% if date_range == 90 %}selected{% endif %}>Next 90 Days</option>
+					<option value="365" {% if date_range == 365 %}selected{% endif %}>Next 1 Year</option>
                 </select>
 
                 <button type="submit" class="filter-button">Filter</button>
@@ -213,15 +215,18 @@
         </table>
 
         <!-- Pagination -->
-        <div class="pagination" id="pagination">
-            <!-- Pagination buttons will be populated dynamically -->
-        </div>
 
-        <!-- No Records Message -->
+
+
+    </div>
+	        <!-- No Records Message -->
         <div class="no-records" id="noRecords" style="display: none;">
             <p>No alerts found.</p>
         </div>
-    </div>
+	
+	        <div class="pagination" id="pagination">
+            <!-- Pagination buttons will be populated dynamically -->
+        </div>
 
     <script>
         const allAlertsData = {{ alerts | tojson | safe }};
